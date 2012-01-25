@@ -187,9 +187,11 @@ SOURCES       = plugin.cpp \
     ./libontology/java_io_Closeable.cpp \
     ./libontology/java_base_class.cpp \
     ./libontology/java_array.cpp \
-    ./libontology/edu_monash_it_OWLAPIWrapper.cpp
+    ./libontology/edu_monash_it_OWLAPIWrapper.cpp \
+    ttt.cpp
 
 unix:!symbian|win32: LIBS += -L/usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client/ -ljvm
 
 INCLUDEPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
 DEPENDPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
+
