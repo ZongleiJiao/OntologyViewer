@@ -159,7 +159,26 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
                     }
                 }
             }
-        }      
+        }
+        //check whether has supper class (no->thing)*****(not finished)
+        JavaObjectArray *sup = wp->getSuperClasses(a[i]->toString());
+
+        if(sup==NULL){
+            conn = new Connector();
+            conn->initWithConnection(ontoclasses[0], ontoclasses[i]);
+            canvas->addItem(conn);
+            conn->setDirected(true);
+        }
+        else{
+            java::lang::Object ** c = (java::lang::Object **)sup->getArrayData();
+            QString supid=QString(c[0]->toString());
+            if(supid.contains("Thing")){
+                conn = new Connector();
+                conn->initWithConnection(ontoclasses[0], ontoclasses[i]);
+                canvas->addItem(conn);
+                conn->setDirected(true);
+            }
+        }
 
         //display individuals
         JavaObjectArray *indi = wp->getIndividuals(a[i]->toString());
@@ -178,13 +197,18 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
                   canvas->addItem(ontoindividual);
 
                   conn_indi = new Connector();
-                  conn_indi->initWithConnection(ontoindividual, ontoclasses[i]);
+                  conn_indi->initWithConnection(ontoclasses[i],ontoindividual);
                   canvas->addItem(conn_indi);
                   conn_indi->setDirected(true);
               }
           }
     }
 
+    //test double line
+//    conn = new Connector();
+//    conn->initWithConnection(ontoclasses[0], ontoclasses[4]);
+//    canvas->addItem(conn);
+//    conn->setDirected(true);
     return true;
 }
 
