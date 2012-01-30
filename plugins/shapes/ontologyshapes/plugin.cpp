@@ -29,10 +29,9 @@
 #include "libdunnartcanvas/shape.h"
 using namespace dunnart;
 
-//#include "diamond.h"
-//#include "roundedrect.h"
 #include "ontoclass.h"
 #include "ontoindividual.h"
+#include "ontoproperty.h"
 
 class OntologyShapesPlugin : public QObject, public ShapePluginInterface
 {
@@ -72,7 +71,7 @@ class OntologyShapesPlugin : public QObject, public ShapePluginInterface
             }
             else if (shapeType == "org.dunnart.shapes.ontoproperty")
             {
-                return new RectangleShape();
+                return new OntologyPropertyShape();
             }
             return NULL;
         }

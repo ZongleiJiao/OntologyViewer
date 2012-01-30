@@ -9,11 +9,15 @@ include(../shape_plugin_options.pri)
 SOURCES += \
     plugin.cpp \
     ontoclass.cpp \
-    ontoindividual.cpp
+    ontoindividual.cpp \
+    ontoproperty.cpp
 
 HEADERS += \
     ontoclass.h \
-    ontoindividual.h
+    ontoindividual.h \
+    ontoproperty.h
+
+
 
 
 
