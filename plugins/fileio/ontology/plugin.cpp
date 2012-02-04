@@ -38,7 +38,7 @@
 #include "libdunnartcanvas/undo.h"
 
 #include <java_magic.h>
-#include <edu_monash_it_OWLAPIWrapper.h>
+#include <edu_monash_infotech_OWLAPIWrapper.h>
 #include <iostream>
 
 using namespace std;
@@ -111,14 +111,14 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     */
 
     initJavaWrapper(0,NULL);
-    edu::monash::it::OWLAPIWrapper * wp = new edu::monash::it::OWLAPIWrapper();
+    edu::monash::infotech::OWLAPIWrapper * wp = new edu::monash::infotech::OWLAPIWrapper();
 
     //load owl file
     wp->loadOntologyFile(filename.toUtf8().constData());
 
     //get all ontology classes
     JavaObjectArray *res = wp->getAllOWLClasses();
-    java::lang::Object ** a = (java::lang::Object **)res->getArrayData();
+    java::lang::String ** a = (java::lang::String **)res->getArrayData();
 
     //number of ontology classes
     int num = res->getArrayLength();
@@ -204,11 +204,87 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
           }
     }
 
-    //test double line
-//    conn = new Connector();
-//    conn->initWithConnection(ontoclasses[0], ontoclasses[4]);
-//    canvas->addItem(conn);
-//    conn->setDirected(true);
+    //get all properties
+    /*
+      0: name
+      1: type
+      2: domain
+      3: range
+      */
+    JavaObjectArray *dataprop = wp->getAllPropertiesByType(wp->TYPE_DATA_PROPERTY);
+    JavaObjectArray *objprop = wp->getAllPropertiesByType(wp->TYPE_OBJECT_PROPERTY);
+    java::lang::String ** dataprops = (java::lang::String **) dataprop->getArrayData();
+    java::lang::String ** objprops = (java::lang::String **) objprop->getArrayData();
+    int datapropertyno = (dataprop->getArrayLength())/4;
+    int objpropertyno = (objprop->getArrayLength())/4;
+    cout<<"-=-=-=-=-=-=-=Properties [DATA] "
+        <<datapropertyno
+        <<" [OBJECT] "
+        <<objpropertyno
+        <<" -=-=-=-=-=-="<<endl;
+
+    ShapeObj **ontodataproperties=new ShapeObj * [datapropertyno];
+    ShapeObj **ontoobjproperties=new ShapeObj * [objpropertyno];
+
+    //draw data properties
+    for(int i=0;i<datapropertyno;i++){
+
+        cout<<dataprops[i*4]->toString()<<endl;
+
+        ontodataproperties[i] = shapeFactory->createShape("ontoproperty");
+        QString lbl = "["
+                + QString(dataprops[i*4+1]->toString())
+                + "]\n"
+                + QString(dataprops[i*4]->toString())
+                + "\n"
+                + QString(dataprops[i*4+3]->toString());
+        ontodataproperties[i]->setLabel(lbl);
+        ontodataproperties[i]->setPosAndSize(QPointF(200,i*25), QSizeF(200,60));
+        canvas->addItem(ontodataproperties[i]);
+        //connect domain
+        QString domainclass = dataprops[i*4+2]->toString();
+        for(int k=0;k<num;k++){
+            if(domainclass == ontoclasses[k]->getLabel()){
+                conn = new Connector();
+                conn->initWithConnection(ontoclasses[k],ontodataproperties[i]);
+                canvas->addItem(conn);
+                conn->setDirected(true);
+            }
+        }
+    }
+
+    //draw object properties
+    for(int i=0;i<objpropertyno;i++){
+
+        cout<<objprops[i*4]->toString()<<endl;
+
+        ontoobjproperties[i] = shapeFactory->createShape("ontoproperty");
+        QString lbl = "["
+                + QString(objprops[i*4+1]->toString())
+                + "]\n"
+                + QString(objprops[i*4]->toString());
+        ontoobjproperties[i]->setLabel(lbl);
+        ontoobjproperties[i]->setPosAndSize(QPointF(-200,i*60), QSizeF(200,60));
+        canvas->addItem(ontoobjproperties[i]);
+        //connect domain & range
+        QString domainclass = objprops[i*4+2]->toString();
+        QString rangeclass = objprops[i*4+3]->toString();
+        for(int k=0;k<num;k++){
+            if(domainclass == ontoclasses[k]->getLabel()){
+                conn = new Connector();
+                conn->initWithConnection(ontoclasses[k],ontoobjproperties[i]);
+                canvas->addItem(conn);
+                conn->setDirected(true);
+            }
+            if(rangeclass == ontoclasses[k]->getLabel()){
+                conn = new Connector();
+                conn->initWithConnection(ontoobjproperties[i],ontoclasses[k]);
+                canvas->addItem(conn);
+                conn->setDirected(true);
+            }
+        }
+
+    }
     return true;
 }
 

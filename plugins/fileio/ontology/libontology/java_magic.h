@@ -23,7 +23,6 @@
 #define JAVA_MAGIC_H
 
 #include <jni.h>
-#include <jni_md.h>
 #include <java_wrapper.h>
 
 #include <java_marker.h>
