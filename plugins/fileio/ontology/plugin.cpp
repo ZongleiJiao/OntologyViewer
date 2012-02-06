@@ -247,6 +247,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
             if(domainclass == ontoclasses[k]->getLabel()){
                 conn = new Connector();
                 conn->initWithConnection(ontoclasses[k],ontodataproperties[i]);
+                conn->setDotted(true);
                 canvas->addItem(conn);
                 conn->setDirected(true);
             }
@@ -273,12 +274,14 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
             if(domainclass == ontoclasses[k]->getLabel()){
                 conn = new Connector();
                 conn->initWithConnection(ontoclasses[k],ontoobjproperties[i]);
+                conn->setDotted(true);
                 canvas->addItem(conn);
                 conn->setDirected(true);
             }
             if(rangeclass == ontoclasses[k]->getLabel()){
                 conn = new Connector();
                 conn->initWithConnection(ontoobjproperties[i],ontoclasses[k]);
+                conn->setDotted(true);
                 canvas->addItem(conn);
                 conn->setDirected(true);
             }
