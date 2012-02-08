@@ -23,17 +23,8 @@
  * Author(s): Michael Wybrow  <http://michael.wybrow.info/>
 */
 
-#include <QToolBar>
-#include <QMenu>
-#include <QTimer>
-#include <QPainter>
-#include <QStatusBar>
-#include <QSvgRenderer>
-#include <QGraphicsSceneMouseEvent>
-#include <QUndoStack>
-#include <QSvgGenerator>
-#include <QGraphicsView>
-#include <QMessageBox>
+#include <QtGui>
+#include <QtSvg>
 
 #include "libdunnartcanvas/canvas.h"
 #include "libdunnartcanvas/shape.h"
@@ -186,7 +177,9 @@ Canvas::Canvas()
       m_overlay_router_orthogonal_visgraph(false),
       m_rendering_for_printing(false),
       m_edit_mode(ModeSelection),
-      m_routing_event_posted(false)
+      m_routing_event_posted(false),
+      m_canvas_font(NULL),
+      m_canvas_font_size(DEFAULT_CANVAS_FONT_SIZE)
 {
     m_ideal_connector_length = 100;
     m_directed_edge_height_modifier = 0.5;
@@ -298,11 +291,11 @@ bool Canvas::loadGmlDiagram(const QFileInfo& fileInfo)
 }
 
 
-void Canvas::loadDiagram(const QString& filename)
+bool Canvas::loadDiagram(const QString& filename)
 {
     if (filename.isEmpty())
     {
-        return;
+        return false;
     }
 
     QString errorMessage;
@@ -328,6 +321,7 @@ void Canvas::loadDiagram(const QString& filename)
         message.setWindowModality(Qt::WindowModal);
         message.exec();
     }
+    return successful;
 }
 
 void Canvas::setSvgRendererForFile(const QString& filename)
@@ -412,6 +406,17 @@ CanvasItem *Canvas::getItemByInternalId(uint internalId) const
     return NULL;
 }
 
+QFont &Canvas::canvasFont(void)
+{
+    if (m_canvas_font == NULL)
+    {
+        QFontDatabase database;
+        database.addApplicationFont(":/resources/DejaVuSans.ttf");
+
+        m_canvas_font = new QFont("DejaVu Sans", m_canvas_font_size);
+    }
+    return *m_canvas_font;
+}
 
 QUndoStack *Canvas::undoStack(void) const
 {
@@ -2849,7 +2854,7 @@ void Canvas::loadLayoutOptionsFromDomElement(const QDomElement& options)
     unsigned int fileFontSize;
     if (optionalProp(options,x_fontSize,fileFontSize) && fileFontSize>0)
     {
-        shapeFontSize = fileFontSize;
+        m_canvas_font_size = fileFontSize;
     }
 }
 
@@ -2897,9 +2902,9 @@ QDomElement Canvas::writeLayoutOptionsToDomElement(QDomDocument& doc) const
                 colourStrings.join(",").toLatin1().data());
     }
 
-    if (shapeFontSize != defaultShapeFontSize)
+    if (m_canvas_font_size != DEFAULT_CANVAS_FONT_SIZE)
     {
-        newProp(dunOpts,x_fontSize,shapeFontSize);
+        newProp(dunOpts,x_fontSize,m_canvas_font_size);
     }
 
     return dunOpts;

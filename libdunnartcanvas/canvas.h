@@ -23,6 +23,9 @@
  * Author(s): Michael Wybrow  <http://michael.wybrow.info/>
 */
 
+//! @file
+//! Canvas class.  This is DunnartCanvas' equivalent of QGraphicsScene.
+
 #ifndef CANVAS_H_
 #define CANVAS_H_
 
@@ -74,6 +77,8 @@ class Actions {
         void clear(void);
         bool empty(void) const;
 };
+
+static const unsigned int DEFAULT_CANVAS_FONT_SIZE = 11;
 
 static const uint MESSAGEBOX_PIXMAP_SIZE = 70;
 
@@ -139,6 +144,7 @@ class Canvas : public QGraphicsScene
         void highlightIndicatorsForItemMove(CanvasItem *item);
         void moveSelectionResizeHandle(const int index, const QPointF pos);
         void storeSelectionResizeInfo(void);
+        QFont& canvasFont(void);
 
         QString saveConstraintInfoToString(void) const;
         void loadConstraintInfoFromString(const QString& constraintInfo);
@@ -272,7 +278,7 @@ class Canvas : public QGraphicsScene
         virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 
     private:
-        void loadDiagram(const QString& filename);
+        bool loadDiagram(const QString& filename);
         bool idIsUnique(QString id) const;
         void recursiveMapIDs(QDomNode start, const QString& ns, int pass);
         bool singlePropUpdateID(QDomElement& node, const QString& prop,
@@ -369,6 +375,8 @@ class Canvas : public QGraphicsScene
         bool m_rendering_for_printing;
         int m_edit_mode;
         bool m_routing_event_posted;
+        QFont *m_canvas_font;
+        unsigned int m_canvas_font_size;
 
 #ifdef FPSTIMER
         clock_t startTime;
