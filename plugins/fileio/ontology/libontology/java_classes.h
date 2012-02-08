@@ -1,6 +1,6 @@
 #ifndef JAVA_CLASSES_H
 #define JAVA_CLASSES_H
-#include <edu_monash_it_OWLAPIWrapper.h>
+#include <edu_monash_infotech_OWLAPIWrapper.h>
 #include <java_lang_Object.h>
 #include <java_lang_String.h>
 #include <java_lang_Class.h>
