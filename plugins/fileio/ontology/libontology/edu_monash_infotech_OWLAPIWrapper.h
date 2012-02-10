@@ -38,6 +38,8 @@ class OWLAPIWrapper : public java::lang::Object {
     virtual JavaObjectArray* getDisjointClasses(const char* arg1); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getDisjointClasses(java.lang.String)
     virtual JavaObjectArray* getEquivalentClasses(const char* arg1); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getEquivalentClasses(java.lang.String)
     virtual JavaObjectArray* getIndividuals(const char* arg1); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getIndividuals(java.lang.String)
+    virtual JavaObjectArray* getAllIndividuals(); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getAllIndividuals()
+    virtual const char* getDefaultNameSpace(); // public java.lang.String edu.monash.infotech.OWLAPIWrapper.getDefaultNameSpace()
     virtual JavaObjectArray* getAllPropertiesByType(const char* arg1); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getAllPropertiesByType(java.lang.String)
     virtual JavaObjectArray* getDataProperties(const char* arg1); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getDataProperties(java.lang.String)
     virtual JavaObjectArray* getObjectProperties(const char* arg1); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getObjectProperties(java.lang.String)

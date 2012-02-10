@@ -103,7 +103,11 @@ HEADERS       = \
     libontology/java_classes.h \
     libontology/java_base_class.h \
     libontology/java_array.h \
-    libontology/edu_monash_infotech_OWLAPIWrapper.h
+    libontology/edu_monash_infotech_OWLAPIWrapper.h \
+    owlclass.h \
+    owlproperty.h \
+    owlindividual.h \
+    owlontology.h
 
 SOURCES       = plugin.cpp \
     libontology/java_wrapper.cpp \
@@ -187,12 +191,40 @@ SOURCES       = plugin.cpp \
     libontology/java_io_Closeable.cpp \
     libontology/java_base_class.cpp \
     libontology/java_array.cpp \
-    libontology/edu_monash_infotech_OWLAPIWrapper.cpp
+    libontology/edu_monash_infotech_OWLAPIWrapper.cpp \
+    owlclass.cpp \
+    owlproperty.cpp \
+    owlindividual.cpp \
+    owlontology.cpp
 
 unix:!symbian|win32: LIBS += -L/usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client/ -ljvm
 
 INCLUDEPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
 DEPENDPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -41,6 +41,8 @@
 #include <edu_monash_infotech_OWLAPIWrapper.h>
 #include <iostream>
 
+#include <owlontology.h>
+
 using namespace std;
 using namespace dunnart;
 
@@ -100,15 +102,22 @@ bool OntologyFileIOPlugin::saveDiagramToFile(Canvas *canvas,
 bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
         const QFileInfo& fileInfo, QString& errorMessage)
 {
+    OwlOntology * onto = new OwlOntology();
+    onto->loadontology(fileInfo);
+    cout<<onto->toQString().toStdString();
+    onto->drawClassView(canvas);
+    //onto->drawIndividualView(canvas);
+/** origin code
     QString filename = fileInfo.absoluteFilePath();
-    /*
-    QFile file(filename);
-    if ( ! file.open(QIODevice::ReadOnly) )
-    {
-        errorMessage = tr("File could not be opened for reading.");
-        return false;
-    }
-    */
+
+//    QFile file(filename);
+//    if ( ! file.open(QIODevice::ReadOnly) )
+//    {
+//        errorMessage = tr("File could not be opened for reading.");
+//        return false;
+//    }
+
+
 
     initJavaWrapper(0,NULL);
     edu::monash::infotech::OWLAPIWrapper * wp = new edu::monash::infotech::OWLAPIWrapper();
@@ -131,6 +140,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
         //add ontoclasses
         cout<<a[i]->toString()<<endl;
         ontoclasses[i] = shapeFactory->createShape("ontoclass");
+        ontoclasses[i]->setIdString(QString(a[i]->toString()));
         ontoclasses[i]->setLabel(QString(a[i]->toString()));
         ontoclasses[i]->setPosAndSize(QPointF(0,i*25), QSizeF(150,20));
         canvas->addItem(ontoclasses[i]);
@@ -161,133 +171,131 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
             }
         }
         //check whether has supper class (no->thing)*****(not finished)
-        JavaObjectArray *sup = wp->getSuperClasses(a[i]->toString());
 
-        if(sup==NULL){
-            conn = new Connector();
-            conn->initWithConnection(ontoclasses[0], ontoclasses[i]);
-            canvas->addItem(conn);
-            conn->setDirected(true);
-        }
-        else{
-            java::lang::Object ** c = (java::lang::Object **)sup->getArrayData();
-            QString supid=QString(c[0]->toString());
-            if(supid.contains("Thing")){
-                conn = new Connector();
-                conn->initWithConnection(ontoclasses[0], ontoclasses[i]);
-                canvas->addItem(conn);
-                conn->setDirected(true);
-            }
-        }
+//        JavaObjectArray *sup = wp->getSuperClasses(a[i]->toString());
+
+//        if(sup==NULL){
+//            conn = new Connector();
+//            conn->initWithConnection(ontoclasses[0], ontoclasses[i]);
+//            canvas->addItem(conn);
+//            conn->setDirected(true);
+//        }
+//        else{
+//            java::lang::Object ** c = (java::lang::Object **)sup->getArrayData();
+//            QString supid=QString(c[0]->toString());
+//            if(supid.contains("Thing")){
+//                conn = new Connector();
+//                conn->initWithConnection(ontoclasses[0], ontoclasses[i]);
+//                canvas->addItem(conn);
+//                conn->setDirected(true);
+//            }
+//        }
+
 
         //display individuals
-        JavaObjectArray *indi = wp->getIndividuals(a[i]->toString());
-        if(indi != NULL)
-        {
-              java::lang::Object ** in = (java::lang::Object **)indi->getArrayData();
-              cout<<"+++Individual:"<<indi->getArrayLength()<<endl;
+//        JavaObjectArray *indi = wp->getIndividuals(a[i]->toString());
+//        if(indi != NULL)
+//        {
+//              java::lang::Object ** in = (java::lang::Object **)indi->getArrayData();
+//              cout<<"+++Individual:"<<indi->getArrayLength()<<endl;
 
-              for(int j=0;j<indi->getArrayLength();j++){
-                  cout<<"::"<<in[j]->toString()<<endl;
+//              for(int j=0;j<indi->getArrayLength();j++){
+//                  cout<<"::"<<in[j]->toString()<<endl;
 
-                  //add individuals to canvas
-                  ShapeObj *ontoindividual=shapeFactory->createShape("ontoindividual");
-                  ontoindividual->setLabel(QString(in[j]->toString()));
-                  ontoindividual->setPosAndSize(QPointF(0,i*25), QSizeF(150,20));
-                  canvas->addItem(ontoindividual);
+//                  //add individuals to canvas
+//                  ShapeObj *ontoindividual=shapeFactory->createShape("ontoindividual");
+//                  ontoindividual->setLabel(QString(in[j]->toString()));
+//                  ontoindividual->setPosAndSize(QPointF(0,i*25), QSizeF(150,20));
+//                  canvas->addItem(ontoindividual);
 
-                  conn_indi = new Connector();
-                  conn_indi->initWithConnection(ontoclasses[i],ontoindividual);
-                  canvas->addItem(conn_indi);
-                  conn_indi->setDirected(true);
-              }
-          }
+//                  conn_indi = new Connector();
+//                  conn_indi->initWithConnection(ontoclasses[i],ontoindividual);
+//                  canvas->addItem(conn_indi);
+//                  conn_indi->setDirected(true);
+//              }
+//          }
     }
 
-    //get all properties
-    /*
-      0: name
-      1: type
-      2: domain
-      3: range
-      */
-    JavaObjectArray *dataprop = wp->getAllPropertiesByType(wp->TYPE_DATA_PROPERTY);
-    JavaObjectArray *objprop = wp->getAllPropertiesByType(wp->TYPE_OBJECT_PROPERTY);
-    java::lang::String ** dataprops = (java::lang::String **) dataprop->getArrayData();
-    java::lang::String ** objprops = (java::lang::String **) objprop->getArrayData();
-    int datapropertyno = (dataprop->getArrayLength())/4;
-    int objpropertyno = (objprop->getArrayLength())/4;
-    cout<<"-=-=-=-=-=-=-=Properties [DATA] "
-        <<datapropertyno
-        <<" [OBJECT] "
-        <<objpropertyno
-        <<" -=-=-=-=-=-="<<endl;
+    //get all properties 0: name 1: type 2: domain 3: range
+//    JavaObjectArray *dataprop = wp->getAllPropertiesByType(wp->TYPE_DATA_PROPERTY);
+//    JavaObjectArray *objprop = wp->getAllPropertiesByType(wp->TYPE_OBJECT_PROPERTY);
+//    java::lang::String ** dataprops = (java::lang::String **) dataprop->getArrayData();
+//    java::lang::String ** objprops = (java::lang::String **) objprop->getArrayData();
+//    int datapropertyno = (dataprop->getArrayLength())/4;
+//    int objpropertyno = (objprop->getArrayLength())/4;
+//    cout<<"-=-=-=-=-=-=-=Properties [DATA] "
+//        <<datapropertyno
+//        <<" [OBJECT] "
+//        <<objpropertyno
+//        <<" -=-=-=-=-=-="<<endl;
 
-    ShapeObj **ontodataproperties=new ShapeObj * [datapropertyno];
-    ShapeObj **ontoobjproperties=new ShapeObj * [objpropertyno];
+//    ShapeObj **ontodataproperties=new ShapeObj * [datapropertyno];
+//    ShapeObj **ontoobjproperties=new ShapeObj * [objpropertyno];
 
-    //draw data properties
-    for(int i=0;i<datapropertyno;i++){
+//    //draw data properties
+//    for(int i=0;i<datapropertyno;i++){
 
-        cout<<dataprops[i*4]->toString()<<endl;
+//        cout<<dataprops[i*4]->toString()<<endl;
 
-        ontodataproperties[i] = shapeFactory->createShape("ontoproperty");
-        QString lbl = "["
-                + QString(dataprops[i*4+1]->toString())
-                + "]\n"
-                + QString(dataprops[i*4]->toString())
-                + "\n"
-                + QString(dataprops[i*4+3]->toString());
-        ontodataproperties[i]->setLabel(lbl);
-        ontodataproperties[i]->setPosAndSize(QPointF(200,i*25), QSizeF(200,60));
-        canvas->addItem(ontodataproperties[i]);
-        //connect domain
-        QString domainclass = dataprops[i*4+2]->toString();
-        for(int k=0;k<num;k++){
-            if(domainclass == ontoclasses[k]->getLabel()){
-                conn = new Connector();
-                conn->initWithConnection(ontoclasses[k],ontodataproperties[i]);
-                conn->setDotted(true);
-                canvas->addItem(conn);
-                conn->setDirected(true);
-            }
-        }
-    }
+//        ontodataproperties[i] = shapeFactory->createShape("ontoproperty");
+//        QString lbl = "["
+//                + QString(dataprops[i*4+1]->toString())
+//                + "]\n"
+//                + QString(dataprops[i*4]->toString())
+//                + "\n"
+//                + QString(dataprops[i*4+3]->toString());
+//        ontodataproperties[i]->setLabel(lbl);
+//        ontodataproperties[i]->setPosAndSize(QPointF(200,i*25), QSizeF(200,60));
+//        canvas->addItem(ontodataproperties[i]);
+//        //connect domain
+//        QString domainclass = dataprops[i*4+2]->toString();
+//        for(int k=0;k<num;k++){
+//            if(domainclass == ontoclasses[k]->getLabel()){
+//                conn = new Connector();
+//                conn->initWithConnection(ontoclasses[k],ontodataproperties[i]);
+//                conn->setDotted(true);
+//                canvas->addItem(conn);
+//                conn->setDirected(true);
+//            }
+//        }
+//    }
 
-    //draw object properties
-    for(int i=0;i<objpropertyno;i++){
+//    //draw object properties
+//    for(int i=0;i<objpropertyno;i++){
 
-        cout<<objprops[i*4]->toString()<<endl;
+//        cout<<objprops[i*4]->toString()<<endl;
 
-        ontoobjproperties[i] = shapeFactory->createShape("ontoproperty");
-        QString lbl = "["
-                + QString(objprops[i*4+1]->toString())
-                + "]\n"
-                + QString(objprops[i*4]->toString());
-        ontoobjproperties[i]->setLabel(lbl);
-        ontoobjproperties[i]->setPosAndSize(QPointF(-200,i*60), QSizeF(200,60));
-        canvas->addItem(ontoobjproperties[i]);
-        //connect domain & range
-        QString domainclass = objprops[i*4+2]->toString();
-        QString rangeclass = objprops[i*4+3]->toString();
-        for(int k=0;k<num;k++){
-            if(domainclass == ontoclasses[k]->getLabel()){
-                conn = new Connector();
-                conn->initWithConnection(ontoclasses[k],ontoobjproperties[i]);
-                conn->setDotted(true);
-                canvas->addItem(conn);
-                conn->setDirected(true);
-            }
-            if(rangeclass == ontoclasses[k]->getLabel()){
-                conn = new Connector();
-                conn->initWithConnection(ontoobjproperties[i],ontoclasses[k]);
-                conn->setDotted(true);
-                canvas->addItem(conn);
-                conn->setDirected(true);
-            }
-        }
+//        ontoobjproperties[i] = shapeFactory->createShape("ontoproperty");
+//        QString lbl = "["
+//                + QString(objprops[i*4+1]->toString())
+//                + "]\n"
+//                + QString(objprops[i*4]->toString());
+//        ontoobjproperties[i]->setLabel(lbl);
+//        ontoobjproperties[i]->setPosAndSize(QPointF(-200,i*60), QSizeF(200,60));
+//        canvas->addItem(ontoobjproperties[i]);
+//        //connect domain & range
+//        QString domainclass = objprops[i*4+2]->toString();
+//        QString rangeclass = objprops[i*4+3]->toString();
+//        for(int k=0;k<num;k++){
+//            if(domainclass == ontoclasses[k]->getLabel()){
+//                conn = new Connector();
+//                conn->initWithConnection(ontoclasses[k],ontoobjproperties[i]);
+//                conn->setDotted(true);
+//                canvas->addItem(conn);
+//                conn->setDirected(true);
+//            }
+//            if(rangeclass == ontoclasses[k]->getLabel()){
+//                conn = new Connector();
+//                conn->initWithConnection(ontoobjproperties[i],ontoclasses[k]);
+//                conn->setDotted(true);
+//                canvas->addItem(conn);
+//                conn->setDirected(true);
+//            }
+//        }
 
-    }
+//    }
+  */
+
     return true;
 }
 

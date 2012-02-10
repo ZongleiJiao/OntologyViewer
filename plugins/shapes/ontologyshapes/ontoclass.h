@@ -9,7 +9,6 @@ class OntologyClassShape: public ShapeObj
     public:
         OntologyClassShape();
         virtual ~OntologyClassShape() { }
-
         virtual QPainterPath buildPainterPath(void);
 };
 

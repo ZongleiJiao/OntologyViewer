@@ -534,6 +534,54 @@ JavaObjectArray* OWLAPIWrapper::getIndividuals(const char* arg1)
   updateAllNonFinalVariables(wrapperIntern);
 }
 
+JavaObjectArray* OWLAPIWrapper::getAllIndividuals()
+{
+  jclass    cls = javaEnv->FindClass("edu/monash/infotech/OWLAPIWrapper");
+  handleJavaException(wrapperIntern);
+  jmethodID mid = javaEnv->GetMethodID(cls, "getAllIndividuals", "()[Ljava/lang/String;");
+  handleJavaException(wrapperIntern);
+  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid);
+  handleJavaException(wrapperIntern);
+  JavaObjectArray* result;
+  if (jresult!=NULL) {
+    result=new JavaObjectArray((jarray)jresult);
+    javaEnv->DeleteLocalRef(jresult);
+  } else {
+    result=NULL;
+  }
+  return result;
+  updateAllNonFinalVariables(wrapperIntern);
+}
+
+const char* OWLAPIWrapper::getDefaultNameSpace()
+{
+  jclass    cls = javaEnv->FindClass("edu/monash/infotech/OWLAPIWrapper");
+  handleJavaException(wrapperIntern);
+  jmethodID mid = javaEnv->GetMethodID(cls, "getDefaultNameSpace", "()Ljava/lang/String;");
+  handleJavaException(wrapperIntern);
+  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid);
+  handleJavaException(wrapperIntern);
+  char* result;
+  if (jresult!=NULL) {
+    const char*  jresult_bytes = javaEnv->GetStringUTFChars((jstring)jresult,NULL);
+    handleJavaException(wrapperIntern);
+    jsize        jresult_size = javaEnv->GetStringUTFLength((jstring)jresult);
+    handleJavaException(wrapperIntern);
+                 result = new char[jresult_size+1];
+    for (int i=0;i<jresult_size;i++) {
+      result[i] = jresult_bytes[i];
+    }
+    result[jresult_size]=0;
+    javaEnv->ReleaseStringUTFChars((jstring)jresult, jresult_bytes);
+    handleJavaException(wrapperIntern);
+    javaEnv->DeleteLocalRef(jresult);
+  } else {
+    result=NULL;
+  }
+  return result;
+  updateAllNonFinalVariables(wrapperIntern);
+}
+
 JavaObjectArray* OWLAPIWrapper::getAllPropertiesByType(const char* arg1)
 {
   jclass    cls = javaEnv->FindClass("edu/monash/infotech/OWLAPIWrapper");
