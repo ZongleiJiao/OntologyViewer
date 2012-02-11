@@ -47,7 +47,7 @@ const QString OwlProperty::PROPERTY_TYPE_IRREFLEXIVE_SHORT = "IR";
 
 /** static methods to decode the property type&name string **/
 //get property type (full type name)
-QString OwlProperty::getPropertyTypeCodeByEncodedString(QString encodedString)
+QString OwlProperty::getPropertyTypeByEncodedString(QString encodedString)
 {
     int num = encodedString[1].digitValue();
     if(num==-1) return NULL;
@@ -108,12 +108,13 @@ QString OwlProperty::getPropertyTypeCodeByEncodedString(QString encodedString)
     return tpname;
 }
 //get property type (short type name)
-QString OwlProperty::getPropertyTypeByEncodedString(QString encodedString)
+QString OwlProperty::getPropertyTypeCodeByEncodedString(QString encodedString)
 {
+    QString shorttypename;
     int num = encodedString[1].digitValue();
     if(num==-1) return NULL;
-
-    QString shorttypename = encodedString.mid(2,num*2) + encodedString[0];
+    if(num>0) shorttypename += encodedString.mid(2,num*2);
+    shorttypename += encodedString[0];
 
     return shorttypename;
 }
@@ -127,4 +128,66 @@ QString OwlProperty::getPropertyShortNameByEncodedString(QString encodedString)
     QString name = encodedString.right(namelength);
 
     return name;
+}
+
+/** functions **/
+//print to QString
+QString OwlProperty::toQString(){
+    QString res;
+    res.append("####################");
+//    res.append("\nFull  Name: ");
+//    res.append(URI);
+    res.append("\nShort Name: ");
+    res.append(shortname);
+    res.append(" ["+this->propertytype+"] >"
+               + this->encodedPropertyNameAndType
+               + " >" + this->getPropertyTypeCodeByEncodedString(encodedPropertyNameAndType));
+
+    res.append("\nDomains:");
+    for(int i=0;i<domains.length();i++){
+        res.append(" ");
+        res.append(domains[i]->shortname);
+    }
+
+    res.append("\nRanges:");
+    for(int i=0;i<ranges.length();i++){
+        res.append(" ");
+        res.append(ranges[i]);
+    }
+
+    res.append("\nSubproperties:");
+    for(int i=0;i<subproperties.length();i++){
+        res.append(" ");
+        res.append(subproperties[i]->shortname);
+    }
+
+    res.append("\nSuperproperties:");
+    for(int i=0;i<this->superproperties.length();i++){
+        res.append(" ");
+        res.append(superproperties[i]->shortname);
+    }
+
+    res.append("\nDisjointproperties:");
+    for(int i=0;i<this->disjointproperties.length();i++){
+        res.append(" ");
+        res.append(disjointproperties[i]->shortname);
+    }
+    res.append("\n####################\n");
+    return res;
+}
+
+//isDataProperty
+bool OwlProperty::isDataProperty()
+{
+    if(encodedPropertyNameAndType.left(1)==ENTITIY_TYPE_DATA_PROPERTY_SHORT)
+        return true;
+    else return false;
+}
+
+//isObjectProperty
+bool OwlProperty::isObjectProperty()
+{
+    if(encodedPropertyNameAndType.left(1)==ENTITIY_TYPE_OBJECT_PROPERTY_SHORT)
+        return true;
+    else return false;
 }

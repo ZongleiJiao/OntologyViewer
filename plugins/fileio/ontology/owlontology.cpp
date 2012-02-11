@@ -15,6 +15,24 @@ OwlOntology::OwlOntology()
 {
 }
 
+/** unfinished:
+1. all URI name
+2. prefix
+3. properties
+4. about Thing?
+5. (done) Did not deal with the -1 error when use getIndexOfClasses(),getIndexOfIndividuals(),getIndexOfProperties()
+*/
+
+//const
+const QColor OwlOntology::CLASS_SHAPE_COLOR = QColor(65,105,225);
+const QColor OwlOntology::INDIVIDUAL_SHAPE_COLOR = QColor(238,130,238);
+const QColor OwlOntology::PROPERTY_SHAPE_COLOR = QColor(143,188,143);
+
+const QColor OwlOntology::CLASS_CONNECTER_COLOR = QColor("blue");
+const QColor OwlOntology::INDIVIDUAL_CONNECTER_COLOR = QColor("purple");
+const QColor OwlOntology::PROPERTY_CONNECT_TO_CLASS_COLOR = QColor("yellow");
+const QColor OwlOntology::PROPERTY_CONNECTER_COLOR = QColor("green");
+
 //get index of individuals by its shortname
 int OwlOntology::getIndexOfIndividuals(QString shortname)
 {
@@ -35,14 +53,17 @@ int OwlOntology::getIndexOfClasses(QString shortname)
     return -1;
 }
 
+//get index of properties by its shortname
+int OwlOntology::getIndexOfProperties(QString shortname)
+{
+    for(int i=0;i<properties.length();i++)
+    {
+        if(properties[i]->shortname == shortname) return i;
+    }
+    return -1;
+}
+
 //load ontology using owlapi via OWLAPIWrapper
-/** unfinished:
-1. all URI name
-2. prefix
-3. properties
-4. about Thing?
-5. individual---class
-*/
 void OwlOntology::loadontology(const QFileInfo& fileInfo)
 {
     //init JVM
@@ -72,6 +93,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         tmpindividual->shape->setIdString(tmpindividual->shortname);
         tmpindividual->shape->setLabel(tmpindividual->shortname);
         tmpindividual->shape->setSize(QSizeF(150,20));
+        tmpindividual->shape->setFillColour(this->INDIVIDUAL_SHAPE_COLOR);
 
         //append tmpindividual to list
         this->individuals.append(tmpindividual);
@@ -92,14 +114,14 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         tmpclass->shape = shapeFactory->createShape("ontoclass");
         tmpclass->shape->setIdString(tmpclass->shortname);
         tmpclass->shape->setLabel(tmpclass->shortname);
-        tmpclass->shape->setSize(QSizeF(150,20));
         tmpclass->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));
+        tmpclass->shape->setFillColour(this->CLASS_SHAPE_COLOR);
 
         //append tmpclass to list
         this->classes.append(tmpclass);
     }
 
-    //get the subclasses, superclasses, disjointclasses and individuals of classes
+    //get and set the subclasses, superclasses, disjointclasses and individuals of classes
     for(int i=0;i<classes.length();i++)
     {
         //get&set subclasses
@@ -107,8 +129,8 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         if(resGetSubClasses!=NULL){
             java::lang::String ** owlsubclasses = (java::lang::String **)resGetSubClasses->getArrayData();
             for(int j=0;j<resGetSubClasses->getArrayLength();j++){
-                int ind = getIndexOfClasses(owlsubclasses[j]->toString());
-                classes[i]->subclasses<<classes[ind];
+                int idx = getIndexOfClasses(owlsubclasses[j]->toString());
+                if(idx!=-1)classes[i]->subclasses<<classes[idx];
             }
         }
 
@@ -117,8 +139,8 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         if(resGetSuperClasses!=NULL){
             java::lang::String ** owlsuperclasses = (java::lang::String **)resGetSuperClasses->getArrayData();
             for(int j=0;j<resGetSuperClasses->getArrayLength();j++){
-                int ind = getIndexOfClasses(owlsuperclasses[j]->toString());
-                classes[i]->superclasses<<classes[ind];
+                int idx = getIndexOfClasses(owlsuperclasses[j]->toString());
+                if(idx!=-1)classes[i]->superclasses<<classes[idx];
             }
         }
 
@@ -127,8 +149,8 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         if(resGetDisjointClasses!=NULL){
             java::lang::String ** owldisjointclasses = (java::lang::String **)resGetDisjointClasses->getArrayData();
             for(int j=0;j<resGetDisjointClasses->getArrayLength();j++){
-                int ind = getIndexOfClasses(owldisjointclasses[j]->toString());
-                classes[i]->disjointclasses<<classes[ind];
+                int idx = getIndexOfClasses(owldisjointclasses[j]->toString());
+                if(idx!=-1)classes[i]->disjointclasses<<classes[idx];
             }
         }
 
@@ -137,56 +159,107 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         if(resGetIndividuals!=NULL){
             java::lang::String ** owlclassindividuals = (java::lang::String **)resGetIndividuals->getArrayData();
             for(int j=0;j<resGetIndividuals->getArrayLength();j++){
-                int ind = getIndexOfIndividuals(owlclassindividuals[j]->toString());
-                //add this class[i] to individual's owner classes list
-                this->individuals[ind]->ownerclasses.append(classes[i]->shortname);
-                //add individuals[ind] to class[i] individuals list
-                classes[i]->individuals<<this->individuals[ind];
+                int idx = getIndexOfIndividuals(owlclassindividuals[j]->toString());
+                //if found the individual in the list
+                if(idx!=-1){
+                    //add this class[i] to individual's owner classes list
+                    this->individuals[idx]->ownerclasses.append(classes[i]->shortname);
+                    //add individuals[ind] to class[i] individuals list
+                    classes[i]->individuals<<this->individuals[idx];
+                }
             }
         }
     }
 
-    //get all ontology properties from JVM
+    //get all ontology properties name and type encoded string from JVM
     JavaObjectArray *resGetAllPropertiesNameAndSubType = wp->getAllPropertiesNameAndSubType();
     if(resGetAllPropertiesNameAndSubType!=NULL){
         java::lang::String ** owlproperties = (java::lang::String **)resGetAllPropertiesNameAndSubType->getArrayData();
-        for(int j=0;j<resGetAllPropertiesNameAndSubType->getArrayLength();j++){
-            cout<<"--property::"<<owlproperties[j]->toString()<<endl;
+        for(int i=0;i<resGetAllPropertiesNameAndSubType->getArrayLength();i++){
+            //set the property type, name, encoded string,and URI
+            QString encodedstr = QString(owlproperties[i]->toString());
+            OwlProperty * tmpproperty = new OwlProperty();
+
+            tmpproperty->encodedPropertyNameAndType = encodedstr;
+            tmpproperty->URI = "<Property URI name>";
+            tmpproperty->shortname = tmpproperty->getPropertyShortNameByEncodedString(encodedstr);
+            tmpproperty->propertytype = tmpproperty->getPropertyTypeByEncodedString(encodedstr);
+            //create shape for property
+            tmpproperty->shape = shapeFactory->createShape("ontoproperty");
+            tmpproperty->shape->setIdString(tmpproperty->encodedPropertyNameAndType);
+            tmpproperty->shape->setLabel("["+tmpproperty->propertytype +"]\n" + tmpproperty->shortname);
+            tmpproperty->shape->setPosAndSize(QPointF(0,i*40),QSizeF(200,35));
+            tmpproperty->shape->setFillColour(this->PROPERTY_SHAPE_COLOR);
+
+            //add to property list
+            this->properties.append(tmpproperty);
         }
     }
 
-    JavaObjectArray *resGetPropertyDomainsByName = wp->getPropertyDomainsByName(wp->ENTITIY_TYPE_OBJECT_PROPERTY,"hasDegree");
-    if(resGetPropertyDomainsByName!=NULL){
-        java::lang::String ** owlproperties = (java::lang::String **)resGetPropertyDomainsByName->getArrayData();
-        for(int j=0;j<resGetPropertyDomainsByName->getArrayLength();j++){
-            cout<<"--property Domain::"<<owlproperties[j]->toString()<<endl;
+    //get the domains, ranges, sub/super/disjoint properties and make the internal connection of the pointers
+    for(int i=0;i<this->properties.length();i++){
+        //data or object property
+        QString basictype="";
+        if(properties[i]->isDataProperty())basictype=wp->ENTITIY_TYPE_DATA_PROPERTY;
+        if(properties[i]->isObjectProperty())basictype=wp->ENTITIY_TYPE_OBJECT_PROPERTY;
+
+        //domains -- get and connect the pointers of classes
+        JavaObjectArray *resGetPropertyDomainsByName = wp->getPropertyDomainsByName(basictype.toLocal8Bit().data(),properties[i]->shortname.toLocal8Bit().data());
+        if(resGetPropertyDomainsByName!=NULL){
+            java::lang::String ** owlpropertydomains = (java::lang::String **)resGetPropertyDomainsByName->getArrayData();
+            for(int j=0;j<resGetPropertyDomainsByName->getArrayLength();j++){
+                QString domainname = owlpropertydomains[j]->toString();
+                //deal with no domain
+                if(domainname.trimmed()=="")continue;
+                //get the domain class index
+                int domainclassidx = this->getIndexOfClasses(domainname);
+                //if found the class, insert the domain class pointer
+                if(domainclassidx!=-1) properties[i]->domains<<classes[domainclassidx];
+            }
+        }
+
+        //ranges -- only get the string since DataProperty does not has range of classes.
+        //ObjectProperty ranges are the class shortnames. DataProperty range is a datatype definition
+        JavaObjectArray *resGetPropertyRangesByName = wp->getPropertyRangesByName(basictype.toLocal8Bit().data(),properties[i]->shortname.toLocal8Bit().data());
+        if(resGetPropertyRangesByName!=NULL){
+            java::lang::String ** owlpropertyranges = (java::lang::String **)resGetPropertyRangesByName->getArrayData();
+            for(int j=0;j<resGetPropertyRangesByName->getArrayLength();j++){
+                QString range = owlpropertyranges[j]->toString();
+                if(range.trimmed()=="")continue;
+                else properties[i]->ranges<<range;
+            }
+        }
+        //sub properties
+        JavaObjectArray *resGetSubProperites = wp->getSubProperites(basictype.toLocal8Bit().data(),properties[i]->shortname.toLocal8Bit().data());
+        if(resGetSubProperites!=NULL){
+            java::lang::String ** owlsubproperties = (java::lang::String **)resGetSubProperites->getArrayData();
+            for(int j=0;j<resGetSubProperites->getArrayLength();j++){
+                int idx = getIndexOfProperties(owlsubproperties[j]->toString());
+                //if found, add to list
+                if(idx!=-1)properties[i]->subproperties<<properties[idx];
+            }
+        }
+        //super properties
+        JavaObjectArray *resGetSuperProperites = wp->getSuperProperites(basictype.toLocal8Bit().data(),properties[i]->shortname.toLocal8Bit().data());
+        if(resGetSuperProperites!=NULL){
+            java::lang::String ** owlsuperproperties = (java::lang::String **)resGetSuperProperites->getArrayData();
+            for(int j=0;j<resGetSuperProperites->getArrayLength();j++){
+                int idx = getIndexOfProperties(owlsuperproperties[j]->toString());
+                //if found, add to list
+                if(idx!=-1)properties[i]->superproperties<<properties[idx];
+            }
+        }
+        //disjoint properties
+        JavaObjectArray *resGetDisjointProperites = wp->getDisjointProperties(basictype.toLocal8Bit().data(),properties[i]->shortname.toLocal8Bit().data());
+        if(resGetDisjointProperites!=NULL){
+            java::lang::String ** owldisjointproperties = (java::lang::String **)resGetDisjointProperites->getArrayData();
+            for(int j=0;j<resGetDisjointProperites->getArrayLength();j++){
+                int idx = getIndexOfProperties(owldisjointproperties[j]->toString());
+                //if found, add to list
+                if(idx!=-1)properties[i]->disjointproperties<<properties[idx];
+            }
         }
     }
-
-    JavaObjectArray *resGetPropertyRangesByName = wp->getPropertyRangesByName(wp->ENTITIY_TYPE_OBJECT_PROPERTY,"hasDegree");
-    if(resGetPropertyRangesByName!=NULL){
-        java::lang::String ** owlproperties = (java::lang::String **)resGetPropertyRangesByName->getArrayData();
-        for(int j=0;j<resGetPropertyRangesByName->getArrayLength();j++){
-            cout<<"--property Range::"<<owlproperties[j]->toString()<<endl;
-        }
-    }
-
-    JavaObjectArray *resGetSubProperites = wp->getSubProperites(wp->ENTITIY_TYPE_OBJECT_PROPERTY,"isIngredientOf");
-    if(resGetSubProperites!=NULL){
-        java::lang::String ** owlproperties = (java::lang::String **)resGetSubProperites->getArrayData();
-        for(int j=0;j<resGetSubProperites->getArrayLength();j++){
-            cout<<"--sub property::"<<owlproperties[j]->toString()<<endl;
-        }
-    }
-
-    JavaObjectArray *resGetSuperProperites = wp->getSuperProperites(wp->ENTITIY_TYPE_OBJECT_PROPERTY,"isBaseOf");
-    if(resGetSuperProperites!=NULL){
-        java::lang::String ** owlproperties = (java::lang::String **)resGetSuperProperites->getArrayData();
-        for(int j=0;j<resGetSuperProperites->getArrayLength();j++){
-            cout<<"--super property::"<<owlproperties[j]->toString()<<endl;
-        }
-    }
-
 
 }
 
@@ -214,6 +287,7 @@ void OwlOntology::drawClassView(Canvas *canvas)
             conn->initWithConnection(classes[i]->superclasses[j]->shape,classes[i]->shape);
             canvas->addItem(conn);
             conn->setDirected(true);
+            conn->setColour(this->CLASS_CONNECTER_COLOR);
         }
     }
 
@@ -259,12 +333,13 @@ void OwlOntology::drawIndividualView(Canvas *canvas)
         for(int j=0;j<individuals[i]->ownerclasses.length();j++)
         {
             int ownerclassidx = this->getIndexOfClasses(individuals[i]->ownerclasses[j]);
-            canvas->addItem(this->classes[ownerclassidx]->shape);
+            if(ownerclassidx!=-1) canvas->addItem(this->classes[ownerclassidx]->shape);
 
             conn = new Connector();
             conn->initWithConnection(individuals[i]->shape, this->classes[ownerclassidx]->shape);
             canvas->addItem(conn);
             conn->setDirected(true);
+            conn->setColour(this->INDIVIDUAL_CONNECTER_COLOR);
         }
     }
 }
@@ -272,6 +347,68 @@ void OwlOntology::drawIndividualView(Canvas *canvas)
 //draw the ontology properties -- Unfinished
 void OwlOntology::drawPropertyView(Canvas *canvas)
 {
+    Connector *conn;
+    //draw properties
+    for(int i=0;i<properties.length();i++){
+        canvas->addItem(properties[i]->shape);
+    }
+    //draw domains, ranges, sub relations (super,disjoint not handled)
+    for(int i=0;i<properties.length();i++){
+        //domains
+        for(int j=0;j<properties[i]->domains.length();j++)
+        {
+            //draw the domain class on the canvas(if it is duplicated, canvas will handle it?)
+            canvas->addItem(properties[i]->domains[j]->shape);
+            //draw a connection between domain->property
+            conn = new Connector();
+            conn->initWithConnection(properties[i]->domains[j]->shape, properties[i]->shape);
+            canvas->addItem(conn);
+            conn->setDirected(true);
+            conn->setDotted(true);
+            conn->setColour(this->PROPERTY_CONNECT_TO_CLASS_COLOR);
+        }
+
+        //ranges
+        //dataproperty add a line to label
+        if(properties[i]->isDataProperty()){
+            QString lbl = properties[i]->shape->getLabel();
+            //lbl += "\n--------------------";
+            for(int j=0;j<properties[i]->ranges.length();j++)
+            {
+                lbl += "\n(" + properties[i]->ranges[j]+")";
+            }
+            properties[i]->shape->setSize(QSizeF(200,52.5));
+            properties[i]->shape->setLabel(lbl);
+        }
+        //object property: add the range classes and connect them
+        if(properties[i]->isObjectProperty()){
+            for(int j=0;j<properties[i]->ranges.length();j++)
+            {
+                //draw the range class on the canvas(if it is duplicated, canvas will handle it?)
+                int idx = this->getIndexOfClasses(properties[i]->ranges[j]);
+                if(idx!=-1){
+                    canvas->addItem(classes[idx]->shape);
+                    //draw a connection between property->range classes
+                    conn = new Connector();
+                    conn->initWithConnection(properties[i]->shape, classes[idx]->shape);
+                    canvas->addItem(conn);
+                    conn->setDirected(true);
+                    conn->setDotted(true);
+                    conn->setColour(this->PROPERTY_CONNECT_TO_CLASS_COLOR);
+                }
+            }
+        }
+        //sub
+        for(int j=0;j<properties[i]->subproperties.length();j++)
+        {
+            conn = new Connector();
+            conn->initWithConnection(properties[i]->shape,properties[i]->subproperties[j]->shape);
+            canvas->addItem(conn);
+            conn->setDirected(true);
+            conn->setColour(this->PROPERTY_CONNECTER_COLOR);
+        }
+        //super, disjoint -- Need to deal with?
+    }
 }
 
 //String output
@@ -292,5 +429,9 @@ QString OwlOntology::toQString()
     for(int i=0;i<individuals.length();i++)res.append(individuals[i]->toQString());
 
     //output properties
+    res.append("\nOntology properties :\n");
+    for(int i=0;i<properties.length();i++)res.append(properties[i]->toQString());
     return res;
 }
+
+

@@ -7,13 +7,25 @@
 class OwlOntology
 {
 public:
+    //const
+    static const QColor CLASS_SHAPE_COLOR;
+    static const QColor INDIVIDUAL_SHAPE_COLOR;
+    static const QColor PROPERTY_SHAPE_COLOR;
+
+    static const QColor CLASS_CONNECTER_COLOR;
+    static const QColor INDIVIDUAL_CONNECTER_COLOR;
+    static const QColor PROPERTY_CONNECT_TO_CLASS_COLOR;
+    static const QColor PROPERTY_CONNECTER_COLOR;
+    //variable
     QString ontologyname;
     QList<OwlClass *> classes;
     QList<OwlIndividual *> individuals;
+    QList<OwlProperty *> properties;
 
     OwlOntology();
     int getIndexOfIndividuals(QString shortname);
     int getIndexOfClasses(QString shortname);
+    int getIndexOfProperties(QString shortname);
     void loadontology(const QFileInfo& fileInfo);
     void drawClassView(Canvas *canvas);
     void drawIndividualView(Canvas *canvas);

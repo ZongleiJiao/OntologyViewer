@@ -52,9 +52,15 @@ public:
     static const QString PROPERTY_TYPE_IRREFLEXIVE_SHORT;
 
     /** variables **/
+    //full URI name of property
     QString URI;
+    //shortname of property
     QString shortname;
+    //property type full description
     QString propertytype;
+    //encoded string of property
+    QString encodedPropertyNameAndType;
+
     ShapeObj * shape;
     QList<OwlClass *> domains;
     QList<QString> ranges;
@@ -66,6 +72,9 @@ public:
     OwlProperty();
     //Print to QString
     QString toQString();
+
+    bool isDataProperty();
+    bool isObjectProperty();
 
     /** static methods to decode the property type&name string **/
     QString getPropertyTypeCodeByEncodedString(QString encodedString);
