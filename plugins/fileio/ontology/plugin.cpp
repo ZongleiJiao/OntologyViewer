@@ -105,6 +105,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     OwlOntology * onto = new OwlOntology();
     onto->loadontology(fileInfo);
     cout<<onto->toQString().toStdString();
+
     onto->drawClassView(canvas);
     //onto->drawIndividualView(canvas);
 /** origin code

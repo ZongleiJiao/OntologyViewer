@@ -99,7 +99,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         this->classes.append(tmpclass);
     }
 
-    //get the subclasses, superclasses, and individuals of classes
+    //get the subclasses, superclasses, disjointclasses and individuals of classes
     for(int i=0;i<classes.length();i++)
     {
         //get&set subclasses
@@ -122,6 +122,16 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
             }
         }
 
+        //get&set disjointclasses
+        JavaObjectArray *resGetDisjointClasses = wp->getDisjointClasses(owlclasses[i]->toString());
+        if(resGetDisjointClasses!=NULL){
+            java::lang::String ** owldisjointclasses = (java::lang::String **)resGetDisjointClasses->getArrayData();
+            for(int j=0;j<resGetDisjointClasses->getArrayLength();j++){
+                int ind = getIndexOfClasses(owldisjointclasses[j]->toString());
+                classes[i]->disjointclasses<<classes[ind];
+            }
+        }
+
         //get&set individuals
         JavaObjectArray *resGetIndividuals = wp->getIndividuals(owlclasses[i]->toString());
         if(resGetIndividuals!=NULL){
@@ -137,6 +147,45 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
     }
 
     //get all ontology properties from JVM
+    JavaObjectArray *resGetAllPropertiesNameAndSubType = wp->getAllPropertiesNameAndSubType();
+    if(resGetAllPropertiesNameAndSubType!=NULL){
+        java::lang::String ** owlproperties = (java::lang::String **)resGetAllPropertiesNameAndSubType->getArrayData();
+        for(int j=0;j<resGetAllPropertiesNameAndSubType->getArrayLength();j++){
+            cout<<"--property::"<<owlproperties[j]->toString()<<endl;
+        }
+    }
+
+    JavaObjectArray *resGetPropertyDomainsByName = wp->getPropertyDomainsByName(wp->ENTITIY_TYPE_OBJECT_PROPERTY,"hasDegree");
+    if(resGetPropertyDomainsByName!=NULL){
+        java::lang::String ** owlproperties = (java::lang::String **)resGetPropertyDomainsByName->getArrayData();
+        for(int j=0;j<resGetPropertyDomainsByName->getArrayLength();j++){
+            cout<<"--property Domain::"<<owlproperties[j]->toString()<<endl;
+        }
+    }
+
+    JavaObjectArray *resGetPropertyRangesByName = wp->getPropertyRangesByName(wp->ENTITIY_TYPE_OBJECT_PROPERTY,"hasDegree");
+    if(resGetPropertyRangesByName!=NULL){
+        java::lang::String ** owlproperties = (java::lang::String **)resGetPropertyRangesByName->getArrayData();
+        for(int j=0;j<resGetPropertyRangesByName->getArrayLength();j++){
+            cout<<"--property Range::"<<owlproperties[j]->toString()<<endl;
+        }
+    }
+
+    JavaObjectArray *resGetSubProperites = wp->getSubProperites(wp->ENTITIY_TYPE_OBJECT_PROPERTY,"isIngredientOf");
+    if(resGetSubProperites!=NULL){
+        java::lang::String ** owlproperties = (java::lang::String **)resGetSubProperites->getArrayData();
+        for(int j=0;j<resGetSubProperites->getArrayLength();j++){
+            cout<<"--sub property::"<<owlproperties[j]->toString()<<endl;
+        }
+    }
+
+    JavaObjectArray *resGetSuperProperites = wp->getSuperProperites(wp->ENTITIY_TYPE_OBJECT_PROPERTY,"isBaseOf");
+    if(resGetSuperProperites!=NULL){
+        java::lang::String ** owlproperties = (java::lang::String **)resGetSuperProperites->getArrayData();
+        for(int j=0;j<resGetSuperProperites->getArrayLength();j++){
+            cout<<"--super property::"<<owlproperties[j]->toString()<<endl;
+        }
+    }
 
 
 }
@@ -176,7 +225,7 @@ void OwlOntology::drawClassView(Canvas *canvas)
         {
             classes[i]->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));
             sts.push(classes[i]);
-            cout<<"-->Stack size:" <<sts.size() << "Top: " << classes[i]->shortname.toStdString() <<endl;
+            //cout<<"-->Stack size:" <<sts.size() << "Top: " << classes[i]->shortname.toStdString() <<endl;
         }
         if(classes[i]->shortname=="Thing"){
             classes[i]->shape->setPosAndSize(QPointF(-200,i*25),QSizeF(150,20));
@@ -192,7 +241,7 @@ void OwlOntology::drawClassView(Canvas *canvas)
             qreal y = tmp->subclasses[i]->shape->pos().y();
             tmp->subclasses[i]->shape->setPosAndSize(QPointF(x+200,y),QSizeF(150,20));
             sts.push(tmp->subclasses[i]);
-            cout<<"==>Stack size:" <<sts.size() << "Top: " << tmp->subclasses[i]->shortname.toStdString() <<endl;
+            //cout<<"==>Stack size:" <<sts.size() << "Top: " << tmp->subclasses[i]->shortname.toStdString() <<endl;
         }
 
     }

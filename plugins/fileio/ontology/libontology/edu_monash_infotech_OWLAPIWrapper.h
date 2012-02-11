@@ -9,6 +9,16 @@ namespace lang {
 class String;
 }
 }
+
+namespace org {
+namespace semanticweb {
+namespace owlapi {
+namespace model {
+class OWLClass;
+}
+}
+}
+}
 class JavaByteArray;
 class JavaBooleanArray;
 class JavaCharArray;
@@ -30,7 +40,6 @@ class OWLAPIWrapper : public java::lang::Object {
 
     virtual void updateAllVariables(JavaMarker* dummy);
     virtual void updateAllNonFinalVariables(JavaMarker* dummy);
-    virtual void main(JavaObjectArray* arg1); // public static void edu.monash.infotech.OWLAPIWrapper.main(java.lang.String[])
     virtual const char* loadOntologyFile(const char* arg1); // public java.lang.String edu.monash.infotech.OWLAPIWrapper.loadOntologyFile(java.lang.String)
     virtual JavaObjectArray* getAllOWLClasses(); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getAllOWLClasses()
     virtual JavaObjectArray* getSubClasses(const char* arg1); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getSubClasses(java.lang.String)
@@ -40,14 +49,22 @@ class OWLAPIWrapper : public java::lang::Object {
     virtual JavaObjectArray* getIndividuals(const char* arg1); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getIndividuals(java.lang.String)
     virtual JavaObjectArray* getAllIndividuals(); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getAllIndividuals()
     virtual const char* getDefaultNameSpace(); // public java.lang.String edu.monash.infotech.OWLAPIWrapper.getDefaultNameSpace()
+    virtual const char* getPropertyTypeByName(const char* arg1, const char* arg2); // public java.lang.String edu.monash.infotech.OWLAPIWrapper.getPropertyTypeByName(java.lang.String,java.lang.String)
+    virtual JavaObjectArray* getPropertyDomainsByName(const char* arg1, const char* arg2); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getPropertyDomainsByName(java.lang.String,java.lang.String)
+    virtual JavaObjectArray* getPropertyRangesByName(const char* arg1, const char* arg2); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getPropertyRangesByName(java.lang.String,java.lang.String)
+    virtual JavaObjectArray* getAllPropertiesNameAndSubType(); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getAllPropertiesNameAndSubType()
+    virtual JavaObjectArray* getSubProperites(const char* arg1, const char* arg2); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getSubProperites(java.lang.String,java.lang.String)
+    virtual JavaObjectArray* getSuperProperites(const char* arg1, const char* arg2); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getSuperProperites(java.lang.String,java.lang.String)
+    virtual JavaObjectArray* getDisjointProperties(const char* arg1, const char* arg2); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getDisjointProperties(java.lang.String,java.lang.String)
+    virtual JavaObjectArray* getEquivalentProperties(const char* arg1, const char* arg2); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getEquivalentProperties(java.lang.String,java.lang.String)
     virtual JavaObjectArray* getAllPropertiesByType(const char* arg1); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getAllPropertiesByType(java.lang.String)
-    virtual JavaObjectArray* getDataProperties(const char* arg1); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getDataProperties(java.lang.String)
-    virtual JavaObjectArray* getObjectProperties(const char* arg1); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getObjectProperties(java.lang.String)
+    virtual JavaObjectArray* getAllDataProperties(); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getAllDataProperties()
+    virtual JavaObjectArray* getObjectProperties(); // public java.lang.String[] edu.monash.infotech.OWLAPIWrapper.getObjectProperties()
+    virtual JavaObjectArray* getAllOWLClass(); // public org.semanticweb.owlapi.model.OWLClass[] edu.monash.infotech.OWLAPIWrapper.getAllOWLClass()
 
-    const char* TYPE_CLASS; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.TYPE_CLASS
-    const char* TYPE_DATA_PROPERTY; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.TYPE_DATA_PROPERTY
-    const char* TYPE_OBJECT_PROPERTY; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.TYPE_OBJECT_PROPERTY
-    const char* SPLITER; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.SPLITER
+    const char* ENTITIY_TYPE_CLASS; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.ENTITIY_TYPE_CLASS
+    const char* ENTITIY_TYPE_DATA_PROPERTY; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.ENTITIY_TYPE_DATA_PROPERTY
+    const char* ENTITIY_TYPE_OBJECT_PROPERTY; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.ENTITIY_TYPE_OBJECT_PROPERTY
     const char* PROPERTY_TYPE_FUNCTIONAL; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_FUNCTIONAL
     const char* PROPERTY_TYPE_INVERSE; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_INVERSE
     const char* PROPERTY_TYPE_INVERSE_FUNCTIONAL; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_INVERSE_FUNCTIONAL
@@ -56,6 +73,18 @@ class OWLAPIWrapper : public java::lang::Object {
     const char* PROPERTY_TYPE_TRANSITIVE; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_TRANSITIVE
     const char* PROPERTY_TYPE_REFLEXIVE; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_REFLEXIVE
     const char* PROPERTY_TYPE_IRREFLEXIVE; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_IRREFLEXIVE
+    const char* SPLITER; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.SPLITER
+    const char* ENTITIY_TYPE_CLASS_SHORT; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.ENTITIY_TYPE_CLASS_SHORT
+    const char* ENTITIY_TYPE_DATA_PROPERTY_SHORT; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.ENTITIY_TYPE_DATA_PROPERTY_SHORT
+    const char* ENTITIY_TYPE_OBJECT_PROPERTY_SHORT; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.ENTITIY_TYPE_OBJECT_PROPERTY_SHORT
+    const char* PROPERTY_TYPE_FUNCTIONAL_SHORT; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_FUNCTIONAL_SHORT
+    const char* PROPERTY_TYPE_INVERSE_SHORT; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_INVERSE_SHORT
+    const char* PROPERTY_TYPE_INVERSE_FUNCTIONAL_SHORT; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_INVERSE_FUNCTIONAL_SHORT
+    const char* PROPERTY_TYPE_SYMMETRIC_SHORT; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_SYMMETRIC_SHORT
+    const char* PROPERTY_TYPE_ASYMMETRIC_SHORT; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_ASYMMETRIC_SHORT
+    const char* PROPERTY_TYPE_TRANSITIVE_SHORT; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_TRANSITIVE_SHORT
+    const char* PROPERTY_TYPE_REFLEXIVE_SHORT; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_REFLEXIVE_SHORT
+    const char* PROPERTY_TYPE_IRREFLEXIVE_SHORT; // public final java.lang.String edu.monash.infotech.OWLAPIWrapper.PROPERTY_TYPE_IRREFLEXIVE_SHORT
 };
 }
 }

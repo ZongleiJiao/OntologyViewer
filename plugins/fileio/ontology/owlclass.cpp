@@ -2,9 +2,7 @@
 
 OwlClass::OwlClass()
 {    
-//    this->placed=false;
-//    this->xpos=0;
-//    this->ylevel=0;
+
 }
 QString OwlClass::toQString(){
     QString res;
@@ -24,6 +22,12 @@ QString OwlClass::toQString(){
     for(int i=0;i<this->superclasses.length();i++){
         res.append(" ");
         res.append(superclasses[i]->shortname);
+    }
+
+    res.append("\nDisjointclasses:");
+    for(int i=0;i<this->disjointclasses.length();i++){
+        res.append(" ");
+        res.append(disjointclasses[i]->shortname);
     }
     res.append("\n--------------------\n");
     return res;

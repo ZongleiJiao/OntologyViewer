@@ -14,12 +14,9 @@ public:
     QString shortname;
     QList<OwlClass *> subclasses;
     QList<OwlClass *> superclasses;
-    //QList<OwlClass *> disjointclasses;
+    QList<OwlClass *> disjointclasses;
     QList<OwlIndividual *> individuals;
     ShapeObj * shape;
-
-//    int xpos,ylevel;
-//    bool placed;
 
     OwlClass();
     QString toQString();
