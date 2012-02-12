@@ -17,7 +17,7 @@ OwlOntology::OwlOntology()
 
 /** unfinished:
 1. all URI name
-2. prefix
+2. prefix---only one namespace!!!
 3. properties
 4. about Thing?
 5. (done) Did not deal with the -1 error when use getIndexOfClasses(),getIndexOfIndividuals(),getIndexOfProperties()
@@ -77,6 +77,10 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
 
     PluginShapeFactory *shapeFactory = sharedPluginShapeFactory();
 
+    /** get owl namespace (Warn: only one namespace was handled!) **/
+    //get namespace for the URI
+    QString owlnamespace = wp->getDefaultNameSpace();
+
     //get all individuals
     JavaObjectArray *resGetAllIndividuals = wp->getAllIndividuals();
     java::lang::String ** owlindividuals = (java::lang::String **)resGetAllIndividuals->getArrayData();
@@ -86,7 +90,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         //set individual name
         OwlIndividual * tmpindividual = new OwlIndividual();
         tmpindividual->shortname=QString(owlindividuals[i]->toString());
-        tmpindividual->URI="<individual URI name>";
+        tmpindividual->URI="<" + owlnamespace + tmpindividual->shortname + ">";
 
         //create shape
         tmpindividual->shape = shapeFactory->createShape("ontoindividual");
@@ -110,7 +114,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         //set class name (???prefix,short,full name???)
         OwlClass * tmpclass=new OwlClass();
         tmpclass->shortname=QString(owlclasses[i]->toString());
-        tmpclass->URI = "<Class URI Name>";
+        tmpclass->URI = "<" + owlnamespace + tmpclass->shortname + ">";
 
         //create shape
         tmpclass->shape = shapeFactory->createShape("ontoclass");
@@ -184,8 +188,8 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
             OwlProperty * tmpproperty = new OwlProperty();
 
             tmpproperty->encodedPropertyNameAndType = encodedstr;
-            tmpproperty->URI = "<Property URI name>";
             tmpproperty->shortname = tmpproperty->getPropertyShortNameByEncodedString(encodedstr);
+            tmpproperty->URI = "<" + owlnamespace + tmpproperty->shortname + ">";
             tmpproperty->propertytype = tmpproperty->getPropertyTypeByEncodedString(encodedstr);
             //create shape for property
             tmpproperty->shape = shapeFactory->createShape("ontoproperty");
