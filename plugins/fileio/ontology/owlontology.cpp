@@ -92,8 +92,10 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         tmpindividual->shape = shapeFactory->createShape("ontoindividual");
         tmpindividual->shape->setIdString(tmpindividual->shortname);
         tmpindividual->shape->setLabel(tmpindividual->shortname);
+        tmpindividual->shape->setToolTip(tmpindividual->URI);
         tmpindividual->shape->setSize(QSizeF(150,20));
         tmpindividual->shape->setFillColour(this->INDIVIDUAL_SHAPE_COLOR);
+
 
         //append tmpindividual to list
         this->individuals.append(tmpindividual);
@@ -114,6 +116,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         tmpclass->shape = shapeFactory->createShape("ontoclass");
         tmpclass->shape->setIdString(tmpclass->shortname);
         tmpclass->shape->setLabel(tmpclass->shortname);
+        tmpclass->shape->setToolTip(tmpclass->URI);
         tmpclass->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));
         tmpclass->shape->setFillColour(this->CLASS_SHAPE_COLOR);
 
@@ -188,6 +191,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
             tmpproperty->shape = shapeFactory->createShape("ontoproperty");
             tmpproperty->shape->setIdString(tmpproperty->encodedPropertyNameAndType);
             tmpproperty->shape->setLabel("["+tmpproperty->propertytype +"]\n" + tmpproperty->shortname);
+            tmpproperty->shape->setToolTip(tmpproperty->URI);
             tmpproperty->shape->setPosAndSize(QPointF(0,i*40),QSizeF(200,35));
             tmpproperty->shape->setFillColour(this->PROPERTY_SHAPE_COLOR);
 
@@ -270,9 +274,6 @@ void OwlOntology::drawClassView(Canvas *canvas)
     for(int i=0;i<classes.length();i++)
     {
         canvas->addItem(classes[i]->shape);
-
-        classes[i]->shape->setToolTip("******************");
-
     }
 
     //draw connections
@@ -280,51 +281,51 @@ void OwlOntology::drawClassView(Canvas *canvas)
     for(int i=0;i<classes.length();i++)
     {
         //subclasses
-//       for(int j=0;j<classes[i]->subclasses.length();j++){
-//            conn = new Connector();
-//            conn->initWithConnection(classes[i]->shape, classes[i]->subclasses[j]->shape);
-//            canvas->addItem(conn);
-//            conn->setDirected(true);
-//        }
-        //superclasses ???
-        for(int j=0;j<classes[i]->superclasses.length();j++)
-        {
+       for(int j=0;j<classes[i]->subclasses.length();j++){
             conn = new Connector();
-            conn->initWithConnection(classes[i]->superclasses[j]->shape,classes[i]->shape);
+            conn->initWithConnection(classes[i]->subclasses[j]->shape,classes[i]->shape);
             canvas->addItem(conn);
             conn->setDirected(true);
-            conn->setColour(this->CLASS_CONNECTER_COLOR);
         }
+        //superclasses ???
+//        for(int j=0;j<classes[i]->superclasses.length();j++)
+//        {
+//            conn = new Connector();
+//            conn->initWithConnection(classes[i]->shape,classes[i]->superclasses[j]->shape);
+//            canvas->addItem(conn);
+//            conn->setDirected(true);
+//            conn->setColour(this->CLASS_CONNECTER_COLOR);
+//        }
     }
 
     //adjust postions -- level only
-    stack<OwlClass *> sts;
-    for(int i=0;i<classes.length();i++)
-    {
-        if((classes[i]->superclasses.length()==0)||(classes[i]->superclasses.length()==1&&classes[i]->superclasses[0]->shortname=="Thing"))
-        {
-            classes[i]->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));
-            sts.push(classes[i]);
-            //cout<<"-->Stack size:" <<sts.size() << "Top: " << classes[i]->shortname.toStdString() <<endl;
-        }
-        if(classes[i]->shortname=="Thing"){
-            classes[i]->shape->setPosAndSize(QPointF(-200,i*25),QSizeF(150,20));
-        }
-    }
-    while(!sts.empty()){
-        OwlClass * tmp = sts.top();
-        sts.pop();
-        qreal x = tmp->shape->pos().x();
+//    stack<OwlClass *> sts;
+//    for(int i=0;i<classes.length();i++)
+//    {
+//        if((classes[i]->superclasses.length()==0)||(classes[i]->superclasses.length()==1&&classes[i]->superclasses[0]->shortname=="Thing"))
+//        {
+//            classes[i]->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));
+//            sts.push(classes[i]);
+//            //cout<<"-->Stack size:" <<sts.size() << "Top: " << classes[i]->shortname.toStdString() <<endl;
+//        }
+//        if(classes[i]->shortname=="Thing"){
+//            classes[i]->shape->setPosAndSize(QPointF(-200,i*25),QSizeF(150,20));
+//        }
+//    }
+//    while(!sts.empty()){
+//        OwlClass * tmp = sts.top();
+//        sts.pop();
+//        qreal x = tmp->shape->pos().x();
 
-        for(int i=0;i<tmp->subclasses.length();i++)
-        {
-            qreal y = tmp->subclasses[i]->shape->pos().y();
-            tmp->subclasses[i]->shape->setPosAndSize(QPointF(x+200,y),QSizeF(150,20));
-            sts.push(tmp->subclasses[i]);
-            //cout<<"==>Stack size:" <<sts.size() << "Top: " << tmp->subclasses[i]->shortname.toStdString() <<endl;
-        }
+//        for(int i=0;i<tmp->subclasses.length();i++)
+//        {
+//            qreal y = tmp->subclasses[i]->shape->pos().y();
+//            tmp->subclasses[i]->shape->setPosAndSize(QPointF(x+200,y),QSizeF(150,20));
+//            sts.push(tmp->subclasses[i]);
+//            //cout<<"==>Stack size:" <<sts.size() << "Top: " << tmp->subclasses[i]->shortname.toStdString() <<endl;
+//        }
 
-    }
+//    }
 
 }
 
@@ -336,6 +337,7 @@ void OwlOntology::drawIndividualView(Canvas *canvas)
     for(int i=0;i<individuals.length();i++)
     {
         canvas->addItem(individuals[i]->shape);
+
         for(int j=0;j<individuals[i]->ownerclasses.length();j++)
         {
             int ownerclassidx = this->getIndexOfClasses(individuals[i]->ownerclasses[j]);
@@ -408,7 +410,7 @@ void OwlOntology::drawPropertyView(Canvas *canvas)
         for(int j=0;j<properties[i]->subproperties.length();j++)
         {
             conn = new Connector();
-            conn->initWithConnection(properties[i]->shape,properties[i]->subproperties[j]->shape);
+            conn->initWithConnection(properties[i]->subproperties[j]->shape,properties[i]->shape);
             canvas->addItem(conn);
             conn->setDirected(true);
             conn->setColour(this->PROPERTY_CONNECTER_COLOR);
@@ -434,16 +436,21 @@ void OwlOntology::drawClassOverview(Canvas *canvas)
     for(int i=0;i<classes.length();i++)
     {
         //subclasses
-
-        //superclasses ???
-        for(int j=0;j<classes[i]->superclasses.length();j++)
-        {
-            conn = new Connector();
-            conn->initWithConnection(classes[i]->superclasses[j]->shape,classes[i]->shape);
-            canvas->addItem(conn);
-            conn->setDirected(true);
-            conn->setColour(this->CLASS_CONNECTER_COLOR);
-        }
+        for(int j=0;j<classes[i]->subclasses.length();j++){
+             conn = new Connector();
+             conn->initWithConnection(classes[i]->subclasses[j]->shape,classes[i]->shape);
+             canvas->addItem(conn);
+             conn->setDirected(true);
+         }
+//        //superclasses ???
+//        for(int j=0;j<classes[i]->superclasses.length();j++)
+//        {
+//            conn = new Connector();
+//            conn->initWithConnection(classes[i]->superclasses[j]->shape,classes[i]->shape);
+//            canvas->addItem(conn);
+//            conn->setDirected(true);
+//            conn->setColour(this->CLASS_CONNECTER_COLOR);
+//        }
     }
 
 
