@@ -267,7 +267,13 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
 void OwlOntology::drawClassView(Canvas *canvas)
 {
     //draw classes
-    for(int i=0;i<classes.length();i++)canvas->addItem(classes[i]->shape);
+    for(int i=0;i<classes.length();i++)
+    {
+        canvas->addItem(classes[i]->shape);
+
+        classes[i]->shape->setToolTip("******************");
+
+    }
 
     //draw connections
     Connector *conn;
@@ -409,6 +415,38 @@ void OwlOntology::drawPropertyView(Canvas *canvas)
         }
         //super, disjoint -- Need to deal with?
     }
+}
+
+//draw the ontology classes
+void OwlOntology::drawClassOverview(Canvas *canvas)
+{
+    //draw classes
+    for(int i=0;i<classes.length();i++)
+    {
+        canvas->addItem(classes[i]->shape);
+        classes[i]->shape->setLabel(".");
+        classes[i]->shape->setToolTip(classes[i]->shortname);
+        classes[i]->shape->setSize(QSizeF(10,10));
+    }
+
+    //draw connections
+    Connector *conn;
+    for(int i=0;i<classes.length();i++)
+    {
+        //subclasses
+
+        //superclasses ???
+        for(int j=0;j<classes[i]->superclasses.length();j++)
+        {
+            conn = new Connector();
+            conn->initWithConnection(classes[i]->superclasses[j]->shape,classes[i]->shape);
+            canvas->addItem(conn);
+            conn->setDirected(true);
+            conn->setColour(this->CLASS_CONNECTER_COLOR);
+        }
+    }
+
+
 }
 
 //String output

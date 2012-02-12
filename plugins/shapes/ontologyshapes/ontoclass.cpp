@@ -4,9 +4,8 @@
 
 using namespace dunnart;
 
-OntologyClassShape::OntologyClassShape()
-    : ShapeObj("ontoclass")
-{
+OntologyClassShape::OntologyClassShape() : ShapeObj("ontoclass")
+{    
 }
 
 QPainterPath OntologyClassShape::buildPainterPath(void)

@@ -110,6 +110,8 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     onto->drawIndividualView(canvas);
     onto->drawPropertyView(canvas);
 
+//    onto->drawClassOverview(canvas);
+
 /** origin code
     QString filename = fileInfo.absoluteFilePath();
 

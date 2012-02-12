@@ -19,9 +19,241 @@ DEPENDPATH += . \
                /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
 
 HEADERS       = \
+        owlclass.h \
+        owlproperty.h \
+        owlindividual.h \
+        owlontology.h \
+    libontology/org_semanticweb_owlapi_vocab_PrefixOWLOntologyFormat.h \
+    libontology/org_semanticweb_owlapi_vocab_OWLRDFVocabulary.h \
+    libontology/org_semanticweb_owlapi_vocab_OWLFacet.h \
+    libontology/org_semanticweb_owlapi_vocab_OWL2Datatype__Category.h \
+    libontology/org_semanticweb_owlapi_vocab_OWL2Datatype.h \
+    libontology/org_semanticweb_owlapi_vocab_Namespaces.h \
+    libontology/org_semanticweb_owlapi_model_SWRLVariable.h \
+    libontology/org_semanticweb_owlapi_model_SWRLUnaryAtom.h \
+    libontology/org_semanticweb_owlapi_model_SWRLSameIndividualAtom.h \
+    libontology/org_semanticweb_owlapi_model_SWRLRule.h \
+    libontology/org_semanticweb_owlapi_model_SWRLPredicate.h \
+    libontology/org_semanticweb_owlapi_model_SWRLObjectVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_SWRLObjectVisitor.h \
+    libontology/org_semanticweb_owlapi_model_SWRLObjectPropertyAtom.h \
+    libontology/org_semanticweb_owlapi_model_SWRLObject.h \
+    libontology/org_semanticweb_owlapi_model_SWRLLiteralArgument.h \
+    libontology/org_semanticweb_owlapi_model_SWRLIndividualArgument.h \
+    libontology/org_semanticweb_owlapi_model_SWRLIArgument.h \
+    libontology/org_semanticweb_owlapi_model_SWRLDifferentIndividualsAtom.h \
+    libontology/org_semanticweb_owlapi_model_SWRLDataRangeAtom.h \
+    libontology/org_semanticweb_owlapi_model_SWRLDataPropertyAtom.h \
+    libontology/org_semanticweb_owlapi_model_SWRLDataFactory.h \
+    libontology/org_semanticweb_owlapi_model_SWRLDArgument.h \
+    libontology/org_semanticweb_owlapi_model_SWRLClassAtom.h \
+    libontology/org_semanticweb_owlapi_model_SWRLBuiltInAtom.h \
+    libontology/org_semanticweb_owlapi_model_SWRLBinaryAtom.h \
+    libontology/org_semanticweb_owlapi_model_SWRLAtom.h \
+    libontology/org_semanticweb_owlapi_model_SWRLArgument.h \
+    libontology/org_semanticweb_owlapi_model_SetOntologyID.h \
+    libontology/org_semanticweb_owlapi_model_RemoveOntologyAnnotation.h \
+    libontology/org_semanticweb_owlapi_model_RemoveImport.h \
+    libontology/org_semanticweb_owlapi_model_RemoveAxiom.h \
+    libontology/org_semanticweb_owlapi_model_PrefixManager.h \
+    libontology/org_semanticweb_owlapi_model_OWLUnaryPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLTransitiveObjectPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLSymmetricObjectPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLSubPropertyChainOfAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLSubPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLSubObjectPropertyOfAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLSubDataPropertyOfAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLSubClassOfAxiomShortCut.h \
+    libontology/org_semanticweb_owlapi_model_OWLSubClassOfAxiomSetShortCut.h \
+    libontology/org_semanticweb_owlapi_model_OWLSubClassOfAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLSubAnnotationPropertyOfAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLSameIndividualAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLRuntimeException.h \
+    libontology/org_semanticweb_owlapi_model_OWLRestriction.h \
+    libontology/org_semanticweb_owlapi_model_OWLReflexiveObjectPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLQuantifiedRestriction.h \
+    libontology/org_semanticweb_owlapi_model_OWLQuantifiedObjectRestriction.h \
+    libontology/org_semanticweb_owlapi_model_OWLQuantifiedDataRestriction.h \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyRangeAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyRange.h \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyExpressionVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyExpressionVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyExpression.h \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyDomainAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyAssertionObject.h \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyAssertionAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLProperty.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyStorer.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologySetProvider.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyManager.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyLoaderListener__LoadingStartedEvent.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyLoaderListener__LoadingFinishedEvent.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyLoaderListener__LoadingEvent.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyLoaderListener.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyLoaderConfiguration__MissingOntologyHeaderStrategy.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyLoaderConfiguration.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyIRIMapper.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyID.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyFormat.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyFactory__OWLOntologyCreationHandler.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyFactory.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyCreationException.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeVetoException.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangesVetoedListener.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeProgressListener.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeListener.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeException.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeBroadcastStrategy.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChange.h \
+    libontology/org_semanticweb_owlapi_model_OWLOntology.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectUnionOf.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectSomeValuesFrom.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectPropertyRangeAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectPropertyExpression.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectPropertyDomainAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectPropertyCharacteristicAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectPropertyAssertionAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectProperty.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectOneOf.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectMinCardinality.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectMaxCardinality.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectInverseOf.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectIntersectionOf.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectHasValue.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectHasSelf.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectExactCardinality.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectComplementOf.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectCardinalityRestriction.h \
+    libontology/org_semanticweb_owlapi_model_OWLObjectAllValuesFrom.h \
+    libontology/org_semanticweb_owlapi_model_OWLObject.h \
+    libontology/org_semanticweb_owlapi_model_OWLNegativeObjectPropertyAssertionAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLNegativeDataPropertyAssertionAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLNaryPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLNaryIndividualAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLNaryDataRange.h \
+    libontology/org_semanticweb_owlapi_model_OWLNaryClassAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLNaryBooleanClassExpression.h \
+    libontology/org_semanticweb_owlapi_model_OWLNaryAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLNamedObjectVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLNamedObjectVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLNamedObject.h \
+    libontology/org_semanticweb_owlapi_model_OWLNamedIndividual.h \
+    libontology/org_semanticweb_owlapi_model_OWLLogicalEntity.h \
+    libontology/org_semanticweb_owlapi_model_OWLLogicalAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLLiteral.h \
+    libontology/org_semanticweb_owlapi_model_OWLIrreflexiveObjectPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLInverseObjectPropertiesAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLInverseFunctionalObjectPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLIndividualVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLIndividualVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLIndividualAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLIndividual.h \
+    libontology/org_semanticweb_owlapi_model_OWLImportsDeclaration.h \
+    libontology/org_semanticweb_owlapi_model_OWLHasValueRestriction.h \
+    libontology/org_semanticweb_owlapi_model_OWLHasKeyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLFunctionalObjectPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLFunctionalDataPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLFacetRestriction.h \
+    libontology/org_semanticweb_owlapi_model_OWLException.h \
+    libontology/org_semanticweb_owlapi_model_OWLEquivalentObjectPropertiesAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLEquivalentDataPropertiesAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLEquivalentClassesAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLEntityVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLEntityVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLEntity.h \
+    libontology/org_semanticweb_owlapi_model_OWLDisjointUnionAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLDisjointObjectPropertiesAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLDisjointDataPropertiesAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLDisjointClassesAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLDifferentIndividualsAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLDeclarationAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataUnionOf.h \
+    libontology/org_semanticweb_owlapi_model_OWLDatatypeRestriction.h \
+    libontology/org_semanticweb_owlapi_model_OWLDatatypeDefinitionAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLDatatype.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataSomeValuesFrom.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataRangeVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataRangeVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataRange.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataPropertyRangeAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataPropertyExpression.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataPropertyDomainAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataPropertyCharacteristicAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataPropertyAssertionAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataProperty.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataOneOf.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataMinCardinality.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataMaxCardinality.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataIntersectionOf.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataHasValue.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataFactory.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataExactCardinality.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataComplementOf.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataCardinalityRestriction.h \
+    libontology/org_semanticweb_owlapi_model_OWLDataAllValuesFrom.h \
+    libontology/org_semanticweb_owlapi_model_OWLClassExpressionVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLClassExpressionVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLClassExpression.h \
+    libontology/org_semanticweb_owlapi_model_OWLClassAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLClassAssertionAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLClass.h \
+    libontology/org_semanticweb_owlapi_model_OWLCardinalityRestriction.h \
+    libontology/org_semanticweb_owlapi_model_OWLBooleanClassExpression.h \
+    libontology/org_semanticweb_owlapi_model_OWLAxiomVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLAxiomVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLAxiomChange.h \
+    libontology/org_semanticweb_owlapi_model_OWLAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLAsymmetricObjectPropertyAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnonymousIndividual.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnonymousClassExpression.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationValueVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationValueVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationValue.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationSubjectVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationSubjectVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationSubject.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationPropertyRangeAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationPropertyDomainAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationProperty.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationObjectVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationObjectVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationObject.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationAxiomVisitorEx.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationAxiomVisitor.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationAssertionAxiom.h \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotation.h \
+    libontology/org_semanticweb_owlapi_model_NodeID.h \
+    libontology/org_semanticweb_owlapi_model_MissingImportListener.h \
+    libontology/org_semanticweb_owlapi_model_MissingImportEvent.h \
+    libontology/org_semanticweb_owlapi_model_IRI.h \
+    libontology/org_semanticweb_owlapi_model_ImportChange.h \
+    libontology/org_semanticweb_owlapi_model_ImpendingOWLOntologyChangeListener.h \
+    libontology/org_semanticweb_owlapi_model_EntityType.h \
+    libontology/org_semanticweb_owlapi_model_DataRangeType.h \
+    libontology/org_semanticweb_owlapi_model_ClassExpressionType.h \
+    libontology/org_semanticweb_owlapi_model_AxiomType.h \
+    libontology/org_semanticweb_owlapi_model_AddOntologyAnnotation.h \
+    libontology/org_semanticweb_owlapi_model_AddImport.h \
+    libontology/org_semanticweb_owlapi_model_AddAxiom.h \
+    libontology/org_semanticweb_owlapi_io_OWLOntologyLoaderMetaData.h \
+    libontology/org_semanticweb_owlapi_io_OWLOntologyDocumentTarget.h \
+    libontology/org_semanticweb_owlapi_io_OWLOntologyDocumentSource.h \
     libontology/java_wrapper.h \
     libontology/java_util_SortedMap.h \
     libontology/java_util_Set.h \
+    libontology/java_util_regex_Pattern.h \
+    libontology/java_util_regex_MatchResult.h \
+    libontology/java_util_regex_Matcher.h \
     libontology/java_util_Map.h \
     libontology/java_util_Locale.h \
     libontology/java_util_ListIterator.h \
@@ -70,9 +302,12 @@ HEADERS       = \
     libontology/java_net_ContentHandler.h \
     libontology/java_marker.h \
     libontology/java_magic.h \
+    libontology/java_lang_Throwable.h \
     libontology/java_lang_StringBuilder.h \
     libontology/java_lang_StringBuffer.h \
     libontology/java_lang_String.h \
+    libontology/java_lang_StackTraceElement.h \
+    libontology/java_lang_RuntimeException.h \
     libontology/java_lang_reflect_TypeVariable.h \
     libontology/java_lang_reflect_Type.h \
     libontology/java_lang_reflect_Method.h \
@@ -86,6 +321,7 @@ HEADERS       = \
     libontology/java_lang_Package.h \
     libontology/java_lang_Object.h \
     libontology/java_lang_Iterable.h \
+    libontology/java_lang_Exception.h \
     libontology/java_lang_Enum.h \
     libontology/java_lang_Comparable.h \
     libontology/java_lang_Cloneable.h \
@@ -95,24 +331,260 @@ HEADERS       = \
     libontology/java_lang_Appendable.h \
     libontology/java_lang_annotation_Annotation.h \
     libontology/java_lang_AbstractStringBuilder.h \
+    libontology/java_io_Writer.h \
     libontology/java_io_Serializable.h \
+    libontology/java_io_Reader.h \
+    libontology/java_io_PrintWriter.h \
+    libontology/java_io_PrintStream.h \
     libontology/java_io_OutputStream.h \
     libontology/java_io_InputStream.h \
     libontology/java_io_Flushable.h \
+    libontology/java_io_FilterOutputStream.h \
+    libontology/java_io_FilenameFilter.h \
+    libontology/java_io_FileFilter.h \
+    libontology/java_io_File.h \
     libontology/java_io_Closeable.h \
     libontology/java_classes.h \
     libontology/java_base_class.h \
     libontology/java_array.h \
-    libontology/edu_monash_infotech_OWLAPIWrapper.h \
-    owlclass.h \
-    owlproperty.h \
-    owlindividual.h \
-    owlontology.h
+    libontology/edu_monash_infotech_OWLAPIWrapper.h
 
 SOURCES       = plugin.cpp \
+                owlclass.cpp \
+                owlproperty.cpp \
+                owlindividual.cpp \
+                owlontology.cpp \
+    libontology/org_semanticweb_owlapi_vocab_PrefixOWLOntologyFormat.cpp \
+    libontology/org_semanticweb_owlapi_vocab_OWLRDFVocabulary.cpp \
+    libontology/org_semanticweb_owlapi_vocab_OWLFacet.cpp \
+    libontology/org_semanticweb_owlapi_vocab_OWL2Datatype__Category.cpp \
+    libontology/org_semanticweb_owlapi_vocab_OWL2Datatype.cpp \
+    libontology/org_semanticweb_owlapi_vocab_Namespaces.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLVariable.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLUnaryAtom.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLSameIndividualAtom.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLRule.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLPredicate.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLObjectVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLObjectVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLObjectPropertyAtom.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLObject.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLLiteralArgument.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLIndividualArgument.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLIArgument.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLDifferentIndividualsAtom.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLDataRangeAtom.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLDataPropertyAtom.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLDataFactory.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLDArgument.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLClassAtom.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLBuiltInAtom.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLBinaryAtom.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLAtom.cpp \
+    libontology/org_semanticweb_owlapi_model_SWRLArgument.cpp \
+    libontology/org_semanticweb_owlapi_model_SetOntologyID.cpp \
+    libontology/org_semanticweb_owlapi_model_RemoveOntologyAnnotation.cpp \
+    libontology/org_semanticweb_owlapi_model_RemoveImport.cpp \
+    libontology/org_semanticweb_owlapi_model_RemoveAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_PrefixManager.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLUnaryPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLTransitiveObjectPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLSymmetricObjectPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLSubPropertyChainOfAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLSubPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLSubObjectPropertyOfAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLSubDataPropertyOfAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLSubClassOfAxiomShortCut.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLSubClassOfAxiomSetShortCut.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLSubClassOfAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLSubAnnotationPropertyOfAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLSameIndividualAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLRuntimeException.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLRestriction.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLReflexiveObjectPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLQuantifiedRestriction.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLQuantifiedObjectRestriction.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLQuantifiedDataRestriction.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyRangeAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyRange.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyExpressionVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyExpressionVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyExpression.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyDomainAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyAssertionObject.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLPropertyAssertionAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLProperty.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyStorer.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologySetProvider.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyManager.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyLoaderListener__LoadingStartedEvent.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyLoaderListener__LoadingFinishedEvent.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyLoaderListener__LoadingEvent.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyLoaderListener.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyLoaderConfiguration__MissingOntologyHeaderStrategy.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyLoaderConfiguration.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyIRIMapper.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyID.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyFormat.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyFactory__OWLOntologyCreationHandler.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyFactory.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyCreationException.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeVetoException.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangesVetoedListener.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeProgressListener.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeListener.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeException.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChangeBroadcastStrategy.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntologyChange.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLOntology.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectUnionOf.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectSomeValuesFrom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectPropertyRangeAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectPropertyExpression.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectPropertyDomainAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectPropertyCharacteristicAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectPropertyAssertionAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectProperty.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectOneOf.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectMinCardinality.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectMaxCardinality.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectInverseOf.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectIntersectionOf.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectHasValue.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectHasSelf.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectExactCardinality.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectComplementOf.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectCardinalityRestriction.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObjectAllValuesFrom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLObject.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLNegativeObjectPropertyAssertionAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLNegativeDataPropertyAssertionAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLNaryPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLNaryIndividualAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLNaryDataRange.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLNaryClassAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLNaryBooleanClassExpression.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLNaryAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLNamedObjectVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLNamedObjectVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLNamedObject.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLNamedIndividual.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLLogicalEntity.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLLogicalAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLLiteral.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLIrreflexiveObjectPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLInverseObjectPropertiesAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLInverseFunctionalObjectPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLIndividualVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLIndividualVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLIndividualAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLIndividual.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLImportsDeclaration.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLHasValueRestriction.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLHasKeyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLFunctionalObjectPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLFunctionalDataPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLFacetRestriction.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLException.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLEquivalentObjectPropertiesAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLEquivalentDataPropertiesAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLEquivalentClassesAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLEntityVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLEntityVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLEntity.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDisjointUnionAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDisjointObjectPropertiesAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDisjointDataPropertiesAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDisjointClassesAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDifferentIndividualsAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDeclarationAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataUnionOf.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDatatypeRestriction.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDatatypeDefinitionAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDatatype.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataSomeValuesFrom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataRangeVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataRangeVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataRange.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataPropertyRangeAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataPropertyExpression.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataPropertyDomainAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataPropertyCharacteristicAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataPropertyAssertionAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataProperty.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataOneOf.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataMinCardinality.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataMaxCardinality.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataIntersectionOf.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataHasValue.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataFactory.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataExactCardinality.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataComplementOf.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataCardinalityRestriction.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLDataAllValuesFrom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLClassExpressionVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLClassExpressionVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLClassExpression.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLClassAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLClassAssertionAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLClass.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLCardinalityRestriction.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLBooleanClassExpression.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAxiomVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAxiomVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAxiomChange.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAsymmetricObjectPropertyAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnonymousIndividual.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnonymousClassExpression.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationValueVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationValueVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationValue.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationSubjectVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationSubjectVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationSubject.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationPropertyRangeAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationPropertyDomainAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationProperty.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationObjectVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationObjectVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationObject.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationAxiomVisitorEx.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationAxiomVisitor.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotationAssertionAxiom.cpp \
+    libontology/org_semanticweb_owlapi_model_OWLAnnotation.cpp \
+    libontology/org_semanticweb_owlapi_model_NodeID.cpp \
+    libontology/org_semanticweb_owlapi_model_MissingImportListener.cpp \
+    libontology/org_semanticweb_owlapi_model_MissingImportEvent.cpp \
+    libontology/org_semanticweb_owlapi_model_IRI.cpp \
+    libontology/org_semanticweb_owlapi_model_ImportChange.cpp \
+    libontology/org_semanticweb_owlapi_model_ImpendingOWLOntologyChangeListener.cpp \
+    libontology/org_semanticweb_owlapi_model_EntityType.cpp \
+    libontology/org_semanticweb_owlapi_model_DataRangeType.cpp \
+    libontology/org_semanticweb_owlapi_model_ClassExpressionType.cpp \
+    libontology/org_semanticweb_owlapi_model_AxiomType.cpp \
+    libontology/org_semanticweb_owlapi_model_AddOntologyAnnotation.cpp \
+    libontology/org_semanticweb_owlapi_model_AddImport.cpp \
+    libontology/org_semanticweb_owlapi_model_AddAxiom.cpp \
+    libontology/org_semanticweb_owlapi_io_OWLOntologyLoaderMetaData.cpp \
+    libontology/org_semanticweb_owlapi_io_OWLOntologyDocumentTarget.cpp \
+    libontology/org_semanticweb_owlapi_io_OWLOntologyDocumentSource.cpp \
     libontology/java_wrapper.cpp \
     libontology/java_util_SortedMap.cpp \
     libontology/java_util_Set.cpp \
+    libontology/java_util_regex_Pattern.cpp \
+    libontology/java_util_regex_MatchResult.cpp \
+    libontology/java_util_regex_Matcher.cpp \
     libontology/java_util_Map.cpp \
     libontology/java_util_Locale.cpp \
     libontology/java_util_ListIterator.cpp \
@@ -159,9 +631,12 @@ SOURCES       = plugin.cpp \
     libontology/java_net_FileNameMap.cpp \
     libontology/java_net_ContentHandlerFactory.cpp \
     libontology/java_net_ContentHandler.cpp \
+    libontology/java_lang_Throwable.cpp \
     libontology/java_lang_StringBuilder.cpp \
     libontology/java_lang_StringBuffer.cpp \
     libontology/java_lang_String.cpp \
+    libontology/java_lang_StackTraceElement.cpp \
+    libontology/java_lang_RuntimeException.cpp \
     libontology/java_lang_reflect_TypeVariable.cpp \
     libontology/java_lang_reflect_Type.cpp \
     libontology/java_lang_reflect_Method.cpp \
@@ -175,6 +650,7 @@ SOURCES       = plugin.cpp \
     libontology/java_lang_Package.cpp \
     libontology/java_lang_Object.cpp \
     libontology/java_lang_Iterable.cpp \
+    libontology/java_lang_Exception.cpp \
     libontology/java_lang_Enum.cpp \
     libontology/java_lang_Comparable.cpp \
     libontology/java_lang_Cloneable.cpp \
@@ -184,23 +660,29 @@ SOURCES       = plugin.cpp \
     libontology/java_lang_Appendable.cpp \
     libontology/java_lang_annotation_Annotation.cpp \
     libontology/java_lang_AbstractStringBuilder.cpp \
+    libontology/java_io_Writer.cpp \
     libontology/java_io_Serializable.cpp \
+    libontology/java_io_Reader.cpp \
+    libontology/java_io_PrintWriter.cpp \
+    libontology/java_io_PrintStream.cpp \
     libontology/java_io_OutputStream.cpp \
     libontology/java_io_InputStream.cpp \
     libontology/java_io_Flushable.cpp \
+    libontology/java_io_FilterOutputStream.cpp \
+    libontology/java_io_FilenameFilter.cpp \
+    libontology/java_io_FileFilter.cpp \
+    libontology/java_io_File.cpp \
     libontology/java_io_Closeable.cpp \
     libontology/java_base_class.cpp \
     libontology/java_array.cpp \
-    libontology/edu_monash_infotech_OWLAPIWrapper.cpp \
-    owlclass.cpp \
-    owlproperty.cpp \
-    owlindividual.cpp \
-    owlontology.cpp
+    libontology/edu_monash_infotech_OWLAPIWrapper.cpp
 
 unix:!symbian|win32: LIBS += -L/usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client/ -ljvm
 
 INCLUDEPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
 DEPENDPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
+
+
 
 
 

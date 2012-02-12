@@ -31,6 +31,8 @@ public:
     void drawIndividualView(Canvas *canvas);
     void drawPropertyView(Canvas *canvas);
 
+    void drawClassOverview(Canvas *canvas);
+
     QString toQString();
 };
 
