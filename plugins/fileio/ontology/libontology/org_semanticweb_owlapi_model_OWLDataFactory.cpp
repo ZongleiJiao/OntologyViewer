@@ -9,9 +9,6 @@
 #include <org_semanticweb_owlapi_model_IRI.h>
 #include <java_lang_String.h>
 #include <org_semanticweb_owlapi_model_PrefixManager.h>
-#include <org_semanticweb_owlapi_model_OWLEquivalentClassesAxiom.h>
-#include <java_util_Set.h>
-#include <org_semanticweb_owlapi_model_OWLClassExpression.h>
 #include <org_semanticweb_owlapi_model_OWLDataProperty.h>
 #include <org_semanticweb_owlapi_model_OWLObjectProperty.h>
 #include <org_semanticweb_owlapi_model_OWLEntity.h>
@@ -25,6 +22,7 @@
 #include <org_semanticweb_owlapi_model_OWLLiteral.h>
 #include <org_semanticweb_owlapi_vocab_OWL2Datatype.h>
 #include <org_semanticweb_owlapi_model_OWLDataOneOf.h>
+#include <java_util_Set.h>
 #include <org_semanticweb_owlapi_model_OWLDataComplementOf.h>
 #include <org_semanticweb_owlapi_model_OWLDataRange.h>
 #include <org_semanticweb_owlapi_model_OWLDatatypeRestriction.h>
@@ -33,6 +31,7 @@
 #include <org_semanticweb_owlapi_model_OWLDataUnionOf.h>
 #include <org_semanticweb_owlapi_model_OWLDataIntersectionOf.h>
 #include <org_semanticweb_owlapi_model_OWLObjectIntersectionOf.h>
+#include <org_semanticweb_owlapi_model_OWLClassExpression.h>
 #include <org_semanticweb_owlapi_model_OWLDataSomeValuesFrom.h>
 #include <org_semanticweb_owlapi_model_OWLDataPropertyExpression.h>
 #include <org_semanticweb_owlapi_model_OWLDataAllValuesFrom.h>
@@ -53,6 +52,7 @@
 #include <org_semanticweb_owlapi_model_OWLObjectUnionOf.h>
 #include <org_semanticweb_owlapi_model_OWLDeclarationAxiom.h>
 #include <org_semanticweb_owlapi_model_OWLSubClassOfAxiom.h>
+#include <org_semanticweb_owlapi_model_OWLEquivalentClassesAxiom.h>
 #include <org_semanticweb_owlapi_model_OWLDisjointClassesAxiom.h>
 #include <org_semanticweb_owlapi_model_OWLDisjointUnionAxiom.h>
 #include <org_semanticweb_owlapi_model_OWLSubObjectPropertyOfAxiom.h>
@@ -178,155 +178,6 @@ org::semanticweb::owlapi::model::OWLClass* OWLDataFactory::getOWLClass(const cha
   org::semanticweb::owlapi::model::OWLClass* result;
   if (jresult!=NULL) {
     result=new org::semanticweb::owlapi::model::OWLClass(jresult);
-    javaEnv->DeleteLocalRef(jresult);
-  } else {
-    result=NULL;
-  }
-  return result;
-  updateAllNonFinalVariables(wrapperIntern);
-}
-
-org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* OWLDataFactory::getOWLEquivalentClassesAxiom(java::util::Set* arg1)
-{
-  jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLDataFactory");
-  handleJavaException(wrapperIntern);
-  jmethodID mid = javaEnv->GetMethodID(cls, "getOWLEquivalentClassesAxiom", "(Ljava/util/Set;)Lorg/semanticweb/owlapi/model/OWLEquivalentClassesAxiom;");
-  handleJavaException(wrapperIntern);
-  jobject jarg1;
-  if (arg1!=NULL) {
-    jarg1=arg1->getJavaObject();
-  } else {
-    jarg1=NULL;
-  }
-  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid, jarg1);
-  handleJavaException(wrapperIntern);
-  org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* result;
-  if (jresult!=NULL) {
-    result=new org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom(jresult);
-    javaEnv->DeleteLocalRef(jresult);
-  } else {
-    result=NULL;
-  }
-  return result;
-  updateAllNonFinalVariables(wrapperIntern);
-}
-
-org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* OWLDataFactory::getOWLEquivalentClassesAxiom(java::util::Set* arg1, java::util::Set* arg2)
-{
-  jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLDataFactory");
-  handleJavaException(wrapperIntern);
-  jmethodID mid = javaEnv->GetMethodID(cls, "getOWLEquivalentClassesAxiom", "(Ljava/util/Set;Ljava/util/Set;)Lorg/semanticweb/owlapi/model/OWLEquivalentClassesAxiom;");
-  handleJavaException(wrapperIntern);
-  jobject jarg1;
-  if (arg1!=NULL) {
-    jarg1=arg1->getJavaObject();
-  } else {
-    jarg1=NULL;
-  }
-  jobject jarg2;
-  if (arg2!=NULL) {
-    jarg2=arg2->getJavaObject();
-  } else {
-    jarg2=NULL;
-  }
-  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid, jarg1, jarg2);
-  handleJavaException(wrapperIntern);
-  org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* result;
-  if (jresult!=NULL) {
-    result=new org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom(jresult);
-    javaEnv->DeleteLocalRef(jresult);
-  } else {
-    result=NULL;
-  }
-  return result;
-  updateAllNonFinalVariables(wrapperIntern);
-}
-
-org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* OWLDataFactory::getOWLEquivalentClassesAxiom(JavaObjectArray* arg1)
-{
-  jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLDataFactory");
-  handleJavaException(wrapperIntern);
-  jmethodID mid = javaEnv->GetMethodID(cls, "getOWLEquivalentClassesAxiom", "([Lorg/semanticweb/owlapi/model/OWLClassExpression;)Lorg/semanticweb/owlapi/model/OWLEquivalentClassesAxiom;");
-  handleJavaException(wrapperIntern);
-  jarray jarg1;
-  if (arg1!=NULL) {
-    jarg1=(jarray)(arg1->getJavaObject());
-  } else {
-    jarg1=NULL;
-  }
-  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid, jarg1);
-  handleJavaException(wrapperIntern);
-  org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* result;
-  if (jresult!=NULL) {
-    result=new org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom(jresult);
-    javaEnv->DeleteLocalRef(jresult);
-  } else {
-    result=NULL;
-  }
-  return result;
-  updateAllNonFinalVariables(wrapperIntern);
-}
-
-org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* OWLDataFactory::getOWLEquivalentClassesAxiom(org::semanticweb::owlapi::model::OWLClassExpression* arg1, org::semanticweb::owlapi::model::OWLClassExpression* arg2)
-{
-  jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLDataFactory");
-  handleJavaException(wrapperIntern);
-  jmethodID mid = javaEnv->GetMethodID(cls, "getOWLEquivalentClassesAxiom", "(Lorg/semanticweb/owlapi/model/OWLClassExpression;Lorg/semanticweb/owlapi/model/OWLClassExpression;)Lorg/semanticweb/owlapi/model/OWLEquivalentClassesAxiom;");
-  handleJavaException(wrapperIntern);
-  jobject jarg1;
-  if (arg1!=NULL) {
-    jarg1=arg1->getJavaObject();
-  } else {
-    jarg1=NULL;
-  }
-  jobject jarg2;
-  if (arg2!=NULL) {
-    jarg2=arg2->getJavaObject();
-  } else {
-    jarg2=NULL;
-  }
-  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid, jarg1, jarg2);
-  handleJavaException(wrapperIntern);
-  org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* result;
-  if (jresult!=NULL) {
-    result=new org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom(jresult);
-    javaEnv->DeleteLocalRef(jresult);
-  } else {
-    result=NULL;
-  }
-  return result;
-  updateAllNonFinalVariables(wrapperIntern);
-}
-
-org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* OWLDataFactory::getOWLEquivalentClassesAxiom(org::semanticweb::owlapi::model::OWLClassExpression* arg1, org::semanticweb::owlapi::model::OWLClassExpression* arg2, java::util::Set* arg3)
-{
-  jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLDataFactory");
-  handleJavaException(wrapperIntern);
-  jmethodID mid = javaEnv->GetMethodID(cls, "getOWLEquivalentClassesAxiom", "(Lorg/semanticweb/owlapi/model/OWLClassExpression;Lorg/semanticweb/owlapi/model/OWLClassExpression;Ljava/util/Set;)Lorg/semanticweb/owlapi/model/OWLEquivalentClassesAxiom;");
-  handleJavaException(wrapperIntern);
-  jobject jarg1;
-  if (arg1!=NULL) {
-    jarg1=arg1->getJavaObject();
-  } else {
-    jarg1=NULL;
-  }
-  jobject jarg2;
-  if (arg2!=NULL) {
-    jarg2=arg2->getJavaObject();
-  } else {
-    jarg2=NULL;
-  }
-  jobject jarg3;
-  if (arg3!=NULL) {
-    jarg3=arg3->getJavaObject();
-  } else {
-    jarg3=NULL;
-  }
-  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid, jarg1, jarg2, jarg3);
-  handleJavaException(wrapperIntern);
-  org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* result;
-  if (jresult!=NULL) {
-    result=new org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom(jresult);
     javaEnv->DeleteLocalRef(jresult);
   } else {
     result=NULL;
@@ -3061,6 +2912,155 @@ org::semanticweb::owlapi::model::OWLSubClassOfAxiom* OWLDataFactory::getOWLSubCl
   org::semanticweb::owlapi::model::OWLSubClassOfAxiom* result;
   if (jresult!=NULL) {
     result=new org::semanticweb::owlapi::model::OWLSubClassOfAxiom(jresult);
+    javaEnv->DeleteLocalRef(jresult);
+  } else {
+    result=NULL;
+  }
+  return result;
+  updateAllNonFinalVariables(wrapperIntern);
+}
+
+org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* OWLDataFactory::getOWLEquivalentClassesAxiom(java::util::Set* arg1)
+{
+  jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLDataFactory");
+  handleJavaException(wrapperIntern);
+  jmethodID mid = javaEnv->GetMethodID(cls, "getOWLEquivalentClassesAxiom", "(Ljava/util/Set;)Lorg/semanticweb/owlapi/model/OWLEquivalentClassesAxiom;");
+  handleJavaException(wrapperIntern);
+  jobject jarg1;
+  if (arg1!=NULL) {
+    jarg1=arg1->getJavaObject();
+  } else {
+    jarg1=NULL;
+  }
+  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid, jarg1);
+  handleJavaException(wrapperIntern);
+  org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* result;
+  if (jresult!=NULL) {
+    result=new org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom(jresult);
+    javaEnv->DeleteLocalRef(jresult);
+  } else {
+    result=NULL;
+  }
+  return result;
+  updateAllNonFinalVariables(wrapperIntern);
+}
+
+org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* OWLDataFactory::getOWLEquivalentClassesAxiom(java::util::Set* arg1, java::util::Set* arg2)
+{
+  jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLDataFactory");
+  handleJavaException(wrapperIntern);
+  jmethodID mid = javaEnv->GetMethodID(cls, "getOWLEquivalentClassesAxiom", "(Ljava/util/Set;Ljava/util/Set;)Lorg/semanticweb/owlapi/model/OWLEquivalentClassesAxiom;");
+  handleJavaException(wrapperIntern);
+  jobject jarg1;
+  if (arg1!=NULL) {
+    jarg1=arg1->getJavaObject();
+  } else {
+    jarg1=NULL;
+  }
+  jobject jarg2;
+  if (arg2!=NULL) {
+    jarg2=arg2->getJavaObject();
+  } else {
+    jarg2=NULL;
+  }
+  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid, jarg1, jarg2);
+  handleJavaException(wrapperIntern);
+  org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* result;
+  if (jresult!=NULL) {
+    result=new org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom(jresult);
+    javaEnv->DeleteLocalRef(jresult);
+  } else {
+    result=NULL;
+  }
+  return result;
+  updateAllNonFinalVariables(wrapperIntern);
+}
+
+org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* OWLDataFactory::getOWLEquivalentClassesAxiom(JavaObjectArray* arg1)
+{
+  jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLDataFactory");
+  handleJavaException(wrapperIntern);
+  jmethodID mid = javaEnv->GetMethodID(cls, "getOWLEquivalentClassesAxiom", "([Lorg/semanticweb/owlapi/model/OWLClassExpression;)Lorg/semanticweb/owlapi/model/OWLEquivalentClassesAxiom;");
+  handleJavaException(wrapperIntern);
+  jarray jarg1;
+  if (arg1!=NULL) {
+    jarg1=(jarray)(arg1->getJavaObject());
+  } else {
+    jarg1=NULL;
+  }
+  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid, jarg1);
+  handleJavaException(wrapperIntern);
+  org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* result;
+  if (jresult!=NULL) {
+    result=new org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom(jresult);
+    javaEnv->DeleteLocalRef(jresult);
+  } else {
+    result=NULL;
+  }
+  return result;
+  updateAllNonFinalVariables(wrapperIntern);
+}
+
+org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* OWLDataFactory::getOWLEquivalentClassesAxiom(org::semanticweb::owlapi::model::OWLClassExpression* arg1, org::semanticweb::owlapi::model::OWLClassExpression* arg2)
+{
+  jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLDataFactory");
+  handleJavaException(wrapperIntern);
+  jmethodID mid = javaEnv->GetMethodID(cls, "getOWLEquivalentClassesAxiom", "(Lorg/semanticweb/owlapi/model/OWLClassExpression;Lorg/semanticweb/owlapi/model/OWLClassExpression;)Lorg/semanticweb/owlapi/model/OWLEquivalentClassesAxiom;");
+  handleJavaException(wrapperIntern);
+  jobject jarg1;
+  if (arg1!=NULL) {
+    jarg1=arg1->getJavaObject();
+  } else {
+    jarg1=NULL;
+  }
+  jobject jarg2;
+  if (arg2!=NULL) {
+    jarg2=arg2->getJavaObject();
+  } else {
+    jarg2=NULL;
+  }
+  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid, jarg1, jarg2);
+  handleJavaException(wrapperIntern);
+  org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* result;
+  if (jresult!=NULL) {
+    result=new org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom(jresult);
+    javaEnv->DeleteLocalRef(jresult);
+  } else {
+    result=NULL;
+  }
+  return result;
+  updateAllNonFinalVariables(wrapperIntern);
+}
+
+org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* OWLDataFactory::getOWLEquivalentClassesAxiom(org::semanticweb::owlapi::model::OWLClassExpression* arg1, org::semanticweb::owlapi::model::OWLClassExpression* arg2, java::util::Set* arg3)
+{
+  jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLDataFactory");
+  handleJavaException(wrapperIntern);
+  jmethodID mid = javaEnv->GetMethodID(cls, "getOWLEquivalentClassesAxiom", "(Lorg/semanticweb/owlapi/model/OWLClassExpression;Lorg/semanticweb/owlapi/model/OWLClassExpression;Ljava/util/Set;)Lorg/semanticweb/owlapi/model/OWLEquivalentClassesAxiom;");
+  handleJavaException(wrapperIntern);
+  jobject jarg1;
+  if (arg1!=NULL) {
+    jarg1=arg1->getJavaObject();
+  } else {
+    jarg1=NULL;
+  }
+  jobject jarg2;
+  if (arg2!=NULL) {
+    jarg2=arg2->getJavaObject();
+  } else {
+    jarg2=NULL;
+  }
+  jobject jarg3;
+  if (arg3!=NULL) {
+    jarg3=arg3->getJavaObject();
+  } else {
+    jarg3=NULL;
+  }
+  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid, jarg1, jarg2, jarg3);
+  handleJavaException(wrapperIntern);
+  org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* result;
+  if (jresult!=NULL) {
+    result=new org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom(jresult);
     javaEnv->DeleteLocalRef(jresult);
   } else {
     result=NULL;

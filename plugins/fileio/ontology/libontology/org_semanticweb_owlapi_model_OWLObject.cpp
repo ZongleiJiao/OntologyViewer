@@ -120,25 +120,6 @@ java::util::Set* OWLObject::getClassesInSignature()
   updateAllNonFinalVariables(wrapperIntern);
 }
 
-java::util::Set* OWLObject::getNestedClassExpressions()
-{
-  jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLObject");
-  handleJavaException(wrapperIntern);
-  jmethodID mid = javaEnv->GetMethodID(cls, "getNestedClassExpressions", "()Ljava/util/Set;");
-  handleJavaException(wrapperIntern);
-  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid);
-  handleJavaException(wrapperIntern);
-  java::util::Set* result;
-  if (jresult!=NULL) {
-    result=new java::util::Set(jresult);
-    javaEnv->DeleteLocalRef(jresult);
-  } else {
-    result=NULL;
-  }
-  return result;
-  updateAllNonFinalVariables(wrapperIntern);
-}
-
 java::util::Set* OWLObject::getIndividualsInSignature()
 {
   jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLObject");
@@ -201,6 +182,25 @@ java::util::Set* OWLObject::getDatatypesInSignature()
   jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLObject");
   handleJavaException(wrapperIntern);
   jmethodID mid = javaEnv->GetMethodID(cls, "getDatatypesInSignature", "()Ljava/util/Set;");
+  handleJavaException(wrapperIntern);
+  jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid);
+  handleJavaException(wrapperIntern);
+  java::util::Set* result;
+  if (jresult!=NULL) {
+    result=new java::util::Set(jresult);
+    javaEnv->DeleteLocalRef(jresult);
+  } else {
+    result=NULL;
+  }
+  return result;
+  updateAllNonFinalVariables(wrapperIntern);
+}
+
+java::util::Set* OWLObject::getNestedClassExpressions()
+{
+  jclass    cls = javaEnv->FindClass("org/semanticweb/owlapi/model/OWLObject");
+  handleJavaException(wrapperIntern);
+  jmethodID mid = javaEnv->GetMethodID(cls, "getNestedClassExpressions", "()Ljava/util/Set;");
   handleJavaException(wrapperIntern);
   jobject jresult=javaEnv->CallObjectMethod(this->getJavaObject(), mid);
   handleJavaException(wrapperIntern);

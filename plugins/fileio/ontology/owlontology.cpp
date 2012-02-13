@@ -16,9 +16,9 @@ OwlOntology::OwlOntology()
 }
 
 /** unfinished:
-1. all URI name
+1. all URI name ---only one namespace!!!
 2. prefix---only one namespace!!!
-3. properties
+3. properties --done
 4. about Thing?
 5. (done) Did not deal with the -1 error when use getIndexOfClasses(),getIndexOfIndividuals(),getIndexOfProperties()
 */
@@ -124,6 +124,9 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         tmpclass->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));
         tmpclass->shape->setFillColour(this->CLASS_SHAPE_COLOR);
 
+        //get equivalent class (Warn!!! only 1 or more???)
+        QString tmpstr = QString(wp->getEquivalentClasses(tmpclass->shortname.toLocal8Bit().data()));
+        tmpclass->equivalentclass = tmpstr;
         //append tmpclass to list
         this->classes.append(tmpclass);
     }
@@ -268,6 +271,8 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
             }
         }
     }
+
+
 
 }
 
@@ -484,52 +489,8 @@ QString OwlOntology::toQString()
     for(int i=0;i<properties.length();i++)res.append(properties[i]->toQString());
     return res;
 }
+
 //methods to get the logical representation.
-/*
-    public static ArrayList<String> splitString(String str) {
-
-    }
-
-    public static String destr(String str) {
-        String r = "";
-        if (str.startsWith("<")) {
-            r = "<"+str.substring(1, str.length() - 1).split("#")[1]+">";
-        } else if (str.startsWith("ObjectIntersectionOf")) {
-            String fstr = str.substring(21, str.length() - 1);
-            ArrayList<String> substrs = splitString(fstr);
-            r = "("+destr(substrs.get(0));
-            for (int i = 1; i < substrs.size(); i++) {
-                r += " ∧ " + destr(substrs.get(i));
-            }
-            r+=")";
-        } else if(str.startsWith("ObjectUnionOf")){
-            String fstr = str.substring(14, str.length() - 1);
-            ArrayList<String> substrs = splitString(fstr);
-            r = "("+destr(substrs.get(0));
-            for (int i = 1; i < substrs.size(); i++) {
-                r += " ∨ " + destr(substrs.get(i));
-            }
-            r+=")";
-        } else if (str.startsWith("ObjectAllValuesFrom")) {
-            String fstr = str.substring(20, str.length() - 1);
-            ArrayList<String> substrs = splitString(fstr);
-            r = "∀" + destr(substrs.get(0)) + "(" + destr(substrs.get(1)) +")";
-        } else if (str.startsWith("ObjectHasValue")) {
-            String fstr = str.substring(15, str.length() - 1);
-            ArrayList<String> substrs = splitString(fstr);
-            r = "∃" + destr(substrs.get(0)) + "(" + destr(substrs.get(1)) +")";
-        } else if (str.startsWith("ObjectExactCardinality")) {
-            String fstr = str.substring(23, str.length() - 1);
-            ArrayList<String> substrs = splitString(fstr);
-            r = "≡" + destr(substrs.get(1)) +destr(substrs.get(0)) +"(" + destr(substrs.get(2)) +")";
-        }
-        else {
-            r = "<"+str +">";
-        }
-        return r;
-    }
-  */
-
 QList<QString> OwlOntology::splitFormula(QString str)
 {
     QList<QString> res;
@@ -590,10 +551,19 @@ QString OwlOntology::getFormula(QString str)
             r += " ∨ " + getFormula(substrs.at(i));
         }
         r+=")";
-    } else if (str.startsWith("ObjectAllValuesFrom")) {
+    } else if (str.startsWith("DataHasValue")) {
+        QString fstr = str.mid(13, str.length() - 14);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "[DataHasValue]" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
+    }
+    else if (str.startsWith("ObjectAllValuesFrom")) {
         QString fstr = str.mid(20, str.length() - 21);
         QList<QString> substrs = splitFormula(fstr);
         r = "∀" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
+    } else if (str.startsWith("ObjectSomeValuesFrom")) {
+        QString fstr = str.mid(21, str.length() - 22);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "[someValuesFrom]" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
     } else if (str.startsWith("ObjectHasValue")) {
         QString fstr = str.mid(15, str.length() - 16);
         QList<QString> substrs = splitFormula(fstr);
@@ -602,6 +572,14 @@ QString OwlOntology::getFormula(QString str)
         QString fstr = str.mid(23, str.length() - 24);
         QList<QString> substrs = splitFormula(fstr);
         r = "≡" + getFormula(substrs.at(1)) +getFormula(substrs.at(0)) +"(" + getFormula(substrs.at(2)) +")";
+    } else if (str.startsWith("ObjectMinCardinality")){
+        QString fstr = str.mid(21, str.length() - 22);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "≥" + getFormula(substrs.at(1)) +getFormula(substrs.at(0)) +"(" + getFormula(substrs.at(2)) +")";
+    } else if (str.startsWith("ObjectMaxCardinality")){
+        QString fstr = str.mid(21, str.length() - 22);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "≤" + getFormula(substrs.at(1)) +getFormula(substrs.at(0)) +"(" + getFormula(substrs.at(2)) +")";
     }
     else {
         r = "<"+str +">";
@@ -610,12 +588,13 @@ QString OwlOntology::getFormula(QString str)
 }
 
 
-
-ShapeObj * OwlOntology::drawLogicalView(QString str,Canvas *canvas)
-{
+ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
+{    
     ShapeObj * rshape=NULL;
+
     PluginShapeFactory *shapeFactory = sharedPluginShapeFactory();
-    if (str.startsWith("<")) {
+
+    if (str.startsWith("<")) {        
         int i = str.indexOf("#",0);
         QString sname = str.mid(i+1,str.length() - 2-i);
         ShapeObj * entityshape = shapeFactory->createShape("ontoclass");
@@ -638,7 +617,7 @@ ShapeObj * OwlOntology::drawLogicalView(QString str,Canvas *canvas)
         Connector *conn;
         for (int i = 0; i < substrs.size(); i++) {
             conn = new Connector();
-            conn->initWithConnection(mshape,drawLogicalView(substrs.at(i),canvas));
+            conn->initWithConnection(mshape,drawLogical(substrs.at(i),canvas));
             canvas->addItem(conn);
             conn->setDirected(true);
             conn->setColour(QColor("blue"));
@@ -658,7 +637,7 @@ ShapeObj * OwlOntology::drawLogicalView(QString str,Canvas *canvas)
         Connector *conn;
         for (int i = 0; i < substrs.size(); i++) {
             conn = new Connector();
-            conn->initWithConnection(mshape,drawLogicalView(substrs.at(i),canvas));
+            conn->initWithConnection(mshape,drawLogical(substrs.at(i),canvas));
             canvas->addItem(conn);
             conn->setDirected(true);
             conn->setColour(QColor("blue"));
@@ -666,7 +645,36 @@ ShapeObj * OwlOntology::drawLogicalView(QString str,Canvas *canvas)
         }
         rshape=mshape;
 
-    } else if (str.startsWith("ObjectAllValuesFrom")) {
+    }
+    else if (str.startsWith("DataHasValue")) {
+            QString fstr = str.mid(13, str.length() - 14);
+            QList<QString> substrs = splitFormula(fstr);
+
+            ShapeObj * mshape = new RectangleShape();
+    //        mshape->setLabel(getFormula(str));
+            mshape->setLabel("DataHasValue");
+            mshape->setSize(QSizeF(250,30));
+            mshape->setFillColour(QColor("gray"));
+            canvas->addItem(mshape);
+
+            ShapeObj * shape1 = drawLogical(substrs.at(0),canvas);
+            ShapeObj * shape2 = drawLogical(substrs.at(1),canvas);
+            Connector *conn;
+            conn = new Connector();
+            conn->initWithConnection(mshape,shape1);
+            canvas->addItem(conn);
+            conn->setDirected(true);
+            conn->setColour(QColor("blue"));
+
+            conn = new Connector();
+            conn->initWithConnection(shape1,shape2);
+            canvas->addItem(conn);
+            conn->setLabel("DataHasValue");
+            conn->setDirected(true);
+            conn->setColour(QColor("blue"));
+            rshape = mshape;
+    }
+    else if (str.startsWith("ObjectAllValuesFrom")) {
         QString fstr = str.mid(20, str.length() - 21);
         QList<QString> substrs = splitFormula(fstr);
 
@@ -677,8 +685,8 @@ ShapeObj * OwlOntology::drawLogicalView(QString str,Canvas *canvas)
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
-        ShapeObj * shape1 = drawLogicalView(substrs.at(0),canvas);
-        ShapeObj * shape2 = drawLogicalView(substrs.at(1),canvas);
+        ShapeObj * shape1 = drawLogical(substrs.at(0),canvas);
+        ShapeObj * shape2 = drawLogical(substrs.at(1),canvas);
         Connector *conn;
         conn = new Connector();
         conn->initWithConnection(mshape,shape1);
@@ -689,11 +697,43 @@ ShapeObj * OwlOntology::drawLogicalView(QString str,Canvas *canvas)
         conn = new Connector();
         conn->initWithConnection(shape1,shape2);
         canvas->addItem(conn);
+        conn->setLabel("AllValueFrom");
         conn->setDirected(true);
         conn->setColour(QColor("blue"));
 
         rshape = mshape;
-    } else if (str.startsWith("ObjectHasValue")) {
+    }
+    else if (str.startsWith("ObjectSomeValuesFrom")) {
+        QString fstr = str.mid(21, str.length() - 22);
+        QList<QString> substrs = splitFormula(fstr);
+
+        ShapeObj * mshape = new RectangleShape();
+//        mshape->setLabel(getFormula(str));
+        mshape->setLabel("ObjectSomeValuesFrom");
+        mshape->setSize(QSizeF(250,30));
+        mshape->setFillColour(QColor("gray"));
+        canvas->addItem(mshape);
+
+        ShapeObj * shape1 = drawLogical(substrs.at(0),canvas);
+        ShapeObj * shape2 = drawLogical(substrs.at(1),canvas);
+        Connector *conn;
+        conn = new Connector();
+        conn->initWithConnection(mshape,shape1);
+        canvas->addItem(conn);
+        conn->setDirected(true);
+        conn->setColour(QColor("blue"));
+
+        conn = new Connector();
+        conn->initWithConnection(shape1,shape2);
+        canvas->addItem(conn);
+        conn->setLabel("SomeValueFrom");
+        conn->setDirected(true);
+        conn->setColour(QColor("blue"));
+
+        rshape = mshape;
+
+    }
+    else if (str.startsWith("ObjectHasValue")) {
         QString fstr = str.mid(15, str.length() - 16);
         QList<QString> substrs = splitFormula(fstr);
 
@@ -704,8 +744,8 @@ ShapeObj * OwlOntology::drawLogicalView(QString str,Canvas *canvas)
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
-        ShapeObj * shape1 = drawLogicalView(substrs.at(0),canvas);
-        ShapeObj * shape2 = drawLogicalView(substrs.at(1),canvas);
+        ShapeObj * shape1 = drawLogical(substrs.at(0),canvas);
+        ShapeObj * shape2 = drawLogical(substrs.at(1),canvas);
         Connector *conn;
         conn = new Connector();
         conn->initWithConnection(mshape,shape1);
@@ -716,12 +756,13 @@ ShapeObj * OwlOntology::drawLogicalView(QString str,Canvas *canvas)
         conn = new Connector();
         conn->initWithConnection(shape1,shape2);
         canvas->addItem(conn);
+        conn->setLabel("ObjectHasValue");
         conn->setDirected(true);
         conn->setColour(QColor("blue"));
 
         rshape = mshape;
-
-    } else if (str.startsWith("ObjectExactCardinality")) {
+    }
+    else if (str.startsWith("ObjectExactCardinality")) {
         QString fstr = str.mid(23, str.length() - 24);
         QList<QString> substrs = splitFormula(fstr);
 
@@ -732,8 +773,8 @@ ShapeObj * OwlOntology::drawLogicalView(QString str,Canvas *canvas)
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
-        ShapeObj * shape1 = drawLogicalView(substrs.at(1),canvas);
-        ShapeObj * shape2 = drawLogicalView(substrs.at(2),canvas);
+        ShapeObj * shape1 = drawLogical(substrs.at(1),canvas);
+        ShapeObj * shape2 = drawLogical(substrs.at(2),canvas);
 
         Connector *conn;
         conn = new Connector();
@@ -750,7 +791,66 @@ ShapeObj * OwlOntology::drawLogicalView(QString str,Canvas *canvas)
         conn->setColour(QColor("blue"));
 
         rshape = mshape;
+    }
+    else if (str.startsWith("ObjectMinCardinality")) {
+        QString fstr = str.mid(21, str.length() - 22);
+        QList<QString> substrs = splitFormula(fstr);
 
+        ShapeObj * mshape = new RectangleShape();
+//        mshape->setLabel(getFormula(str));
+        mshape->setLabel("ObjectMinCardinality");
+        mshape->setSize(QSizeF(250,30));
+        mshape->setFillColour(QColor("gray"));
+        canvas->addItem(mshape);
+
+        ShapeObj * shape1 = drawLogical(substrs.at(1),canvas);
+        ShapeObj * shape2 = drawLogical(substrs.at(2),canvas);
+
+        Connector *conn;
+        conn = new Connector();
+        conn->initWithConnection(mshape,shape1);
+        canvas->addItem(conn);
+        conn->setDirected(true);
+        conn->setColour(QColor("blue"));
+
+        conn = new Connector();
+        conn->initWithConnection(shape1,shape2);
+        canvas->addItem(conn);
+        conn->setDirected(true);
+        conn->setLabel("hasAtLeast " + substrs.at(0));
+        conn->setColour(QColor("blue"));
+
+        rshape = mshape;
+    }
+    else if (str.startsWith("ObjectMaxCardinality")) {
+        QString fstr = str.mid(21, str.length() - 22);
+        QList<QString> substrs = splitFormula(fstr);
+
+        ShapeObj * mshape = new RectangleShape();
+//        mshape->setLabel(getFormula(str));
+        mshape->setLabel("ObjectExactCardinality");
+        mshape->setSize(QSizeF(250,30));
+        mshape->setFillColour(QColor("gray"));
+        canvas->addItem(mshape);
+
+        ShapeObj * shape1 = drawLogical(substrs.at(1),canvas);
+        ShapeObj * shape2 = drawLogical(substrs.at(2),canvas);
+
+        Connector *conn;
+        conn = new Connector();
+        conn->initWithConnection(mshape,shape1);
+        canvas->addItem(conn);
+        conn->setDirected(true);
+        conn->setColour(QColor("blue"));
+
+        conn = new Connector();
+        conn->initWithConnection(shape1,shape2);
+        canvas->addItem(conn);
+        conn->setDirected(true);
+        conn->setLabel("hasAtMost " + substrs.at(0));
+        conn->setColour(QColor("blue"));
+
+        rshape = mshape;
     }
     else {
         QString sname = str;
@@ -759,9 +859,25 @@ ShapeObj * OwlOntology::drawLogicalView(QString str,Canvas *canvas)
         entityshape->setSize(QSizeF(150,30));
         entityshape->setFillColour(QColor("green"));
         canvas->addItem(entityshape);
-        rshape = entityshape;
+        rshape = entityshape;        
     }
     return rshape;
 }
 
+void OwlOntology::drawLogicalView(Canvas *canvas){
+    for(int i=0;i<classes.size();i++){
+        if(classes[i]->equivalentclass.trimmed()!=""){
+            //show the formula in tooltip
+            classes[i]->shape->setToolTip(getFormula(classes[i]->equivalentclass));
+
+            canvas->addItem(classes[i]->shape);
+            ShapeObj * lgcview = drawLogical(classes[i]->equivalentclass,canvas);
+            Connector * conn = new Connector();
+            conn->initWithConnection(classes[i]->shape,lgcview);
+            conn->setColour(QColor("black"));
+            conn->setDirected(true);
+            canvas->addItem(conn);
+        }
+    }
+}
 

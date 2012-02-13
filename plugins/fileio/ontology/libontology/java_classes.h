@@ -186,7 +186,6 @@
 #include <org_semanticweb_owlapi_vocab_OWL2Datatype__Category.h>
 #include <org_semanticweb_owlapi_model_SWRLDataFactory.h>
 #include <org_semanticweb_owlapi_model_PrefixManager.h>
-#include <org_semanticweb_owlapi_model_OWLEquivalentClassesAxiom.h>
 #include <org_semanticweb_owlapi_model_OWLObjectInverseOf.h>
 #include <org_semanticweb_owlapi_model_OWLDataOneOf.h>
 #include <org_semanticweb_owlapi_model_OWLDataComplementOf.h>
@@ -197,6 +196,7 @@
 #include <org_semanticweb_owlapi_model_OWLDataIntersectionOf.h>
 #include <org_semanticweb_owlapi_model_OWLDeclarationAxiom.h>
 #include <org_semanticweb_owlapi_model_OWLSubClassOfAxiom.h>
+#include <org_semanticweb_owlapi_model_OWLEquivalentClassesAxiom.h>
 #include <org_semanticweb_owlapi_model_OWLDisjointClassesAxiom.h>
 #include <org_semanticweb_owlapi_model_OWLDisjointUnionAxiom.h>
 #include <org_semanticweb_owlapi_model_OWLSubObjectPropertyOfAxiom.h>
@@ -269,9 +269,9 @@
 #include <java_util_regex_Matcher.h>
 #include <org_semanticweb_owlapi_model_SWRLIArgument.h>
 #include <org_semanticweb_owlapi_model_SWRLDArgument.h>
-#include <org_semanticweb_owlapi_model_OWLNaryClassAxiom.h>
 #include <org_semanticweb_owlapi_model_OWLNaryDataRange.h>
 #include <org_semanticweb_owlapi_model_OWLClassAxiom.h>
+#include <org_semanticweb_owlapi_model_OWLNaryClassAxiom.h>
 #include <org_semanticweb_owlapi_model_OWLSubPropertyAxiom.h>
 #include <org_semanticweb_owlapi_model_OWLObjectPropertyAxiom.h>
 #include <org_semanticweb_owlapi_model_OWLNaryPropertyAxiom.h>

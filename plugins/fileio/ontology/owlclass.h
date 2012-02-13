@@ -17,6 +17,7 @@ public:
     QList<OwlClass *> disjointclasses;
     QList<OwlIndividual *> individuals;
     ShapeObj * shape;
+    QString equivalentclass;
 
     OwlClass();
     QString toQString();

@@ -38,7 +38,8 @@ public:
     //methods to get the logical representation and view
     QString getFormula(QString str);
     QList<QString> splitFormula(QString str);
-    ShapeObj * drawLogicalView(QString str,Canvas *canvas);
+    ShapeObj * drawLogical(QString str,Canvas *canvas);
+    void drawLogicalView(Canvas *canvas);
 };
 
 #endif // OWLONTOLOGY_H

@@ -2,7 +2,7 @@
 
 OwlClass::OwlClass()
 {    
-
+    this->equivalentclass="";
 }
 QString OwlClass::toQString(){
     QString res;
@@ -11,7 +11,7 @@ QString OwlClass::toQString(){
 //    res.append(URI);
     res.append("\nShort Name: ");
     res.append(shortname);
-    res.append("\nSubclasses:");
+    res.append("\nSubclasses:");    
 
     for(int i=0;i<subclasses.length();i++){
         res.append(" ");

@@ -111,12 +111,12 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     /** classview, individualview, propertyview can
       * be displayed together or individually.
     **/
-    //classview
-    onto->drawClassView(canvas);
-    //individualview
-    onto->drawIndividualView(canvas);
-    //propertyview
-    onto->drawPropertyView(canvas);
+//    //classview
+//    onto->drawClassView(canvas);
+//    //individualview
+//    onto->drawIndividualView(canvas);
+//    //propertyview
+//    onto->drawPropertyView(canvas);
 
     /** Overview of classes (not finished) **/
     //    onto->drawClassOverview(canvas);
@@ -129,7 +129,9 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    QString ss = "ObjectIntersectionOf(<http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#Student> ObjectAllValuesFrom(<http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#hasChildren> <http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#Female>) ObjectHasValue(<http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#hasGender> <http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#male>) 	ObjectExactCardinality(3 <http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#hasChildren> owl:Thing))";
 //    cout<<">>>>> "<<onto->getFormula(ss).toStdString()<<endl;
 //    canvas->addText(onto->getFormula(ss));
-//    onto->drawLogicalView(ss,canvas);
+//    onto->drawLogical(ss,canvas);
+
+    onto->drawLogicalView(canvas);
 
     return true;
 }

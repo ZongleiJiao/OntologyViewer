@@ -54,32 +54,6 @@ namespace org {
 namespace semanticweb {
 namespace owlapi {
 namespace model {
-class OWLEquivalentClassesAxiom;
-}
-}
-}
-}
-
-namespace java {
-namespace util {
-class Set;
-}
-}
-
-namespace org {
-namespace semanticweb {
-namespace owlapi {
-namespace model {
-class OWLClassExpression;
-}
-}
-}
-}
-
-namespace org {
-namespace semanticweb {
-namespace owlapi {
-namespace model {
 class OWLDataProperty;
 }
 }
@@ -206,6 +180,12 @@ class OWLDataOneOf;
 }
 }
 
+namespace java {
+namespace util {
+class Set;
+}
+}
+
 namespace org {
 namespace semanticweb {
 namespace owlapi {
@@ -281,6 +261,16 @@ namespace semanticweb {
 namespace owlapi {
 namespace model {
 class OWLObjectIntersectionOf;
+}
+}
+}
+}
+
+namespace org {
+namespace semanticweb {
+namespace owlapi {
+namespace model {
+class OWLClassExpression;
 }
 }
 }
@@ -481,6 +471,16 @@ namespace semanticweb {
 namespace owlapi {
 namespace model {
 class OWLSubClassOfAxiom;
+}
+}
+}
+}
+
+namespace org {
+namespace semanticweb {
+namespace owlapi {
+namespace model {
+class OWLEquivalentClassesAxiom;
 }
 }
 }
@@ -914,11 +914,6 @@ class OWLDataFactory : public java::lang::Object {
     virtual void updateAllNonFinalVariables(JavaMarker* dummy);
     virtual org::semanticweb::owlapi::model::OWLClass* getOWLClass(org::semanticweb::owlapi::model::IRI* arg1); // public abstract org.semanticweb.owlapi.model.OWLClass org.semanticweb.owlapi.model.OWLDataFactory.getOWLClass(org.semanticweb.owlapi.model.IRI)
     virtual org::semanticweb::owlapi::model::OWLClass* getOWLClass(const char* arg1, org::semanticweb::owlapi::model::PrefixManager* arg2); // public abstract org.semanticweb.owlapi.model.OWLClass org.semanticweb.owlapi.model.OWLDataFactory.getOWLClass(java.lang.String,org.semanticweb.owlapi.model.PrefixManager)
-    virtual org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* getOWLEquivalentClassesAxiom(java::util::Set* arg1); // public abstract org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLEquivalentClassesAxiom(java.util.Set)
-    virtual org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* getOWLEquivalentClassesAxiom(java::util::Set* arg1, java::util::Set* arg2); // public abstract org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLEquivalentClassesAxiom(java.util.Set,java.util.Set)
-    virtual org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* getOWLEquivalentClassesAxiom(JavaObjectArray* arg1); // public abstract org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLEquivalentClassesAxiom(org.semanticweb.owlapi.model.OWLClassExpression[])
-    virtual org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* getOWLEquivalentClassesAxiom(org::semanticweb::owlapi::model::OWLClassExpression* arg1, org::semanticweb::owlapi::model::OWLClassExpression* arg2); // public abstract org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLEquivalentClassesAxiom(org.semanticweb.owlapi.model.OWLClassExpression,org.semanticweb.owlapi.model.OWLClassExpression)
-    virtual org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* getOWLEquivalentClassesAxiom(org::semanticweb::owlapi::model::OWLClassExpression* arg1, org::semanticweb::owlapi::model::OWLClassExpression* arg2, java::util::Set* arg3); // public abstract org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLEquivalentClassesAxiom(org.semanticweb.owlapi.model.OWLClassExpression,org.semanticweb.owlapi.model.OWLClassExpression,java.util.Set)
     virtual org::semanticweb::owlapi::model::OWLDataProperty* getOWLDataProperty(org::semanticweb::owlapi::model::IRI* arg1); // public abstract org.semanticweb.owlapi.model.OWLDataProperty org.semanticweb.owlapi.model.OWLDataFactory.getOWLDataProperty(org.semanticweb.owlapi.model.IRI)
     virtual org::semanticweb::owlapi::model::OWLDataProperty* getOWLDataProperty(const char* arg1, org::semanticweb::owlapi::model::PrefixManager* arg2); // public abstract org.semanticweb.owlapi.model.OWLDataProperty org.semanticweb.owlapi.model.OWLDataFactory.getOWLDataProperty(java.lang.String,org.semanticweb.owlapi.model.PrefixManager)
     virtual org::semanticweb::owlapi::model::OWLObjectProperty* getOWLObjectProperty(org::semanticweb::owlapi::model::IRI* arg1); // public abstract org.semanticweb.owlapi.model.OWLObjectProperty org.semanticweb.owlapi.model.OWLDataFactory.getOWLObjectProperty(org.semanticweb.owlapi.model.IRI)
@@ -1026,6 +1021,11 @@ class OWLDataFactory : public java::lang::Object {
     virtual org::semanticweb::owlapi::model::OWLDeclarationAxiom* getOWLDeclarationAxiom(org::semanticweb::owlapi::model::OWLEntity* arg1, java::util::Set* arg2); // public abstract org.semanticweb.owlapi.model.OWLDeclarationAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLDeclarationAxiom(org.semanticweb.owlapi.model.OWLEntity,java.util.Set)
     virtual org::semanticweb::owlapi::model::OWLSubClassOfAxiom* getOWLSubClassOfAxiom(org::semanticweb::owlapi::model::OWLClassExpression* arg1, org::semanticweb::owlapi::model::OWLClassExpression* arg2); // public abstract org.semanticweb.owlapi.model.OWLSubClassOfAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLSubClassOfAxiom(org.semanticweb.owlapi.model.OWLClassExpression,org.semanticweb.owlapi.model.OWLClassExpression)
     virtual org::semanticweb::owlapi::model::OWLSubClassOfAxiom* getOWLSubClassOfAxiom(org::semanticweb::owlapi::model::OWLClassExpression* arg1, org::semanticweb::owlapi::model::OWLClassExpression* arg2, java::util::Set* arg3); // public abstract org.semanticweb.owlapi.model.OWLSubClassOfAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLSubClassOfAxiom(org.semanticweb.owlapi.model.OWLClassExpression,org.semanticweb.owlapi.model.OWLClassExpression,java.util.Set)
+    virtual org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* getOWLEquivalentClassesAxiom(java::util::Set* arg1); // public abstract org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLEquivalentClassesAxiom(java.util.Set)
+    virtual org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* getOWLEquivalentClassesAxiom(java::util::Set* arg1, java::util::Set* arg2); // public abstract org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLEquivalentClassesAxiom(java.util.Set,java.util.Set)
+    virtual org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* getOWLEquivalentClassesAxiom(JavaObjectArray* arg1); // public abstract org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLEquivalentClassesAxiom(org.semanticweb.owlapi.model.OWLClassExpression[])
+    virtual org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* getOWLEquivalentClassesAxiom(org::semanticweb::owlapi::model::OWLClassExpression* arg1, org::semanticweb::owlapi::model::OWLClassExpression* arg2); // public abstract org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLEquivalentClassesAxiom(org.semanticweb.owlapi.model.OWLClassExpression,org.semanticweb.owlapi.model.OWLClassExpression)
+    virtual org::semanticweb::owlapi::model::OWLEquivalentClassesAxiom* getOWLEquivalentClassesAxiom(org::semanticweb::owlapi::model::OWLClassExpression* arg1, org::semanticweb::owlapi::model::OWLClassExpression* arg2, java::util::Set* arg3); // public abstract org.semanticweb.owlapi.model.OWLEquivalentClassesAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLEquivalentClassesAxiom(org.semanticweb.owlapi.model.OWLClassExpression,org.semanticweb.owlapi.model.OWLClassExpression,java.util.Set)
     virtual org::semanticweb::owlapi::model::OWLDisjointClassesAxiom* getOWLDisjointClassesAxiom(java::util::Set* arg1); // public abstract org.semanticweb.owlapi.model.OWLDisjointClassesAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLDisjointClassesAxiom(java.util.Set)
     virtual org::semanticweb::owlapi::model::OWLDisjointClassesAxiom* getOWLDisjointClassesAxiom(JavaObjectArray* arg1); // public abstract org.semanticweb.owlapi.model.OWLDisjointClassesAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLDisjointClassesAxiom(org.semanticweb.owlapi.model.OWLClassExpression[])
     virtual org::semanticweb::owlapi::model::OWLDisjointClassesAxiom* getOWLDisjointClassesAxiom(java::util::Set* arg1, java::util::Set* arg2); // public abstract org.semanticweb.owlapi.model.OWLDisjointClassesAxiom org.semanticweb.owlapi.model.OWLDataFactory.getOWLDisjointClassesAxiom(java.util.Set,java.util.Set)
