@@ -277,7 +277,9 @@ void OwlOntology::drawClassView(Canvas *canvas)
     //draw classes
     for(int i=0;i<classes.length();i++)
     {
-        canvas->addItem(classes[i]->shape);
+        //**** do not draw thing ****
+        if(classes[i]->shortname.toLower()!="thing")
+            canvas->addItem(classes[i]->shape);
     }
 
     //draw connections
@@ -481,6 +483,285 @@ QString OwlOntology::toQString()
     res.append("\nOntology properties :\n");
     for(int i=0;i<properties.length();i++)res.append(properties[i]->toQString());
     return res;
+}
+//methods to get the logical representation.
+/*
+    public static ArrayList<String> splitString(String str) {
+
+    }
+
+    public static String destr(String str) {
+        String r = "";
+        if (str.startsWith("<")) {
+            r = "<"+str.substring(1, str.length() - 1).split("#")[1]+">";
+        } else if (str.startsWith("ObjectIntersectionOf")) {
+            String fstr = str.substring(21, str.length() - 1);
+            ArrayList<String> substrs = splitString(fstr);
+            r = "("+destr(substrs.get(0));
+            for (int i = 1; i < substrs.size(); i++) {
+                r += " ∧ " + destr(substrs.get(i));
+            }
+            r+=")";
+        } else if(str.startsWith("ObjectUnionOf")){
+            String fstr = str.substring(14, str.length() - 1);
+            ArrayList<String> substrs = splitString(fstr);
+            r = "("+destr(substrs.get(0));
+            for (int i = 1; i < substrs.size(); i++) {
+                r += " ∨ " + destr(substrs.get(i));
+            }
+            r+=")";
+        } else if (str.startsWith("ObjectAllValuesFrom")) {
+            String fstr = str.substring(20, str.length() - 1);
+            ArrayList<String> substrs = splitString(fstr);
+            r = "∀" + destr(substrs.get(0)) + "(" + destr(substrs.get(1)) +")";
+        } else if (str.startsWith("ObjectHasValue")) {
+            String fstr = str.substring(15, str.length() - 1);
+            ArrayList<String> substrs = splitString(fstr);
+            r = "∃" + destr(substrs.get(0)) + "(" + destr(substrs.get(1)) +")";
+        } else if (str.startsWith("ObjectExactCardinality")) {
+            String fstr = str.substring(23, str.length() - 1);
+            ArrayList<String> substrs = splitString(fstr);
+            r = "≡" + destr(substrs.get(1)) +destr(substrs.get(0)) +"(" + destr(substrs.get(2)) +")";
+        }
+        else {
+            r = "<"+str +">";
+        }
+        return r;
+    }
+  */
+
+QList<QString> OwlOntology::splitFormula(QString str)
+{
+    QList<QString> res;
+    int s = 0;
+    int e;
+    int count = -1;
+    for (int i = 0; i < str.length(); i++) {
+        if (str.at(i) == '(' || str.at(i) == '<') {
+            if (count == -1) {
+                count = 1;
+            } else {
+                count++;
+            }
+        }
+        if (str.at(i) == ')' || str.at(i) == '>') {
+            count--;
+        }
+
+        if ((str.at(i) == ' ' || i == str.length() - 1) && count == -1) {
+            e = i + 1;
+            if (s != e && str.at(s) != ' ') {
+                QString tmp = str.mid(s, e-s).trimmed();
+                res.append(tmp);
+            }
+
+            s = i + 1;
+        }
+        if (count == 0) {
+            e = i + 1;
+            QString tmp = str.mid(s, e-s).trimmed();
+            res.append(tmp);
+            s = i + 1;
+            count = -1;
+        }
+    }
+    return res;
+}
+
+QString OwlOntology::getFormula(QString str)
+{
+    QString r = "";
+    if (str.startsWith("<")) {
+        int i = str.indexOf("#",0);
+        r = "<"+str.mid(i+1,str.length() - 2-i)+">";
+    } else if (str.startsWith("ObjectIntersectionOf")) {
+        QString fstr = str.mid(21, str.length() - 22);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "("+getFormula(substrs.at(0));
+        for (int i = 1; i < substrs.size(); i++) {
+            r += " ∧ " + getFormula(substrs.at(i));
+        }
+        r+=")";
+    } else if(str.startsWith("ObjectUnionOf")){
+        QString fstr = str.mid(14, str.length() - 15);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "("+getFormula(substrs.at(0));
+        for (int i = 1; i < substrs.size(); i++) {
+            r += " ∨ " + getFormula(substrs.at(i));
+        }
+        r+=")";
+    } else if (str.startsWith("ObjectAllValuesFrom")) {
+        QString fstr = str.mid(20, str.length() - 21);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "∀" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
+    } else if (str.startsWith("ObjectHasValue")) {
+        QString fstr = str.mid(15, str.length() - 16);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "∃" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
+    } else if (str.startsWith("ObjectExactCardinality")) {
+        QString fstr = str.mid(23, str.length() - 24);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "≡" + getFormula(substrs.at(1)) +getFormula(substrs.at(0)) +"(" + getFormula(substrs.at(2)) +")";
+    }
+    else {
+        r = "<"+str +">";
+    }
+    return r;
+}
+
+
+
+ShapeObj * OwlOntology::drawLogicalView(QString str,Canvas *canvas)
+{
+    ShapeObj * rshape=NULL;
+    PluginShapeFactory *shapeFactory = sharedPluginShapeFactory();
+    if (str.startsWith("<")) {
+        int i = str.indexOf("#",0);
+        QString sname = str.mid(i+1,str.length() - 2-i);
+        ShapeObj * entityshape = shapeFactory->createShape("ontoclass");
+        entityshape->setLabel(sname);
+        entityshape->setSize(QSizeF(150,30));
+        entityshape->setFillColour(QColor("green"));
+        canvas->addItem(entityshape);
+        rshape = entityshape;
+
+    } else if (str.startsWith("ObjectIntersectionOf")) {
+        QString fstr = str.mid(21, str.length() - 22);
+        QList<QString> substrs = splitFormula(fstr);
+
+        ShapeObj * mshape = new RectangleShape();
+        mshape->setLabel("AND");
+        mshape->setSize(QSizeF(40,30));
+        mshape->setFillColour(QColor("yellow"));
+        canvas->addItem(mshape);
+
+        Connector *conn;
+        for (int i = 0; i < substrs.size(); i++) {
+            conn = new Connector();
+            conn->initWithConnection(mshape,drawLogicalView(substrs.at(i),canvas));
+            canvas->addItem(conn);
+            conn->setDirected(true);
+            conn->setColour(QColor("blue"));
+        }
+        rshape=mshape;
+
+    } else if(str.startsWith("ObjectUnionOf")){
+        QString fstr = str.mid(14, str.length() - 15);
+        QList<QString> substrs = splitFormula(fstr);
+
+        ShapeObj * mshape = new RectangleShape();
+        mshape->setLabel("OR");
+        mshape->setSize(QSizeF(40,30));
+        mshape->setFillColour(QColor("yellow"));
+        canvas->addItem(mshape);
+
+        Connector *conn;
+        for (int i = 0; i < substrs.size(); i++) {
+            conn = new Connector();
+            conn->initWithConnection(mshape,drawLogicalView(substrs.at(i),canvas));
+            canvas->addItem(conn);
+            conn->setDirected(true);
+            conn->setColour(QColor("blue"));
+
+        }
+        rshape=mshape;
+
+    } else if (str.startsWith("ObjectAllValuesFrom")) {
+        QString fstr = str.mid(20, str.length() - 21);
+        QList<QString> substrs = splitFormula(fstr);
+
+        ShapeObj * mshape = new RectangleShape();
+//        mshape->setLabel(getFormula(str));
+        mshape->setLabel("ObjectAllValuesFrom");
+        mshape->setSize(QSizeF(250,30));
+        mshape->setFillColour(QColor("gray"));
+        canvas->addItem(mshape);
+
+        ShapeObj * shape1 = drawLogicalView(substrs.at(0),canvas);
+        ShapeObj * shape2 = drawLogicalView(substrs.at(1),canvas);
+        Connector *conn;
+        conn = new Connector();
+        conn->initWithConnection(mshape,shape1);
+        canvas->addItem(conn);
+        conn->setDirected(true);
+        conn->setColour(QColor("blue"));
+
+        conn = new Connector();
+        conn->initWithConnection(shape1,shape2);
+        canvas->addItem(conn);
+        conn->setDirected(true);
+        conn->setColour(QColor("blue"));
+
+        rshape = mshape;
+    } else if (str.startsWith("ObjectHasValue")) {
+        QString fstr = str.mid(15, str.length() - 16);
+        QList<QString> substrs = splitFormula(fstr);
+
+        ShapeObj * mshape = new RectangleShape();
+//        mshape->setLabel(getFormula(str));
+        mshape->setLabel("ObjectHasValue");
+        mshape->setSize(QSizeF(250,30));
+        mshape->setFillColour(QColor("gray"));
+        canvas->addItem(mshape);
+
+        ShapeObj * shape1 = drawLogicalView(substrs.at(0),canvas);
+        ShapeObj * shape2 = drawLogicalView(substrs.at(1),canvas);
+        Connector *conn;
+        conn = new Connector();
+        conn->initWithConnection(mshape,shape1);
+        canvas->addItem(conn);
+        conn->setDirected(true);
+        conn->setColour(QColor("blue"));
+
+        conn = new Connector();
+        conn->initWithConnection(shape1,shape2);
+        canvas->addItem(conn);
+        conn->setDirected(true);
+        conn->setColour(QColor("blue"));
+
+        rshape = mshape;
+
+    } else if (str.startsWith("ObjectExactCardinality")) {
+        QString fstr = str.mid(23, str.length() - 24);
+        QList<QString> substrs = splitFormula(fstr);
+
+        ShapeObj * mshape = new RectangleShape();
+//        mshape->setLabel(getFormula(str));
+        mshape->setLabel("ObjectExactCardinality");
+        mshape->setSize(QSizeF(250,30));
+        mshape->setFillColour(QColor("gray"));
+        canvas->addItem(mshape);
+
+        ShapeObj * shape1 = drawLogicalView(substrs.at(1),canvas);
+        ShapeObj * shape2 = drawLogicalView(substrs.at(2),canvas);
+
+        Connector *conn;
+        conn = new Connector();
+        conn->initWithConnection(mshape,shape1);
+        canvas->addItem(conn);
+        conn->setDirected(true);
+        conn->setColour(QColor("blue"));
+
+        conn = new Connector();
+        conn->initWithConnection(shape1,shape2);
+        canvas->addItem(conn);
+        conn->setDirected(true);
+        conn->setLabel("hasExactly " + substrs.at(0));
+        conn->setColour(QColor("blue"));
+
+        rshape = mshape;
+
+    }
+    else {
+        QString sname = str;
+        ShapeObj * entityshape = new RectangleShape();
+        entityshape->setLabel(sname);
+        entityshape->setSize(QSizeF(150,30));
+        entityshape->setFillColour(QColor("green"));
+        canvas->addItem(entityshape);
+        rshape = entityshape;
+    }
+    return rshape;
 }
 
 
