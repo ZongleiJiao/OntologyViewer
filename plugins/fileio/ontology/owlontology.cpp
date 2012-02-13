@@ -15,12 +15,13 @@ OwlOntology::OwlOntology()
 {
 }
 
-/** unfinished:
+/** TODO List:
 1. all URI name ---only one namespace!!!
 2. prefix---only one namespace!!!
 3. properties --done
 4. about Thing?
 5. (done) Did not deal with the -1 error when use getIndexOfClasses(),getIndexOfIndividuals(),getIndexOfProperties()
+6. drawLogical() and getFormula() has not fully covered all the expressions
 */
 
 //const
@@ -490,6 +491,7 @@ QString OwlOntology::toQString()
     return res;
 }
 
+
 //methods to get the logical representation.
 QList<QString> OwlOntology::splitFormula(QString str)
 {
@@ -535,12 +537,21 @@ QString OwlOntology::getFormula(QString str)
     if (str.startsWith("<")) {
         int i = str.indexOf("#",0);
         r = "<"+str.mid(i+1,str.length() - 2-i)+">";
+    } else if (str.startsWith("ObjectOneOf")) {
+        QString fstr = str.mid(12, str.length() - 13);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "[ObjectOneOf]("+getFormula(substrs.at(0));
+        for (int i = 1; i < substrs.size(); i++) {
+            r += " , " + getFormula(substrs.at(i));
+        }
+        r+=")";
     } else if (str.startsWith("ObjectIntersectionOf")) {
         QString fstr = str.mid(21, str.length() - 22);
         QList<QString> substrs = splitFormula(fstr);
         r = "("+getFormula(substrs.at(0));
         for (int i = 1; i < substrs.size(); i++) {
-            r += " ∧ " + getFormula(substrs.at(i));
+//            r += " ∧ " + getFormula(substrs.at(i));
+            r += " AND " + getFormula(substrs.at(i));
         }
         r+=")";
     } else if(str.startsWith("ObjectUnionOf")){
@@ -548,7 +559,8 @@ QString OwlOntology::getFormula(QString str)
         QList<QString> substrs = splitFormula(fstr);
         r = "("+getFormula(substrs.at(0));
         for (int i = 1; i < substrs.size(); i++) {
-            r += " ∨ " + getFormula(substrs.at(i));
+//            r += " ∨ " + getFormula(substrs.at(i));
+            r += " OR " + getFormula(substrs.at(i));
         }
         r+=")";
     } else if (str.startsWith("DataHasValue")) {
@@ -604,7 +616,29 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         canvas->addItem(entityshape);
         rshape = entityshape;
 
-    } else if (str.startsWith("ObjectIntersectionOf")) {
+    }
+    else if (str.startsWith("ObjectOneOf")) {
+        QString fstr = str.mid(12, str.length() - 13);
+        QList<QString> substrs = splitFormula(fstr);
+
+        ShapeObj * mshape = new RectangleShape();
+        mshape->setLabel("ObjectOneOf");
+        mshape->setSize(QSizeF(100,30));
+        mshape->setFillColour(QColor("gray"));
+        canvas->addItem(mshape);
+
+        Connector *conn;
+        for (int i = 0; i < substrs.size(); i++) {
+            conn = new Connector();
+            conn->initWithConnection(mshape,drawLogical(substrs.at(i),canvas));
+            canvas->addItem(conn);
+            conn->setDirected(true);
+            conn->setColour(QColor("blue"));
+        }
+        rshape=mshape;
+
+    }
+    else if (str.startsWith("ObjectIntersectionOf")) {
         QString fstr = str.mid(21, str.length() - 22);
         QList<QString> substrs = splitFormula(fstr);
 
@@ -624,7 +658,8 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         }
         rshape=mshape;
 
-    } else if(str.startsWith("ObjectUnionOf")){
+    }
+    else if(str.startsWith("ObjectUnionOf")){
         QString fstr = str.mid(14, str.length() - 15);
         QList<QString> substrs = splitFormula(fstr);
 
@@ -653,7 +688,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
             ShapeObj * mshape = new RectangleShape();
     //        mshape->setLabel(getFormula(str));
             mshape->setLabel("DataHasValue");
-            mshape->setSize(QSizeF(250,30));
+            mshape->setSize(QSizeF(200,30));
             mshape->setFillColour(QColor("gray"));
             canvas->addItem(mshape);
 
@@ -681,7 +716,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         ShapeObj * mshape = new RectangleShape();
 //        mshape->setLabel(getFormula(str));
         mshape->setLabel("ObjectAllValuesFrom");
-        mshape->setSize(QSizeF(250,30));
+        mshape->setSize(QSizeF(200,30));
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
@@ -710,7 +745,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         ShapeObj * mshape = new RectangleShape();
 //        mshape->setLabel(getFormula(str));
         mshape->setLabel("ObjectSomeValuesFrom");
-        mshape->setSize(QSizeF(250,30));
+        mshape->setSize(QSizeF(200,30));
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
@@ -740,7 +775,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         ShapeObj * mshape = new RectangleShape();
 //        mshape->setLabel(getFormula(str));
         mshape->setLabel("ObjectHasValue");
-        mshape->setSize(QSizeF(250,30));
+        mshape->setSize(QSizeF(200,30));
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
@@ -769,7 +804,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         ShapeObj * mshape = new RectangleShape();
 //        mshape->setLabel(getFormula(str));
         mshape->setLabel("ObjectExactCardinality");
-        mshape->setSize(QSizeF(250,30));
+        mshape->setSize(QSizeF(200,30));
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
@@ -799,7 +834,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         ShapeObj * mshape = new RectangleShape();
 //        mshape->setLabel(getFormula(str));
         mshape->setLabel("ObjectMinCardinality");
-        mshape->setSize(QSizeF(250,30));
+        mshape->setSize(QSizeF(200,30));
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
@@ -829,7 +864,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         ShapeObj * mshape = new RectangleShape();
 //        mshape->setLabel(getFormula(str));
         mshape->setLabel("ObjectExactCardinality");
-        mshape->setSize(QSizeF(250,30));
+        mshape->setSize(QSizeF(200,30));
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
