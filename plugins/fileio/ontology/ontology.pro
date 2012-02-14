@@ -685,17 +685,26 @@ SOURCES       = plugin.cpp \
     ontologyshapes/ontoindividual.cpp \
     ontologyshapes/ontoclass.cpp
 
-unix:!symbian|win32: LIBS += -L/usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client/ -ljvm
+#unix:!symbian|win32: LIBS += -L/usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client/ -ljvm
 
-INCLUDEPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
-DEPENDPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
+#INCLUDEPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
+#DEPENDPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
 
+<<<<<<< HEAD
 OTHER_FILES +=
 
 
 
 
 
+=======
+mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
+
+INCLUDEPATH += /System/Library/Frameworks
+DEPENDPATH += /System/Library/Frameworks
+
+INCLUDEPATH += /System/Library/Frameworks/JavaVM.framework/Headers
+>>>>>>> 0435b5e2fce8af14b4178c5bbc0e47d48489aa18
 
 
 
