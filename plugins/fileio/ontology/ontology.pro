@@ -682,6 +682,12 @@ unix:!symbian|win32: LIBS += -L/usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/cli
 INCLUDEPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
 DEPENDPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
 
+mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
+
+INCLUDEPATH += /System/Library/Frameworks
+DEPENDPATH += /System/Library/Frameworks
+
+INCLUDEPATH += /System/Library/Frameworks/JavaVM.framework/Headers
 
 
 
