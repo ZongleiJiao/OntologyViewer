@@ -702,7 +702,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
             conn->setColour(QColor("blue"));
 
             conn = new Connector();
-            conn->initWithConnection(shape1,shape2);
+            conn->initWithConnection(mshape,shape2);
             canvas->addItem(conn);
             conn->setLabel("DataHasValue");
             conn->setDirected(true);
@@ -730,7 +730,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         conn->setColour(QColor("blue"));
 
         conn = new Connector();
-        conn->initWithConnection(shape1,shape2);
+        conn->initWithConnection(mshape,shape2);
         canvas->addItem(conn);
         conn->setLabel("AllValueFrom");
         conn->setDirected(true);
@@ -759,7 +759,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         conn->setColour(QColor("blue"));
 
         conn = new Connector();
-        conn->initWithConnection(shape1,shape2);
+        conn->initWithConnection(mshape,shape2);
         canvas->addItem(conn);
         conn->setLabel("SomeValueFrom");
         conn->setDirected(true);
@@ -789,7 +789,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         conn->setColour(QColor("blue"));
 
         conn = new Connector();
-        conn->initWithConnection(shape1,shape2);
+        conn->initWithConnection(mshape,shape2);
         canvas->addItem(conn);
         conn->setLabel("ObjectHasValue");
         conn->setDirected(true);
@@ -819,7 +819,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         conn->setColour(QColor("blue"));
 
         conn = new Connector();
-        conn->initWithConnection(shape1,shape2);
+        conn->initWithConnection(mshape,shape2);
         canvas->addItem(conn);
         conn->setDirected(true);
         conn->setLabel("hasExactly " + substrs.at(0));
@@ -849,7 +849,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         conn->setColour(QColor("blue"));
 
         conn = new Connector();
-        conn->initWithConnection(shape1,shape2);
+        conn->initWithConnection(mshape,shape2);
         canvas->addItem(conn);
         conn->setDirected(true);
         conn->setLabel("hasAtLeast " + substrs.at(0));
@@ -879,7 +879,7 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         conn->setColour(QColor("blue"));
 
         conn = new Connector();
-        conn->initWithConnection(shape1,shape2);
+        conn->initWithConnection(mshape,shape2);
         canvas->addItem(conn);
         conn->setDirected(true);
         conn->setLabel("hasAtMost " + substrs.at(0));

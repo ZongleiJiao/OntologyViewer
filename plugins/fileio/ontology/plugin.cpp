@@ -29,6 +29,7 @@
 #include <QObject>
 #include <QFileInfo>
 
+#include "libdunnartcanvas/shapeplugininterface.h"
 #include "libdunnartcanvas/fileioplugininterface.h"
 #include "libdunnartcanvas/canvas.h"
 #include "libdunnartcanvas/canvasitem.h"
@@ -42,6 +43,9 @@
 #include <iostream>
 
 #include <owlontology.h>
+#include <ontoclass.h>
+#include <ontoindividual.h>
+#include <ontoproperty.h>
 
 using namespace std;
 using namespace dunnart;
@@ -58,10 +62,11 @@ using namespace dunnart;
 //! software built on top of Dunnart can easily exclude this functionality
 //! if desired.
 //!
-class OntologyFileIOPlugin : public QObject, public FileIOPluginInterface
+class OntologyFileIOPlugin : public QObject, public ShapePluginInterface,public FileIOPluginInterface
 {
     Q_OBJECT
         Q_INTERFACES (dunnart::FileIOPluginInterface)
+        Q_INTERFACES (dunnart::ShapePluginInterface)
 
     public:
         OntologyFileIOPlugin()
@@ -90,6 +95,41 @@ class OntologyFileIOPlugin : public QObject, public FileIOPluginInterface
                 QString& errorMessage);
         bool loadDiagramFromFile(Canvas *canvas, const QFileInfo& fileInfo,
                 QString& errorMessage);
+
+        //methods for ShapePluginInterface
+        QString shapesClassLabel(void) const
+        {
+            return "Ontology";
+        }
+        QStringList producableShapeTypes() const
+        {
+            QStringList shapes;
+            shapes << "org.dunnart.shapes.ontoclass";
+            shapes << "org.dunnart.shapes.ontoindividual";
+            shapes << "org.dunnart.shapes.ontoequivalentclass";
+            shapes << "org.dunnart.shapes.ontoproperty";
+            return shapes;
+        }
+        ShapeObj *generateShapeOfType(QString shapeType)
+        {
+            if (shapeType == "org.dunnart.shapes.ontoclass")
+            {
+                return new OntologyClassShape();
+            }
+            else if (shapeType == "org.dunnart.shapes.ontoindividual")
+            {
+                return new OntologyIndividualShape();
+            }
+            else if (shapeType == "org.dunnart.shapes.ontoequivalentclass")
+            {
+                return new RectangleShape();
+            }
+            else if (shapeType == "org.dunnart.shapes.ontoproperty")
+            {
+                return new OntologyPropertyShape();
+            }
+            return NULL;
+        }
 };
 
 bool OntologyFileIOPlugin::saveDiagramToFile(Canvas *canvas,
