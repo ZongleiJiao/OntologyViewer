@@ -32,20 +32,13 @@ int initJavaWrapper(int argc,char **argv)
         JavaVMOption options[3];
         JavaVMInitArgs vm_args;
         options[0].optionString = "-Djava.compiler=NONE";                                       /* disable JIT */
-<<<<<<< HEAD
-        options[2].optionString = "-Djava.class.path=../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar"; // path for linux
-        options[1].optionString = "-Djava.class.path=../../../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar"; // path for mac
-        options[3].optionString = "-verbose:none";                                              /* print JNI-related messages */
-=======
         options[1].optionString = "-Djava.class.path=../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar"; // path for linux
-//        options[1].optionString = "-Djava.class.path=../../../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar"; // path for mac
+        //options[1].optionString = "-Djava.class.path=../../../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar"; // path for mac
         options[2].optionString = "-verbose:none";                                              /* print JNI-related messages */
->>>>>>> 58b9a5bc5473355c1b76592181ab4d2f3fb9d803
         vm_args.version = JNI_VERSION_1_2;
         vm_args.options = options;
         vm_args.nOptions = 3;
         vm_args.ignoreUnrecognized = JNI_TRUE;
-        //cout<<"Init JVM..."<<endl;
 
         int res = JNI_CreateJavaVM(&jvm, (void**)&javaEnv, &vm_args);
         return res;
