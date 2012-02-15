@@ -37,7 +37,7 @@ public:
     QString toQString();
 
     //methods to get the logical representation and view
-    QString getFormula(QString str);
+    QString getFormula(QString qstr);
     QList<QString> splitFormula(QString str);
     ShapeObj * drawLogical(QString str,Canvas *canvas);
     void drawLogicalView(Canvas *canvas);

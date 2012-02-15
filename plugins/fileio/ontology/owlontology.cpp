@@ -16,12 +16,13 @@ OwlOntology::OwlOntology()
 }
 
 /** TODO List:
-1. all URI name ---only one namespace!!!
-2. prefix---only one namespace!!!
-3. properties --done
-4. about Thing?
-5. (done) Did not deal with the -1 error when use getIndexOfClasses(),getIndexOfIndividuals(),getIndexOfProperties()
-6. drawLogical() and getFormula() has not fully covered all the expressions
+1. --all URI name ---only one namespace!!!
+2. --prefix---only one namespace!!!
+3. --properties --done
+4. --about Thing?
+5. --(done) Did not deal with the -1 error when use getIndexOfClasses(),getIndexOfIndividuals(),getIndexOfProperties()
+6. --(done) drawLogical() and getFormula() has not fully covered all the expressions
+7. link different views
 */
 
 //const
@@ -531,99 +532,122 @@ QList<QString> OwlOntology::splitFormula(QString str)
     return res;
 }
 
-QString OwlOntology::getFormula(QString str)
+QString OwlOntology::getFormula(QString qstr)
 {
-    /** Syntax not full covered!! **/
+    /** Need to be verified all syntax!! **/
 
-    //<> element
     QString r = "";
-    if (str.startsWith("<")) {
+
+    int startpos=0;
+    QString marker="";
+
+    if(qstr.startsWith("Object")){
+        startpos=6;
+        marker="";
+
+    }
+    else if(qstr.startsWith("Data"))
+    {
+        startpos=4;
+        marker="[D]";
+    }
+    else
+    {
+        startpos=0;
+        marker="";
+    }
+
+    QString str = qstr.right(qstr.length()-startpos);
+    //<> element
+
+    if (str.startsWith("<"))
+    {
         int i = str.indexOf("#",0);
         r = "<"+str.mid(i+1,str.length() - 2-i)+">";
     }
 
-    //Object Syntax
-    else if (str.startsWith("ObjectOneOf")) {
-        QString fstr = str.mid(12, str.length() - 13);
+    //Syntax--both data and object
+    else if (str.startsWith("OneOf"))
+    {
+        QString fstr = str.mid(6, str.length() - 7);
         QList<QString> substrs = splitFormula(fstr);
-        r = "[O]OneOf("+getFormula(substrs.at(0));
+        r = marker + "OneOf("+getFormula(substrs.at(0));
         for (int i = 1; i < substrs.size(); i++) {
             r += " , " + getFormula(substrs.at(i));
         }
         r+=")";
     }
 
-    else if (str.startsWith("ObjectIntersectionOf")) {
-        QString fstr = str.mid(21, str.length() - 22);
+    else if (str.startsWith("IntersectionOf"))
+    {
+        QString fstr = str.mid(15, str.length() - 16);
         QList<QString> substrs = splitFormula(fstr);
-        r = "("+getFormula(substrs.at(0));
+        r = marker + "("+getFormula(substrs.at(0));
         for (int i = 1; i < substrs.size(); i++) {
             r += " AND " + getFormula(substrs.at(i));
         }
         r+=")";
     }
 
-    else if(str.startsWith("ObjectUnionOf")){
-        QString fstr = str.mid(14, str.length() - 15);
+    else if (str.startsWith("UnionOf"))
+    {
+        QString fstr = str.mid(8, str.length() - 9);
         QList<QString> substrs = splitFormula(fstr);
-        r = "("+getFormula(substrs.at(0));
+        r = marker+"("+getFormula(substrs.at(0));
         for (int i = 1; i < substrs.size(); i++) {
             r += " OR " + getFormula(substrs.at(i));
         }
         r+=")";
     }
 
-    else if (str.startsWith("ObjectComplementOf")){
+    else if (str.startsWith("ComplementOf"))
+    {
         /** Need to be verified!! **/
-        QString fstr = str.mid(19, str.length() - 20);
-        QList<QString> substrs = splitFormula(fstr);
-        r = "NOT("+getFormula(substrs.at(0)) + "(";
-    }
-
-
-    else if (str.startsWith("ObjectAllValuesFrom")) {
-        QString fstr = str.mid(20, str.length() - 21);
-        QList<QString> substrs = splitFormula(fstr);
-        r = "∀" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
-    }
-
-    else if (str.startsWith("ObjectSomeValuesFrom")) {
-        QString fstr = str.mid(21, str.length() - 22);
-        QList<QString> substrs = splitFormula(fstr);
-        r = "" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
-    } else if (str.startsWith("ObjectHasValue")) {
-        QString fstr = str.mid(15, str.length() - 16);
-        QList<QString> substrs = splitFormula(fstr);
-        r = "∃" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
-    } else if (str.startsWith("ObjectExactCardinality")) {
-        QString fstr = str.mid(23, str.length() - 24);
-        QList<QString> substrs = splitFormula(fstr);
-        r = "≡" + getFormula(substrs.at(1)) +getFormula(substrs.at(0)) +"(" + getFormula(substrs.at(2)) +")";
-    } else if (str.startsWith("ObjectMinCardinality")){
-        QString fstr = str.mid(21, str.length() - 22);
-        QList<QString> substrs = splitFormula(fstr);
-        r = "≥" + getFormula(substrs.at(1)) +getFormula(substrs.at(0)) +"(" + getFormula(substrs.at(2)) +")";
-    } else if (str.startsWith("ObjectMaxCardinality")){
-        QString fstr = str.mid(21, str.length() - 22);
-        QList<QString> substrs = splitFormula(fstr);
-        r = "≤" + getFormula(substrs.at(1)) +getFormula(substrs.at(0)) +"(" + getFormula(substrs.at(2)) +")";
-    }
-
-    //Data syntax
-    else if (str.startsWith("DataOneOf")) {
-        QString fstr = str.mid(10, str.length() - 11);
-        QList<QString> substrs = splitFormula(fstr);
-        r = "[D]OneOf("+getFormula(substrs.at(0));
-        for (int i = 1; i < substrs.size(); i++) {
-            r += " , " + getFormula(substrs.at(i));
-        }
-        r+=")";
-    }
-
-    else if (str.startsWith("DataHasValue")) {
         QString fstr = str.mid(13, str.length() - 14);
         QList<QString> substrs = splitFormula(fstr);
-        r = "[D]Has" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
+        r = marker+"NOT("+getFormula(substrs.at(0)) + ")";
+    }
+
+    else if (str.startsWith("AllValuesFrom"))
+    {
+        QString fstr = str.mid(14, str.length() - 15);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "(" + getFormula(substrs.at(0)) +" "+marker+"ONLY " + getFormula(substrs.at(1)) +")";
+    }
+
+    else if (str.startsWith("SomeValuesFrom"))
+    {
+        QString fstr = str.mid(15, str.length() - 16);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "(" + getFormula(substrs.at(0)) + " "+marker+"SOME " + getFormula(substrs.at(1)) +")";
+    }
+
+    else if (str.startsWith("HasValue"))
+    {
+        QString fstr = str.mid(9, str.length() - 10);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "(" + getFormula(substrs.at(0)) + " "+marker+"VALUE " + getFormula(substrs.at(1)) +")";
+    }
+
+    else if (str.startsWith("ExactCardinality"))
+    {
+        QString fstr = str.mid(17, str.length() - 18);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "(" + getFormula(substrs.at(1))+" "+marker+"EXACTLY " +getFormula(substrs.at(0)) + getFormula(substrs.at(2)) +")";
+    }
+
+    else if (str.startsWith("MinCardinality"))
+    {
+        QString fstr = str.mid(15, str.length() - 16);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "(" + getFormula(substrs.at(1))+" "+marker+"MIN " +getFormula(substrs.at(0)) + getFormula(substrs.at(2)) +")";
+    }
+
+    else if (str.startsWith("MaxCardinality"))
+    {
+        QString fstr = str.mid(15, str.length() - 16);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "(" + getFormula(substrs.at(1))+" "+marker+"MAX " +getFormula(substrs.at(0)) + getFormula(substrs.at(2)) +")";
     }
 
     //others
@@ -634,30 +658,92 @@ QString OwlOntology::getFormula(QString str)
 }
 
 
-ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
+ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
 {    
     ShapeObj * rshape=NULL;
 
     PluginShapeFactory *shapeFactory = sharedPluginShapeFactory();
 
-    if (str.startsWith("<")) {        
+    /** Need to be verified all syntax!! **/
+
+    int startpos=0;
+    QString marker="";
+
+    if(qstr.startsWith("Object")){
+        startpos=6;
+        marker="[O]";
+
+    }
+    else if(qstr.startsWith("Data"))
+    {
+        startpos=4;
+        marker="[D]";
+    }
+    else
+    {
+        startpos=0;
+        marker="";
+    }
+
+    QString str = qstr.right(qstr.length()-startpos);
+
+    //<> element ??? consider about multiple namespace!!!
+    if (str.startsWith("<"))
+    {
         int i = str.indexOf("#",0);
         QString sname = str.mid(i+1,str.length() - 2-i);
-        ShapeObj * entityshape = shapeFactory->createShape("ontoclass");
-        entityshape->setLabel(sname);
+
+        ShapeObj * entityshape;
+
+        int idx = -1;
+        //not found entity type, check class
+        if(idx==-1){
+            idx=this->getIndexOfClasses(sname);
+            if(idx != -1)
+            {
+                entityshape=classes[idx]->shape;
+            }
+        }
+
+        //not class, check individual
+        if(idx==-1){
+            idx=this->getIndexOfIndividuals(sname);
+            if(idx != -1)
+            {
+                entityshape=individuals[idx]->shape;
+            }
+        }
+
+        //not class or individual, check properties
+        if(idx==-1){
+            idx=this->getIndexOfProperties(sname);
+            if(idx != -1)
+            {
+                entityshape=properties[idx]->shape;
+            }
+        }
+
+        //not class, individual, or property
+        if(idx==-1){
+            entityshape = new RectangleShape();
+            entityshape->setLabel(sname);
+            entityshape->setFillColour(QColor("orange"));
+        }
         entityshape->setSize(QSizeF(150,30));
-        entityshape->setFillColour(QColor("green"));
         canvas->addItem(entityshape);
         rshape = entityshape;
 
     }
-    else if (str.startsWith("ObjectOneOf")) {
-        QString fstr = str.mid(12, str.length() - 13);
+
+    //syntax -- both Object and Data
+    else if (str.startsWith("OneOf"))
+    {
+        QString fstr = str.mid(6, str.length() - 7);
         QList<QString> substrs = splitFormula(fstr);
 
         ShapeObj * mshape = new RectangleShape();
-        mshape->setLabel("ObjectOneOf");
-        mshape->setSize(QSizeF(100,30));
+        mshape->setLabel(marker + "OneOf");
+        mshape->setSize(QSizeF(80,30));
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
@@ -672,144 +758,78 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         rshape=mshape;
 
     }
-    else if (str.startsWith("ObjectIntersectionOf")) {
-        QString fstr = str.mid(21, str.length() - 22);
-        QList<QString> substrs = splitFormula(fstr);
 
-        ShapeObj * mshape = new RectangleShape();
-        mshape->setLabel("AND");
-        mshape->setSize(QSizeF(40,30));
-        mshape->setFillColour(QColor("yellow"));
-        canvas->addItem(mshape);
-
-        Connector *conn;
-        for (int i = 0; i < substrs.size(); i++) {
-            conn = new Connector();
-            conn->initWithConnection(mshape,drawLogical(substrs.at(i),canvas));
-            canvas->addItem(conn);
-            conn->setDirected(true);
-            conn->setColour(QColor("blue"));
-        }
-        rshape=mshape;
-
-    }
-    else if(str.startsWith("ObjectUnionOf")){
-        QString fstr = str.mid(14, str.length() - 15);
-        QList<QString> substrs = splitFormula(fstr);
-
-        ShapeObj * mshape = new RectangleShape();
-        mshape->setLabel("OR");
-        mshape->setSize(QSizeF(40,30));
-        mshape->setFillColour(QColor("yellow"));
-        canvas->addItem(mshape);
-
-        Connector *conn;
-        for (int i = 0; i < substrs.size(); i++) {
-            conn = new Connector();
-            conn->initWithConnection(mshape,drawLogical(substrs.at(i),canvas));
-            canvas->addItem(conn);
-            conn->setDirected(true);
-            conn->setColour(QColor("blue"));
-
-        }
-        rshape=mshape;
-
-    }
-    else if (str.startsWith("DataHasValue")) {
-            QString fstr = str.mid(13, str.length() - 14);
-            QList<QString> substrs = splitFormula(fstr);
-
-            ShapeObj * mshape = new RectangleShape();
-    //        mshape->setLabel(getFormula(str));
-            mshape->setLabel("DataHasValue");
-            mshape->setSize(QSizeF(200,30));
-            mshape->setFillColour(QColor("gray"));
-            canvas->addItem(mshape);
-
-            ShapeObj * shape1 = drawLogical(substrs.at(0),canvas);
-            ShapeObj * shape2 = drawLogical(substrs.at(1),canvas);
-            Connector *conn;
-            conn = new Connector();
-            conn->initWithConnection(mshape,shape1);
-            canvas->addItem(conn);
-            conn->setDirected(true);
-            conn->setColour(QColor("blue"));
-
-            conn = new Connector();
-            conn->initWithConnection(mshape,shape2);
-            canvas->addItem(conn);
-            conn->setLabel("DataHasValue");
-            conn->setDirected(true);
-            conn->setColour(QColor("blue"));
-            rshape = mshape;
-    }
-    else if (str.startsWith("ObjectAllValuesFrom")) {
-        QString fstr = str.mid(20, str.length() - 21);
-        QList<QString> substrs = splitFormula(fstr);
-
-        ShapeObj * mshape = new RectangleShape();
-//        mshape->setLabel(getFormula(str));
-        mshape->setLabel("ObjectAllValuesFrom");
-        mshape->setSize(QSizeF(200,30));
-        mshape->setFillColour(QColor("gray"));
-        canvas->addItem(mshape);
-
-        ShapeObj * shape1 = drawLogical(substrs.at(0),canvas);
-        ShapeObj * shape2 = drawLogical(substrs.at(1),canvas);
-        Connector *conn;
-        conn = new Connector();
-        conn->initWithConnection(mshape,shape1);
-        canvas->addItem(conn);
-        conn->setDirected(true);
-        conn->setColour(QColor("blue"));
-
-        conn = new Connector();
-        conn->initWithConnection(mshape,shape2);
-        canvas->addItem(conn);
-        conn->setLabel("AllValueFrom");
-        conn->setDirected(true);
-        conn->setColour(QColor("blue"));
-
-        rshape = mshape;
-    }
-    else if (str.startsWith("ObjectSomeValuesFrom")) {
-        QString fstr = str.mid(21, str.length() - 22);
-        QList<QString> substrs = splitFormula(fstr);
-
-        ShapeObj * mshape = new RectangleShape();
-//        mshape->setLabel(getFormula(str));
-        mshape->setLabel("ObjectSomeValuesFrom");
-        mshape->setSize(QSizeF(200,30));
-        mshape->setFillColour(QColor("gray"));
-        canvas->addItem(mshape);
-
-        ShapeObj * shape1 = drawLogical(substrs.at(0),canvas);
-        ShapeObj * shape2 = drawLogical(substrs.at(1),canvas);
-        Connector *conn;
-        conn = new Connector();
-        conn->initWithConnection(mshape,shape1);
-        canvas->addItem(conn);
-        conn->setDirected(true);
-        conn->setColour(QColor("blue"));
-
-        conn = new Connector();
-        conn->initWithConnection(mshape,shape2);
-        canvas->addItem(conn);
-        conn->setLabel("SomeValueFrom");
-        conn->setDirected(true);
-        conn->setColour(QColor("blue"));
-
-        rshape = mshape;
-
-    }
-    else if (str.startsWith("ObjectHasValue")) {
+    else if (str.startsWith("IntersectionOf")) {
         QString fstr = str.mid(15, str.length() - 16);
         QList<QString> substrs = splitFormula(fstr);
 
         ShapeObj * mshape = new RectangleShape();
-//        mshape->setLabel(getFormula(str));
-        mshape->setLabel("ObjectHasValue");
-        mshape->setSize(QSizeF(200,30));
+        mshape->setLabel(marker+"AND");
+        mshape->setSize(QSizeF(80,30));
+        mshape->setFillColour(QColor("gray"));
+        canvas->addItem(mshape);
+
+        Connector *conn;
+        for (int i = 0; i < substrs.size(); i++) {
+            conn = new Connector();
+            conn->initWithConnection(mshape,drawLogical(substrs.at(i),canvas));
+            canvas->addItem(conn);
+            conn->setDirected(true);
+            conn->setColour(QColor("blue"));
+        }
+        rshape=mshape;
+    }
+
+    else if (str.startsWith("UnionOf"))
+    {
+        QString fstr = str.mid(8, str.length() - 9);
+        QList<QString> substrs = splitFormula(fstr);
+
+        ShapeObj * mshape = new RectangleShape();
+        mshape->setLabel(marker+"OR");
+        mshape->setSize(QSizeF(80,30));
+        mshape->setFillColour(QColor("gray"));
+        canvas->addItem(mshape);
+
+        Connector *conn;
+        for (int i = 0; i < substrs.size(); i++) {
+            conn = new Connector();
+            conn->initWithConnection(mshape,drawLogical(substrs.at(i),canvas));
+            canvas->addItem(conn);
+            conn->setDirected(true);
+            conn->setColour(QColor("blue"));
+        }
+        rshape=mshape;
+    }
+
+    else if (str.startsWith("ComplementOf")){
+        QString fstr = str.mid(13, str.length() - 14);
+        QList<QString> substrs = splitFormula(fstr);
+
+        ShapeObj * mshape = new RectangleShape();
+        mshape->setLabel(marker+"NOT");
+        mshape->setSize(QSizeF(80,30));
+        mshape->setFillColour(QColor("gray"));
+        canvas->addItem(mshape);
+
+        Connector *conn;
+        for (int i = 0; i < substrs.size(); i++) {
+            conn = new Connector();
+            conn->initWithConnection(mshape,drawLogical(substrs.at(i),canvas));
+            canvas->addItem(conn);
+            conn->setDirected(true);
+            conn->setColour(QColor("blue"));
+        }
+        rshape=mshape;
+    }
+
+    else if (str.startsWith("AllValuesFrom")) {
+        QString fstr = str.mid(14, str.length() - 15);
+        QList<QString> substrs = splitFormula(fstr);
+
+        ShapeObj * mshape = new RectangleShape();
+        mshape->setLabel(marker+"ONLY");
+        mshape->setSize(QSizeF(80,30));
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
@@ -825,20 +845,78 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         conn = new Connector();
         conn->initWithConnection(mshape,shape2);
         canvas->addItem(conn);
-        conn->setLabel("ObjectHasValue");
+        conn->setLabel("Only");
         conn->setDirected(true);
         conn->setColour(QColor("blue"));
 
         rshape = mshape;
     }
-    else if (str.startsWith("ObjectExactCardinality")) {
-        QString fstr = str.mid(23, str.length() - 24);
+
+    else if (str.startsWith("SomeValuesFrom")) {
+        QString fstr = str.mid(15, str.length() - 16);
         QList<QString> substrs = splitFormula(fstr);
 
         ShapeObj * mshape = new RectangleShape();
-//        mshape->setLabel(getFormula(str));
-        mshape->setLabel("ObjectExactCardinality");
-        mshape->setSize(QSizeF(200,30));
+        mshape->setLabel(marker+"SOME");
+        mshape->setSize(QSizeF(80,30));
+        mshape->setFillColour(QColor("gray"));
+        canvas->addItem(mshape);
+
+        ShapeObj * shape1 = drawLogical(substrs.at(0),canvas);
+        ShapeObj * shape2 = drawLogical(substrs.at(1),canvas);
+        Connector *conn;
+        conn = new Connector();
+        conn->initWithConnection(mshape,shape1);
+        canvas->addItem(conn);
+        conn->setDirected(true);
+        conn->setColour(QColor("blue"));
+
+        conn = new Connector();
+        conn->initWithConnection(mshape,shape2);
+        canvas->addItem(conn);
+        conn->setLabel("Some");
+        conn->setDirected(true);
+        conn->setColour(QColor("blue"));
+
+        rshape = mshape;
+    }
+
+    else if (str.startsWith("HasValue")) {
+        QString fstr = str.mid(9, str.length() - 10);
+        QList<QString> substrs = splitFormula(fstr);
+
+        ShapeObj * mshape = new RectangleShape();
+        mshape->setLabel(marker+"VALUE");
+        mshape->setSize(QSizeF(80,30));
+        mshape->setFillColour(QColor("gray"));
+        canvas->addItem(mshape);
+
+        ShapeObj * shape1 = drawLogical(substrs.at(0),canvas);
+        ShapeObj * shape2 = drawLogical(substrs.at(1),canvas);
+        Connector *conn;
+        conn = new Connector();
+        conn->initWithConnection(mshape,shape1);
+        canvas->addItem(conn);
+        conn->setDirected(true);
+        conn->setColour(QColor("blue"));
+
+        conn = new Connector();
+        conn->initWithConnection(mshape,shape2);
+        canvas->addItem(conn);
+        conn->setLabel("Has");
+        conn->setDirected(true);
+        conn->setColour(QColor("blue"));
+
+        rshape = mshape;
+    }
+
+    else if (str.startsWith("ExactCardinality")) {
+        QString fstr = str.mid(17, str.length() - 18);
+        QList<QString> substrs = splitFormula(fstr);
+
+        ShapeObj * mshape = new RectangleShape();
+        mshape->setLabel(marker+"EXACTLY");
+        mshape->setSize(QSizeF(80,30));
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
@@ -856,19 +934,19 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         conn->initWithConnection(mshape,shape2);
         canvas->addItem(conn);
         conn->setDirected(true);
-        conn->setLabel("hasExactly " + substrs.at(0));
+        conn->setLabel("Exactly " + substrs.at(0));
         conn->setColour(QColor("blue"));
 
         rshape = mshape;
     }
-    else if (str.startsWith("ObjectMinCardinality")) {
-        QString fstr = str.mid(21, str.length() - 22);
+
+    else if (str.startsWith("MinCardinality")) {
+        QString fstr = str.mid(15, str.length() - 16);
         QList<QString> substrs = splitFormula(fstr);
 
         ShapeObj * mshape = new RectangleShape();
-//        mshape->setLabel(getFormula(str));
-        mshape->setLabel("ObjectMinCardinality");
-        mshape->setSize(QSizeF(200,30));
+        mshape->setLabel(marker+"MIN");
+        mshape->setSize(QSizeF(80,30));
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
@@ -886,19 +964,19 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         conn->initWithConnection(mshape,shape2);
         canvas->addItem(conn);
         conn->setDirected(true);
-        conn->setLabel("hasAtLeast " + substrs.at(0));
+        conn->setLabel("Min " + substrs.at(0));
         conn->setColour(QColor("blue"));
 
         rshape = mshape;
     }
-    else if (str.startsWith("ObjectMaxCardinality")) {
-        QString fstr = str.mid(21, str.length() - 22);
+
+    else if (str.startsWith("MaxCardinality")) {
+        QString fstr = str.mid(15, str.length() - 16);
         QList<QString> substrs = splitFormula(fstr);
 
         ShapeObj * mshape = new RectangleShape();
-//        mshape->setLabel(getFormula(str));
-        mshape->setLabel("ObjectExactCardinality");
-        mshape->setSize(QSizeF(200,30));
+        mshape->setLabel(marker+"MAX");
+        mshape->setSize(QSizeF(80,30));
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
@@ -916,20 +994,24 @@ ShapeObj * OwlOntology::drawLogical(QString str,Canvas *canvas)
         conn->initWithConnection(mshape,shape2);
         canvas->addItem(conn);
         conn->setDirected(true);
-        conn->setLabel("hasAtMost " + substrs.at(0));
+        conn->setLabel("Max " + substrs.at(0));
         conn->setColour(QColor("blue"));
 
         rshape = mshape;
     }
+
+    //others
     else {
         QString sname = str;
         ShapeObj * entityshape = new RectangleShape();
         entityshape->setLabel(sname);
         entityshape->setSize(QSizeF(150,30));
-        entityshape->setFillColour(QColor("green"));
+        entityshape->setFillColour(QColor("orange"));
         canvas->addItem(entityshape);
         rshape = entityshape;        
     }
+
+    if(rshape!=NULL)rshape->setToolTip(getFormula(qstr));
     return rshape;
 }
 
@@ -946,6 +1028,8 @@ void OwlOntology::drawLogicalView(Canvas *canvas){
             conn->setColour(QColor("black"));
             conn->setDirected(true);
             canvas->addItem(conn);
+
+            break;
         }
     }
 }
