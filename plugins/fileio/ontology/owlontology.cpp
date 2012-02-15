@@ -533,49 +533,64 @@ QList<QString> OwlOntology::splitFormula(QString str)
 
 QString OwlOntology::getFormula(QString str)
 {
+    /** Syntax not full covered!! **/
+
+    //<> element
     QString r = "";
     if (str.startsWith("<")) {
         int i = str.indexOf("#",0);
         r = "<"+str.mid(i+1,str.length() - 2-i)+">";
-    } else if (str.startsWith("ObjectOneOf")) {
+    }
+
+    //Object Syntax
+    else if (str.startsWith("ObjectOneOf")) {
         QString fstr = str.mid(12, str.length() - 13);
         QList<QString> substrs = splitFormula(fstr);
-        r = "[ObjectOneOf]("+getFormula(substrs.at(0));
+        r = "[O]OneOf("+getFormula(substrs.at(0));
         for (int i = 1; i < substrs.size(); i++) {
             r += " , " + getFormula(substrs.at(i));
         }
         r+=")";
-    } else if (str.startsWith("ObjectIntersectionOf")) {
+    }
+
+    else if (str.startsWith("ObjectIntersectionOf")) {
         QString fstr = str.mid(21, str.length() - 22);
         QList<QString> substrs = splitFormula(fstr);
         r = "("+getFormula(substrs.at(0));
         for (int i = 1; i < substrs.size(); i++) {
-//            r += " ∧ " + getFormula(substrs.at(i));
             r += " AND " + getFormula(substrs.at(i));
         }
         r+=")";
-    } else if(str.startsWith("ObjectUnionOf")){
+    }
+
+    else if(str.startsWith("ObjectUnionOf")){
         QString fstr = str.mid(14, str.length() - 15);
         QList<QString> substrs = splitFormula(fstr);
         r = "("+getFormula(substrs.at(0));
         for (int i = 1; i < substrs.size(); i++) {
-//            r += " ∨ " + getFormula(substrs.at(i));
             r += " OR " + getFormula(substrs.at(i));
         }
         r+=")";
-    } else if (str.startsWith("DataHasValue")) {
-        QString fstr = str.mid(13, str.length() - 14);
-        QList<QString> substrs = splitFormula(fstr);
-        r = "[DataHasValue]" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
     }
+
+    else if (str.startsWith("ObjectComplementOf")){
+        /** Need to be verified!! **/
+        QString fstr = str.mid(19, str.length() - 20);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "NOT("+getFormula(substrs.at(0)) + "(";
+    }
+
+
     else if (str.startsWith("ObjectAllValuesFrom")) {
         QString fstr = str.mid(20, str.length() - 21);
         QList<QString> substrs = splitFormula(fstr);
         r = "∀" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
-    } else if (str.startsWith("ObjectSomeValuesFrom")) {
+    }
+
+    else if (str.startsWith("ObjectSomeValuesFrom")) {
         QString fstr = str.mid(21, str.length() - 22);
         QList<QString> substrs = splitFormula(fstr);
-        r = "[someValuesFrom]" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
+        r = "" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
     } else if (str.startsWith("ObjectHasValue")) {
         QString fstr = str.mid(15, str.length() - 16);
         QList<QString> substrs = splitFormula(fstr);
@@ -593,6 +608,25 @@ QString OwlOntology::getFormula(QString str)
         QList<QString> substrs = splitFormula(fstr);
         r = "≤" + getFormula(substrs.at(1)) +getFormula(substrs.at(0)) +"(" + getFormula(substrs.at(2)) +")";
     }
+
+    //Data syntax
+    else if (str.startsWith("DataOneOf")) {
+        QString fstr = str.mid(10, str.length() - 11);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "[D]OneOf("+getFormula(substrs.at(0));
+        for (int i = 1; i < substrs.size(); i++) {
+            r += " , " + getFormula(substrs.at(i));
+        }
+        r+=")";
+    }
+
+    else if (str.startsWith("DataHasValue")) {
+        QString fstr = str.mid(13, str.length() - 14);
+        QList<QString> substrs = splitFormula(fstr);
+        r = "[D]Has" + getFormula(substrs.at(0)) + "(" + getFormula(substrs.at(1)) +")";
+    }
+
+    //others
     else {
         r = "<"+str +">";
     }

@@ -16,6 +16,7 @@ public:
     static const QColor INDIVIDUAL_CONNECTER_COLOR;
     static const QColor PROPERTY_CONNECT_TO_CLASS_COLOR;
     static const QColor PROPERTY_CONNECTER_COLOR;
+
     //variable
     QString ontologyname;
     QList<OwlClass *> classes;
