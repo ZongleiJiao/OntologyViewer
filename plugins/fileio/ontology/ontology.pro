@@ -694,3 +694,5 @@ DEPENDPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
 
 INCLUDEPATH += /System/Library/Frameworks
 DEPENDPATH += /System/Library/Frameworks
+
+INCLUDEPATH += /System/Library/Frameworks/JavaVM.framework/Headers

@@ -29,15 +29,15 @@ JavaMarker *wrapperIntern = new JavaMarker();
 int initJavaWrapper(int argc,char **argv)
 {
         JavaVM* jvm=NULL;
-        JavaVMOption options[3];
+        JavaVMOption options[4];
         JavaVMInitArgs vm_args;
         options[0].optionString = "-Djava.compiler=NONE";                                       /* disable JIT */
-        options[1].optionString = "-Djava.class.path=../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar";
-//        options[1].optionString = "-Djava.class.path=/Volumes/Data/ZongleiJiao/Monash/MyOntologyProjects/dunnart/plugins/fileio/ontology/libontology/OWLAPIWrapper.jar";
-        options[2].optionString = "-verbose:none";                                              /* print JNI-related messages */
+        options[1].optionString = "-Djava.class.path=../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar"; // path for linux
+        options[2].optionString = "-Djava.class.path=../../../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar"; // path for mac
+        options[3].optionString = "-verbose:none";                                              /* print JNI-related messages */
         vm_args.version = JNI_VERSION_1_2;
         vm_args.options = options;
-        vm_args.nOptions = 3;
+        vm_args.nOptions = 4;
         vm_args.ignoreUnrecognized = JNI_TRUE;
         //cout<<"Init JVM..."<<endl;
 
