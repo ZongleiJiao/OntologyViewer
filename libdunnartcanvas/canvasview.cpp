@@ -339,6 +339,33 @@ void CanvasView::keyReleaseEvent(QKeyEvent *keyEvent)
 
         keyEvent->accept();
     }
+    else if (keyEvent->key() == Qt::Key_Plus ||
+             keyEvent->key() == Qt::Key_Equal)
+    {
+        // The + (=) key will increase the detail level of any selected shapes.
+        CanvasItemList selection = canvas()->selectedItems();
+        for (int i = 0; i < selection.size(); ++i)
+        {
+            ShapeObj *shape = dynamic_cast<ShapeObj *> (selection.at(i));
+            if (shape)
+            {
+                shape->changeDetailLevel(true);
+            }
+        }
+    }
+    else if (keyEvent->key() == Qt::Key_Minus)
+    {
+        // The - key will decrease the detail level of any selected shapes.
+        CanvasItemList selection = canvas()->selectedItems();
+        for (int i = 0; i < selection.size(); ++i)
+        {
+            ShapeObj *shape = dynamic_cast<ShapeObj *> (selection.at(i));
+            if (shape)
+            {
+                shape->changeDetailLevel(false);
+            }
+        }
+    }
     else
     {
         keyEvent->ignore();
@@ -407,7 +434,7 @@ QAction *CanvasView::buildAndExecContextMenu(QMouseEvent *event,
     {
         // Get the current viewport rect.
         QRectF scenerect = QRectF(mapToScene(0,0),
-                mapToScene(width(), height()));
+                mapToScene(viewport()->width(), viewport()->height()));
         canvas()->setPageRect(scenerect);
     }
     else if (action == fitToDiagram)
@@ -424,6 +451,18 @@ QAction *CanvasView::buildAndExecContextMenu(QMouseEvent *event,
     event->accept();
 
     return action;
+}
+
+QPointF CanvasView::centre(void) const
+{
+    QRectF visibleRect(mapToScene(0,0),
+            mapToScene(viewport()->width(), viewport()->height()));
+    return visibleRect.center();
+}
+
+void CanvasView::setCentre(QPointF newCentre)
+{
+    centerOn(newCentre);
 }
 
 void CanvasView::zoomToShowRect(const QRectF& rect)
@@ -476,7 +515,8 @@ void CanvasView::postDiagramLoad(void)
     // re-centred in the view.
     qreal border = 2000;
     QPolygonF scene_poly = mapToScene(-border, -border,
-            width() + (2 * border), height() + (2 * border));
+            viewport()->width() + (2 * border),
+            viewport()->height() + (2 * border));
     QRectF view_scene_rect = scene_poly.boundingRect();
     QRectF scene_rect = scene()->sceneRect();
     scene_rect = scene_rect.united(view_scene_rect);
