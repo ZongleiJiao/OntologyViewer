@@ -22,3 +22,7 @@ QPainterPath OntologyClassShape::buildPainterPath(void)
 
     return painter_path;
 }
+
+void OntologyClassShape::sendSignal(){
+    emit myclick();
+}

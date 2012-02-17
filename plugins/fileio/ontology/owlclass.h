@@ -4,11 +4,12 @@
 #include <QList>
 #include "libdunnartcanvas/shape.h"
 #include <owlindividual.h>
+#include <ontoclass.h>
 
 using namespace dunnart;
 
 class OwlClass
-{
+{    
 public:
     QString URI;
     QString shortname;
@@ -16,7 +17,7 @@ public:
     QList<OwlClass *> superclasses;
     QList<OwlClass *> disjointclasses;
     QList<OwlIndividual *> individuals;
-    ShapeObj * shape;
+    OntologyClassShape * shape;
     QString equivalentclass;
 
     OwlClass();

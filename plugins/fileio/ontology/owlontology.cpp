@@ -8,6 +8,8 @@
 #include <iostream>
 #include <stack>
 
+#include <QMessageBox>
+
 using namespace dunnart;
 using namespace std;
 
@@ -77,8 +79,6 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
     this->ontologyname = fileInfo.baseName();
     wp->loadOntologyFile(filename.toUtf8().constData());
 
-    PluginShapeFactory *shapeFactory = sharedPluginShapeFactory();
-
     /** get owl namespace (Warn: only one namespace was handled!) **/
     //get namespace for the URI
     QString owlnamespace = wp->getDefaultNameSpace();
@@ -95,7 +95,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         tmpindividual->URI="<" + owlnamespace + tmpindividual->shortname + ">";
 
         //create shape
-        tmpindividual->shape = shapeFactory->createShape("ontoindividual");
+        tmpindividual->shape = new OntologyIndividualShape();
         tmpindividual->shape->setIdString(tmpindividual->shortname);
         tmpindividual->shape->setLabel(tmpindividual->shortname);
         tmpindividual->shape->setToolTip(tmpindividual->URI);
@@ -119,12 +119,16 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         tmpclass->URI = "<" + owlnamespace + tmpclass->shortname + ">";
 
         //create shape
-        tmpclass->shape = shapeFactory->createShape("ontoclass");
+        tmpclass->shape = new OntologyClassShape();
         tmpclass->shape->setIdString(tmpclass->shortname);
         tmpclass->shape->setLabel(tmpclass->shortname);
         tmpclass->shape->setToolTip(tmpclass->URI);
         tmpclass->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));
         tmpclass->shape->setFillColour(this->CLASS_SHAPE_COLOR);
+
+        //connect signals
+        connect(tmpclass->shape,SIGNAL(myclick()),this,SLOT(ontoclass_clicked()));
+        tmpclass->shape->sendSignal();
 
         //get equivalent class (Warn!!! only 1 or more???)
         QString tmpstr = QString(wp->getEquivalentClasses(tmpclass->shortname.toLocal8Bit().data()));
@@ -197,7 +201,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
             tmpproperty->URI = "<" + owlnamespace + tmpproperty->shortname + ">";
             tmpproperty->propertytype = tmpproperty->getPropertyTypeByEncodedString(encodedstr);
             //create shape for property
-            tmpproperty->shape = shapeFactory->createShape("ontoproperty");
+            tmpproperty->shape = new OntologyPropertyShape();
             tmpproperty->shape->setIdString(tmpproperty->encodedPropertyNameAndType);
             tmpproperty->shape->setLabel("["+tmpproperty->propertytype +"]\n" + tmpproperty->shortname);
             tmpproperty->shape->setToolTip(tmpproperty->URI);
@@ -662,8 +666,6 @@ ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
 {    
     ShapeObj * rshape=NULL;
 
-    PluginShapeFactory *shapeFactory = sharedPluginShapeFactory();
-
     /** Need to be verified all syntax!! **/
 
     int startpos=0;
@@ -1042,3 +1044,10 @@ void OwlOntology::drawLogicalView(Canvas *canvas){
     }
 }
 
+/** SLOTS to handle the shape signals **/
+void OwlOntology::ontoclass_clicked()
+{
+    //OntologyClassShape * x = (OntologyClassShape *) QObject::sender();
+//    QMessageBox::about(NULL,"Ontology class", "XXXXx->getLabel()");
+    cout<<"OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"<<endl;
+}

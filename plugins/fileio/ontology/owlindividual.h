@@ -3,6 +3,7 @@
 #include <QString>
 #include <QList>
 #include "libdunnartcanvas/shape.h"
+#include <ontoindividual.h>
 
 using namespace dunnart;
 class OwlIndividual
@@ -10,7 +11,7 @@ class OwlIndividual
 public:
     QString URI;
     QString shortname;
-    ShapeObj * shape;
+    OntologyIndividualShape * shape;
     QList<QString> ownerclasses;
 
     OwlIndividual();

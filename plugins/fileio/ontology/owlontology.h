@@ -3,9 +3,16 @@
 #include <owlclass.h>
 #include <owlproperty.h>
 #include <owlindividual.h>
+#include <ontoclass.h>
+#include <ontoindividual.h>
+#include <ontoproperty.h>
 
-class OwlOntology
+class OwlOntology:public QObject
 {
+
+    Q_OBJECT
+public slots:
+    void ontoclass_clicked();
 public:
     //const
     static const QColor CLASS_SHAPE_COLOR;

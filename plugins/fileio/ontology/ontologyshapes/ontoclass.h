@@ -6,10 +6,15 @@ using dunnart::ShapeObj;
 
 class OntologyClassShape: public ShapeObj
 {
+    Q_OBJECT
+    signals:
+    void myclick();
     public:
         OntologyClassShape();
         virtual ~OntologyClassShape() { }
         virtual QPainterPath buildPainterPath(void);
+        //temp
+        void sendSignal();
 };
 
 

@@ -4,6 +4,7 @@
 #include <QList>
 #include "libdunnartcanvas/shape.h"
 #include <owlclass.h>
+#include <ontoproperty.h>
 
 using namespace dunnart;
 
@@ -61,7 +62,7 @@ public:
     //encoded string of property
     QString encodedPropertyNameAndType;
 
-    ShapeObj * shape;
+    OntologyPropertyShape * shape;
     QList<OwlClass *> domains;
     QList<QString> ranges;
     QList<OwlProperty *> subproperties;
