@@ -1018,18 +1018,26 @@ ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
 void OwlOntology::drawLogicalView(Canvas *canvas){
     for(int i=0;i<classes.size();i++){
         if(classes[i]->equivalentclass.trimmed()!=""){
-            //show the formula in tooltip
-            classes[i]->shape->setToolTip(getFormula(classes[i]->equivalentclass));
+            ShapeObj * tp;
 
-            canvas->addItem(classes[i]->shape);
+//            tp = new RectangleShape();
+//            tp->setLabel(classes[i]->shortname);
+//            tp->setFillColour(QColor("pink"));
+//            tp->setSize(QSizeF(150,30));
+
+             tp= classes[i]->shape;
+
+            tp->setToolTip(getFormula(classes[i]->equivalentclass));
+            canvas->addItem(tp);
+
+
             ShapeObj * lgcview = drawLogical(classes[i]->equivalentclass,canvas);
             Connector * conn = new Connector();
-            conn->initWithConnection(classes[i]->shape,lgcview);
+            conn->initWithConnection(tp,lgcview);
             conn->setColour(QColor("black"));
             conn->setDirected(true);
             canvas->addItem(conn);
 
-            break;
         }
     }
 }
