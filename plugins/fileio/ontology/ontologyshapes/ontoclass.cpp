@@ -1,8 +1,10 @@
 #include <QString>
 #include "libdunnartcanvas/canvasitem.h"
 #include "ontoclass.h"
+#include "QMouseEvent"
 
 using namespace dunnart;
+using namespace std;
 
 OntologyClassShape::OntologyClassShape() : ShapeObj("ontoclass")
 {    
@@ -23,6 +25,20 @@ QPainterPath OntologyClassShape::buildPainterPath(void)
     return painter_path;
 }
 
-void OntologyClassShape::sendSignal(){
-    emit myclick();
+
+void OntologyClassShape::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton) {
+        emit myDoubleClick(this);
+
+    }
 }
+
+void OntologyClassShape::mousePressEvent(QGraphicsSceneMouseEvent *event){
+
+    if (event->button() == Qt::LeftButton) {
+        emit myclick(this);
+
+    }
+}
+

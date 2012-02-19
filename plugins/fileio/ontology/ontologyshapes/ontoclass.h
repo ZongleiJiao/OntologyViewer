@@ -2,19 +2,24 @@
 #define ONTOCLASS_H
 
 #include "libdunnartcanvas/shape.h"
+#include <QGraphicsSceneMouseEvent>
 using dunnart::ShapeObj;
 
 class OntologyClassShape: public ShapeObj
 {
     Q_OBJECT
     signals:
-    void myclick();
+    void myclick(OntologyClassShape *shape);
+    void myDoubleClick(OntologyClassShape *shape);
+
     public:
         OntologyClassShape();
         virtual ~OntologyClassShape() { }
         virtual QPainterPath buildPainterPath(void);
-        //temp
-        void sendSignal();
+
+        //mouse events sending singnals
+        void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
+        void mousePressEvent(QGraphicsSceneMouseEvent *event);
 };
 
 
