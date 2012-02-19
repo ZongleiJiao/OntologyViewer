@@ -9,28 +9,32 @@
 
 class OwlOntology:public QObject
 {
-
     Q_OBJECT
 public slots:
-    void ontoclass_clicked();
+    void ontoclass_clicked(OntologyClassShape * classshape);
+    void ontoclass_doubleclicked(OntologyClassShape * classshape);
+    void ontoindividual_clicked(OntologyIndividualShape * individualshape);
+    void ontoproperty_clicked(OntologyPropertyShape * propertyshape);
 public:
     //const
     static const QColor CLASS_SHAPE_COLOR;
     static const QColor INDIVIDUAL_SHAPE_COLOR;
     static const QColor PROPERTY_SHAPE_COLOR;
 
-    static const QColor CLASS_CONNECTER_COLOR;
-    static const QColor INDIVIDUAL_CONNECTER_COLOR;
+    static const QColor CLASS_CONNECTOR_COLOR;
+    static const QColor INDIVIDUAL_CONNECTOR_COLOR;
     static const QColor PROPERTY_CONNECT_TO_CLASS_COLOR;
-    static const QColor PROPERTY_CONNECTER_COLOR;
+    static const QColor PROPERTY_CONNECTOR_COLOR;
 
     //variable
+    Canvas * maincanvas;
     QString ontologyname;
     QList<OwlClass *> classes;
     QList<OwlIndividual *> individuals;
     QList<OwlProperty *> properties;
 
-    OwlOntology();
+    //methods
+    OwlOntology(Canvas * canvas);
     int getIndexOfIndividuals(QString shortname);
     int getIndexOfClasses(QString shortname);
     int getIndexOfProperties(QString shortname);
@@ -43,10 +47,10 @@ public:
 
     QString toQString();
 
-    //methods to get the logical representation and view
+    //methods to get the equivalent class representation and view
     QString getFormula(QString qstr);
     QList<QString> splitFormula(QString str);
-    ShapeObj * drawLogical(QString str,Canvas *canvas);
+    ShapeObj * drawEquivalentClass(QString str,Canvas *canvas);
     void drawLogicalView(Canvas *canvas);
 };
 

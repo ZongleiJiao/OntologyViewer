@@ -3,6 +3,8 @@
 OwlClass::OwlClass()
 {    
     this->equivalentclass="";
+    this->isIndividualsShowed=false;
+    this->isFocused=false;
 }
 QString OwlClass::toQString(){
     QString res;
@@ -32,3 +34,64 @@ QString OwlClass::toQString(){
     res.append("\n--------------------\n");
     return res;
 }
+
+void OwlClass::showIndividuals(Canvas *canvas)
+{
+    if(!isIndividualsShowed)
+    {
+        for(int i=0; i<individuals.size();i++)canvas->addItem(individuals[i]->shape);
+        for(int i=0; i<individualconnectors.size();i++)canvas->addItem(individualconnectors.at(i));
+
+        this->isIndividualsShowed=true;
+    }
+}
+
+void OwlClass::hideIndividuals(Canvas *canvas)
+{
+    if(isIndividualsShowed)
+    {
+        for(int i=0; i<individuals.size();i++)canvas->removeItem(individuals[i]->shape);
+        for(int i=0; i<individualconnectors.size();i++)canvas->removeItem(individualconnectors[i]);
+        this->isIndividualsShowed=false;
+    }
+}
+
+void OwlClass::setFocused(bool focus, Canvas *canvas)
+{
+    //not focused --> set to focused status
+    if(focus&&(!isFocused)){
+        shape->setFillColour(CLASS_SHAPE_FOCUSED_COLOR);
+        for(int i=0;i<subclasses.size();i++){
+            subclasses[i]->shape->setFillColour(SUBCLASS_SHAPE_FOCUSED_COLOR);
+        }
+        for(int i=0;i<superclasses.size();i++){
+            superclasses[i]->shape->setFillColour(SUPERCLASS_SHAPE_FOCUSED_COLOR);
+        }
+        for(int i=0;i<classesconnectors.size();i++){
+            classesconnectors[i]->setColour(CLASS_CONNECTOR_FOCUSED_COLOR);
+        }
+        isFocused = true;
+    }
+    //is focused --> release it
+    if(!focus&&isFocused){
+        shape->setFillColour(CLASS_SHAPE_COLOR);
+        for(int i=0;i<subclasses.size();i++){
+            subclasses[i]->shape->setFillColour(CLASS_SHAPE_COLOR);
+        }
+        for(int i=0;i<superclasses.size();i++){
+            superclasses[i]->shape->setFillColour(CLASS_SHAPE_COLOR);
+        }
+        for(int i=0;i<classesconnectors.size();i++){
+            classesconnectors[i]->setColour(CLASS_CONNECTOR_COLOR);
+        }
+
+        isFocused = false;
+    }
+}
+
+const QColor OwlClass::CLASS_SHAPE_COLOR = QColor(65,105,225);
+const QColor OwlClass::CLASS_SHAPE_FOCUSED_COLOR = QColor("orange");
+const QColor OwlClass::SUBCLASS_SHAPE_FOCUSED_COLOR = QColor("purple");
+const QColor OwlClass::SUPERCLASS_SHAPE_FOCUSED_COLOR = QColor("yellow");
+const QColor OwlClass::CLASS_CONNECTOR_COLOR = QColor("blue");
+const QColor OwlClass::CLASS_CONNECTOR_FOCUSED_COLOR = QColor("red");

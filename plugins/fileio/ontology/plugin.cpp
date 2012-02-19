@@ -142,7 +142,7 @@ bool OntologyFileIOPlugin::saveDiagramToFile(Canvas *canvas,
 bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
         const QFileInfo& fileInfo, QString& errorMessage)
 {
-    OwlOntology * onto = new OwlOntology();
+    OwlOntology * onto = new OwlOntology(canvas);
     onto->loadontology(fileInfo);
 
     /** text output **/
@@ -151,11 +151,11 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     /** classview, individualview, propertyview can
       * be displayed together or individually.
     **/
-//    //classview
-//    onto->drawClassView(canvas);
-//    //individualview
+    //classview
+    onto->drawClassView(canvas);
+    //individualview
 //    onto->drawIndividualView(canvas);
-//    //propertyview
+    //propertyview
 //    onto->drawPropertyView(canvas);
 
     /** Overview of classes (not finished) **/
@@ -171,7 +171,8 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    canvas->addText(onto->getFormula(ss));
 //    onto->drawLogical(ss,canvas);
 
-    onto->drawLogicalView(canvas);
+//    onto->drawLogicalView(canvas);
+
 
     return true;
 }

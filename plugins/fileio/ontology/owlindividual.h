@@ -13,6 +13,7 @@ public:
     QString shortname;
     OntologyIndividualShape * shape;
     QList<QString> ownerclasses;
+    QList<Connector *> classesconnectors;
 
     OwlIndividual();
     QString toQString();

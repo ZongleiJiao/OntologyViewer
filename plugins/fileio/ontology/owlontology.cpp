@@ -13,8 +13,9 @@
 using namespace dunnart;
 using namespace std;
 
-OwlOntology::OwlOntology()
+OwlOntology::OwlOntology(Canvas *canvas)
 {
+    this->maincanvas = canvas;
 }
 
 /** TODO List:
@@ -23,7 +24,7 @@ OwlOntology::OwlOntology()
 3. --properties --done
 4. --about Thing?
 5. --(done) Did not deal with the -1 error when use getIndexOfClasses(),getIndexOfIndividuals(),getIndexOfProperties()
-6. --(done) drawLogical() and getFormula() has not fully covered all the expressions
+6. --(done) drawEquivalentClass() and getFormula() has not fully covered all the expressions
 7. link different views
 */
 
@@ -32,10 +33,10 @@ const QColor OwlOntology::CLASS_SHAPE_COLOR = QColor(65,105,225);
 const QColor OwlOntology::INDIVIDUAL_SHAPE_COLOR = QColor(238,130,238);
 const QColor OwlOntology::PROPERTY_SHAPE_COLOR = QColor(143,188,143);
 
-const QColor OwlOntology::CLASS_CONNECTER_COLOR = QColor("blue");
-const QColor OwlOntology::INDIVIDUAL_CONNECTER_COLOR = QColor("purple");
+const QColor OwlOntology::CLASS_CONNECTOR_COLOR = QColor("blue");
+const QColor OwlOntology::INDIVIDUAL_CONNECTOR_COLOR = QColor("purple");
 const QColor OwlOntology::PROPERTY_CONNECT_TO_CLASS_COLOR = QColor("yellow");
-const QColor OwlOntology::PROPERTY_CONNECTER_COLOR = QColor("green");
+const QColor OwlOntology::PROPERTY_CONNECTOR_COLOR = QColor("green");
 
 //get index of individuals by its shortname
 int OwlOntology::getIndexOfIndividuals(QString shortname)
@@ -127,8 +128,8 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         tmpclass->shape->setFillColour(this->CLASS_SHAPE_COLOR);
 
         //connect signals
-        connect(tmpclass->shape,SIGNAL(myclick()),this,SLOT(ontoclass_clicked()));
-        tmpclass->shape->sendSignal();
+        connect(tmpclass->shape,SIGNAL(myclick(OntologyClassShape*)),this,SLOT(ontoclass_clicked(OntologyClassShape*)));
+        connect(tmpclass->shape,SIGNAL(myDoubleClick(OntologyClassShape*)),this,SLOT(ontoclass_doubleclicked(OntologyClassShape*)));
 
         //get equivalent class (Warn!!! only 1 or more???)
         QString tmpstr = QString(wp->getEquivalentClasses(tmpclass->shortname.toLocal8Bit().data()));
@@ -147,6 +148,15 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
             for(int j=0;j<resGetSubClasses->getArrayLength();j++){
                 int idx = getIndexOfClasses(owlsubclasses[j]->toString());
                 if(idx!=-1)classes[i]->subclasses<<classes[idx];
+
+                //create connectors
+                Connector * conn = new Connector();
+                conn->initWithConnection(classes[idx]->shape,classes[i]->shape);
+                conn->setDirected(true);
+                conn->setColour(CLASS_CONNECTOR_COLOR);
+
+                classes[i]->classesconnectors<<conn;
+                classes[idx]->classesconnectors<<conn;
             }
         }
 
@@ -182,6 +192,14 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
                     this->individuals[idx]->ownerclasses.append(classes[i]->shortname);
                     //add individuals[ind] to class[i] individuals list
                     classes[i]->individuals<<this->individuals[idx];
+                    //create connectors
+                    Connector * conn = new Connector();
+                    conn->initWithConnection(individuals[idx]->shape, classes[i]->shape);
+                    conn->setDirected(true);
+                    conn->setColour(this->INDIVIDUAL_CONNECTOR_COLOR);
+
+                    classes[i]->individualconnectors<<conn;
+                    individuals[idx]->classesconnectors<<conn;
                 }
             }
         }
@@ -290,29 +308,18 @@ void OwlOntology::drawClassView(Canvas *canvas)
     {
         //**** do not draw thing ****
         if(classes[i]->shortname.toLower()!="thing")
-            canvas->addItem(classes[i]->shape);
+            canvas->addItem(classes[i]->shape);       
     }
 
-    //draw connections
-    Connector *conn;
+    //draw subclasses connections
     for(int i=0;i<classes.length();i++)
     {
-        //subclasses
-       for(int j=0;j<classes[i]->subclasses.length();j++){
-            conn = new Connector();
-            conn->initWithConnection(classes[i]->subclasses[j]->shape,classes[i]->shape);
-            canvas->addItem(conn);
-            conn->setDirected(true);
+        //**** do not draw thing ****
+        if(classes[i]->shortname.toLower()!="thing")
+        {
+            for(int j=0;j<classes[i]->classesconnectors.size();j++)
+                canvas->addItem(classes[i]->classesconnectors[j]);
         }
-        //superclasses ???
-//        for(int j=0;j<classes[i]->superclasses.length();j++)
-//        {
-//            conn = new Connector();
-//            conn->initWithConnection(classes[i]->shape,classes[i]->superclasses[j]->shape);
-//            canvas->addItem(conn);
-//            conn->setDirected(true);
-//            conn->setColour(this->CLASS_CONNECTER_COLOR);
-//        }
     }
 
     //adjust postions -- level only
@@ -354,22 +361,21 @@ void OwlOntology::drawIndividualView(Canvas *canvas)
     for(int i=0;i<individuals.length();i++)
     {
         canvas->addItem(individuals[i]->shape);
-
+        //draw owner classes
         for(int j=0;j<individuals[i]->ownerclasses.length();j++)
         {
             int ownerclassidx = this->getIndexOfClasses(individuals[i]->ownerclasses[j]);
             if(ownerclassidx!=-1) canvas->addItem(this->classes[ownerclassidx]->shape);
-
-            conn = new Connector();
-            conn->initWithConnection(individuals[i]->shape, this->classes[ownerclassidx]->shape);
-            canvas->addItem(conn);
-            conn->setDirected(true);
-            conn->setColour(this->INDIVIDUAL_CONNECTER_COLOR);
+        }
+        //draw connectors
+        for(int j=0;j<individuals[i]->classesconnectors.size();j++)
+        {
+            canvas->addItem(individuals[i]->classesconnectors[j]);
         }
     }
 }
 
-//draw the ontology properties -- Unfinished
+//draw the ontology properties
 void OwlOntology::drawPropertyView(Canvas *canvas)
 {
     Connector *conn;
@@ -430,7 +436,7 @@ void OwlOntology::drawPropertyView(Canvas *canvas)
             conn->initWithConnection(properties[i]->subproperties[j]->shape,properties[i]->shape);
             canvas->addItem(conn);
             conn->setDirected(true);
-            conn->setColour(this->PROPERTY_CONNECTER_COLOR);
+            conn->setColour(this->PROPERTY_CONNECTOR_COLOR);
         }
         //super, disjoint -- Need to deal with?
     }
@@ -466,7 +472,7 @@ void OwlOntology::drawClassOverview(Canvas *canvas)
 //            conn->initWithConnection(classes[i]->superclasses[j]->shape,classes[i]->shape);
 //            canvas->addItem(conn);
 //            conn->setDirected(true);
-//            conn->setColour(this->CLASS_CONNECTER_COLOR);
+//            conn->setColour(this->CLASS_CONNECTOR_COLOR);
 //        }
     }
 
@@ -661,8 +667,7 @@ QString OwlOntology::getFormula(QString qstr)
     return r;
 }
 
-
-ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
+ShapeObj * OwlOntology::drawEquivalentClass(QString qstr,Canvas *canvas)
 {    
     ShapeObj * rshape=NULL;
 
@@ -752,7 +757,7 @@ ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
         Connector *conn;
         for (int i = 0; i < substrs.size(); i++) {
             conn = new Connector();
-            conn->initWithConnection(mshape,drawLogical(substrs.at(i),canvas));
+            conn->initWithConnection(mshape,drawEquivalentClass(substrs.at(i),canvas));
             canvas->addItem(conn);
             conn->setDirected(true);
             conn->setColour(QColor("blue"));
@@ -774,7 +779,7 @@ ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
         Connector *conn;
         for (int i = 0; i < substrs.size(); i++) {
             conn = new Connector();
-            conn->initWithConnection(mshape,drawLogical(substrs.at(i),canvas));
+            conn->initWithConnection(mshape,drawEquivalentClass(substrs.at(i),canvas));
             canvas->addItem(conn);
             conn->setDirected(true);
             conn->setColour(QColor("blue"));
@@ -796,7 +801,7 @@ ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
         Connector *conn;
         for (int i = 0; i < substrs.size(); i++) {
             conn = new Connector();
-            conn->initWithConnection(mshape,drawLogical(substrs.at(i),canvas));
+            conn->initWithConnection(mshape,drawEquivalentClass(substrs.at(i),canvas));
             canvas->addItem(conn);
             conn->setDirected(true);
             conn->setColour(QColor("blue"));
@@ -817,7 +822,7 @@ ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
         Connector *conn;
         for (int i = 0; i < substrs.size(); i++) {
             conn = new Connector();
-            conn->initWithConnection(mshape,drawLogical(substrs.at(i),canvas));
+            conn->initWithConnection(mshape,drawEquivalentClass(substrs.at(i),canvas));
             canvas->addItem(conn);
             conn->setDirected(true);
             conn->setColour(QColor("blue"));
@@ -835,8 +840,8 @@ ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
-        ShapeObj * shape1 = drawLogical(substrs.at(0),canvas);
-        ShapeObj * shape2 = drawLogical(substrs.at(1),canvas);
+        ShapeObj * shape1 = drawEquivalentClass(substrs.at(0),canvas);
+        ShapeObj * shape2 = drawEquivalentClass(substrs.at(1),canvas);
         Connector *conn;
         conn = new Connector();
         conn->initWithConnection(mshape,shape1);
@@ -864,8 +869,8 @@ ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
-        ShapeObj * shape1 = drawLogical(substrs.at(0),canvas);
-        ShapeObj * shape2 = drawLogical(substrs.at(1),canvas);
+        ShapeObj * shape1 = drawEquivalentClass(substrs.at(0),canvas);
+        ShapeObj * shape2 = drawEquivalentClass(substrs.at(1),canvas);
         Connector *conn;
         conn = new Connector();
         conn->initWithConnection(mshape,shape1);
@@ -893,8 +898,8 @@ ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
-        ShapeObj * shape1 = drawLogical(substrs.at(0),canvas);
-        ShapeObj * shape2 = drawLogical(substrs.at(1),canvas);
+        ShapeObj * shape1 = drawEquivalentClass(substrs.at(0),canvas);
+        ShapeObj * shape2 = drawEquivalentClass(substrs.at(1),canvas);
         Connector *conn;
         conn = new Connector();
         conn->initWithConnection(mshape,shape1);
@@ -922,8 +927,8 @@ ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
-        ShapeObj * shape1 = drawLogical(substrs.at(1),canvas);
-        ShapeObj * shape2 = drawLogical(substrs.at(2),canvas);
+        ShapeObj * shape1 = drawEquivalentClass(substrs.at(1),canvas);
+        ShapeObj * shape2 = drawEquivalentClass(substrs.at(2),canvas);
 
         Connector *conn;
         conn = new Connector();
@@ -952,8 +957,8 @@ ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
-        ShapeObj * shape1 = drawLogical(substrs.at(1),canvas);
-        ShapeObj * shape2 = drawLogical(substrs.at(2),canvas);
+        ShapeObj * shape1 = drawEquivalentClass(substrs.at(1),canvas);
+        ShapeObj * shape2 = drawEquivalentClass(substrs.at(2),canvas);
 
         Connector *conn;
         conn = new Connector();
@@ -982,8 +987,8 @@ ShapeObj * OwlOntology::drawLogical(QString qstr,Canvas *canvas)
         mshape->setFillColour(QColor("gray"));
         canvas->addItem(mshape);
 
-        ShapeObj * shape1 = drawLogical(substrs.at(1),canvas);
-        ShapeObj * shape2 = drawLogical(substrs.at(2),canvas);
+        ShapeObj * shape1 = drawEquivalentClass(substrs.at(1),canvas);
+        ShapeObj * shape2 = drawEquivalentClass(substrs.at(2),canvas);
 
         Connector *conn;
         conn = new Connector();
@@ -1033,7 +1038,7 @@ void OwlOntology::drawLogicalView(Canvas *canvas){
             canvas->addItem(tp);
 
 
-            ShapeObj * lgcview = drawLogical(classes[i]->equivalentclass,canvas);
+            ShapeObj * lgcview = drawEquivalentClass(classes[i]->equivalentclass,canvas);
             Connector * conn = new Connector();
             conn->initWithConnection(tp,lgcview);
             conn->setColour(QColor("black"));
@@ -1045,9 +1050,30 @@ void OwlOntology::drawLogicalView(Canvas *canvas){
 }
 
 /** SLOTS to handle the shape signals **/
-void OwlOntology::ontoclass_clicked()
+void OwlOntology::ontoclass_clicked(OntologyClassShape *classshape)
 {
-    //OntologyClassShape * x = (OntologyClassShape *) QObject::sender();
-//    QMessageBox::about(NULL,"Ontology class", "XXXXx->getLabel()");
-    cout<<"OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"<<endl;
+    int idx = this->getIndexOfClasses(classshape->getLabel());
+    if(!classes[idx]->isIndividualsShowed)
+        classes[idx]->showIndividuals(this->maincanvas);
+    if(!classes[idx]->isFocused)
+        classes[idx]->setFocused(true,this->maincanvas);
+}
+
+void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
+{
+    int idx = this->getIndexOfClasses(classshape->getLabel());
+    if(classes[idx]->isIndividualsShowed)
+        classes[idx]->hideIndividuals(this->maincanvas);
+    if(classes[idx]->isFocused)
+        classes[idx]->setFocused(false,this->maincanvas);
+}
+
+void OwlOntology::ontoindividual_clicked(OntologyIndividualShape *individualshape)
+{
+
+}
+
+void OwlOntology::ontoproperty_clicked(OntologyPropertyShape *propertyshape)
+{
+
 }
