@@ -8,18 +8,26 @@ using namespace std;
 
 OntologyClassShape::OntologyClassShape() : ShapeObj("ontoclass")
 {
+//    levelLabels[0] = QString("1");
+//    levelLabels[1] = QString("2222222222222222222222222");
+//    levelLabels[2] = QString("33333333333333333333333333333333333333333");
+//    levelLabels[3] = QString("444444444444444444444444444");
+//    levelLabels[4] = QString("55555555555555555555555555555555");
+//    levelLabels[5] = QString("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
     levelLabels[0] = QString("");
     levelLabels[1] = QString("");
     levelLabels[2] = QString("");
     levelLabels[3] = QString("");
     levelLabels[4] = QString("");
+    levelLabels[5] = QString("");
 
-    levelSizes = new QSizeF[5];
+    levelSizes = new QSizeF[6];
     levelSizes[0] = QSizeF(150,20);
     levelSizes[1] = QSizeF(200,35);
-    levelSizes[2] = QSizeF(200,50);
-    levelSizes[3] = QSizeF(200,65);
-    levelSizes[4] = QSizeF(200,80);
+    levelSizes[2] = QSizeF(300,50);
+    levelSizes[3] = QSizeF(400,65);
+    levelSizes[4] = QSizeF(500,80);
+    levelSizes[4] = QSizeF(600,95);
 }
 
 QPainterPath OntologyClassShape::buildPainterPath(void)
@@ -65,24 +73,33 @@ void OntologyClassShape::focusOutEvent(QFocusEvent *event){
 }
 
 uint OntologyClassShape::levelsOfDetail(void) const{
-    return 5;
+    return 6;
 }
 
 QSizeF OntologyClassShape::sizeForDetailLevel(uint level){
     QString lbl="";
+    int maxLength = 150;
+    int temp = 0;
+    int maxWidth = 20;
 
     if(level > 0 && level <= this->levelsOfDetail()){
-        this->setSize(levelSizes[level-1]);
         for(int i=0;i<level;i++){
             if(i < level -1){
-                lbl += levelLabels[i] + "\n";
+                lbl += levelLabels[i] + "\n";                
             }else{
                 lbl += levelLabels[i];
             }
+
+            temp = levelLabels[i].size()*10;
+            if(temp > maxLength){
+                maxLength = temp;
+            }
+            maxWidth += 12;
         }
         this->setLabel(lbl);
-    }
 
+        this->setSize(QSizeF(maxLength,maxWidth));
+    }
     return this->size();
 }
 

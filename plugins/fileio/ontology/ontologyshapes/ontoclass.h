@@ -33,7 +33,7 @@ class OntologyClassShape: public ShapeObj
         void focusInEvent(QFocusEvent *event);
         void focusOutEvent(QFocusEvent *event);
 
-        QString levelLabels[5] ;
+        QString levelLabels[6] ;
         QSizeF * levelSizes;
 };
 
