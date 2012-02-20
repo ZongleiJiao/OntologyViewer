@@ -53,7 +53,7 @@ void OntologyClassShape::focusOutEvent(QFocusEvent *event){
 }
 
 uint OntologyClassShape::levelsOfDetail(void) const{
-    return 6;
+    return 7;
 }
 
 QSizeF OntologyClassShape::sizeForDetailLevel(uint level){
@@ -63,7 +63,7 @@ QSizeF OntologyClassShape::sizeForDetailLevel(uint level){
     int temp = 0;
     int maxWidth = 20;
 
-    if(level > 0 && level <= this->levelsOfDetail()){
+    if(level > 0 && level < this->levelsOfDetail()){
         for(int i=0;i<level;i++){
             tmpLbl = levelLabels[i];
 
@@ -86,8 +86,8 @@ QSizeF OntologyClassShape::sizeForDetailLevel(uint level){
         this->setLabel(lbl);
 
         this->setSize(QSizeF(maxLength,maxWidth));
-    }else if(level > this->levelsOfDetail()){
-        int maxLel = this->levelsOfDetail();
+    }else if(level >= this->levelsOfDetail()){
+        int maxLel = this->levelsOfDetail()-1;
         for(int i=0;i<maxLel;i++){
             tmpLbl = levelLabels[i];
 
