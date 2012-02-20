@@ -125,6 +125,13 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         tmpclass->shape->setLabel(tmpclass->shortname);
         tmpclass->shape->setToolTip(tmpclass->URI);
         tmpclass->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));
+        tmpclass->shape->setLabelByLevels(1,tmpclass->shortname);
+        tmpclass->shape->setLabelByLevels(2,"Sub:");
+        tmpclass->shape->setLabelByLevels(3,"Super:");
+        tmpclass->shape->setLabelByLevels(4,"Disjoint:");
+        tmpclass->shape->setLabelByLevels(5,"Individuals:");
+        tmpclass->shape->setLabelByLevels(6,"Equivalent");
+
         tmpclass->shape->setFillColour(this->CLASS_SHAPE_COLOR);
 
         //connect signals
@@ -1053,15 +1060,19 @@ void OwlOntology::drawLogicalView(Canvas *canvas){
 void OwlOntology::ontoclass_clicked(OntologyClassShape *classshape)
 {
     int idx = this->getIndexOfClasses(classshape->idString());
-    classes[idx]->showIndividuals(this->maincanvas);
-    classes[idx]->setFocused(true,this->maincanvas);
+    if(idx!=-1){
+        classes[idx]->showIndividuals(this->maincanvas);
+        classes[idx]->setFocused(true,this->maincanvas);
+    }
 }
 
 void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
 {
     int idx = this->getIndexOfClasses(classshape->idString());
-    classes[idx]->hideIndividuals(this->maincanvas);
-    classes[idx]->setFocused(false,this->maincanvas);
+    if(idx!=-1){
+        classes[idx]->hideIndividuals(this->maincanvas);
+        classes[idx]->setFocused(false,this->maincanvas);
+    }
 }
 
 void OwlOntology::ontoindividual_clicked(OntologyIndividualShape *individualshape)
