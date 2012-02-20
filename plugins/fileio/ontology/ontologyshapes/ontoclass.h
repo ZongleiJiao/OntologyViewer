@@ -28,6 +28,7 @@ class OntologyClassShape: public ShapeObj
         QSizeF sizeForDetailLevel(uint level);
         void setLabelByLevels(int level, QString text);
         void setSizeByLevels(int level, QSizeF size);
+        void setMyLabel(QString label);
 
         //testing
         void focusInEvent(QFocusEvent *event);

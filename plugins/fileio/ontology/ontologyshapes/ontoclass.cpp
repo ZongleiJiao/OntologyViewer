@@ -98,3 +98,17 @@ void OntologyClassShape::setLabelByLevels(int level, QString text){
 void OntologyClassShape::setSizeByLevels(int level, QSizeF size){
     levelSizes[level-1] = size;
 }
+
+void OntologyClassShape::setMyLabel(QString label){
+
+    int maxLength = 150;
+    int temp = 0;
+    int maxWidth = 20;
+
+    temp = label.size() *10;
+    if(temp > maxLength){
+        maxLength = temp;
+    }
+    this->setLabel(label);
+    this->setSize(QSizeF(maxLength,maxWidth));
+}
