@@ -58,19 +58,46 @@ uint OntologyClassShape::levelsOfDetail(void) const{
 
 QSizeF OntologyClassShape::sizeForDetailLevel(uint level){
     QString lbl="";
+    QString tmpLbl = "";
     int maxLength = 150;
     int temp = 0;
     int maxWidth = 20;
 
     if(level > 0 && level <= this->levelsOfDetail()){
         for(int i=0;i<level;i++){
-            if(i < level -1){
-                lbl += levelLabels[i] + "\n";                
-            }else{
-                lbl += levelLabels[i];
+            tmpLbl = levelLabels[i];
+
+            if(tmpLbl.size() > 40){
+                tmpLbl = levelLabels[i].left(40)+"...";
             }
 
-            temp = levelLabels[i].size()*10;
+            if(i < level -1){
+                lbl += tmpLbl + "\n";
+            }else{
+                lbl += tmpLbl;
+            }
+
+            temp = tmpLbl.size()*10;
+            if(temp > maxLength){
+                maxLength = temp;
+            }
+            maxWidth += 13;
+        }
+        this->setLabel(lbl);
+
+        this->setSize(QSizeF(maxLength,maxWidth));
+    }else if(level > this->levelsOfDetail()){
+        int maxLel = this->levelsOfDetail();
+        for(int i=0;i<maxLel;i++){
+            tmpLbl = levelLabels[i];
+
+            if(i < maxLel -1){
+                lbl += tmpLbl + "\n";
+            }else{
+                lbl += tmpLbl;
+            }
+
+            temp = tmpLbl.size()*10;
             if(temp > maxLength){
                 maxLength = temp;
             }
@@ -80,6 +107,7 @@ QSizeF OntologyClassShape::sizeForDetailLevel(uint level){
 
         this->setSize(QSizeF(maxLength,maxWidth));
     }
+
     return this->size();
 }
 
