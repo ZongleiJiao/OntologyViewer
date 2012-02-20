@@ -402,7 +402,7 @@ void OwlOntology::drawPropertyView(Canvas *canvas)
         //ranges
         //dataproperty add a line to label
         if(properties[i]->isDataProperty()){
-            QString lbl = properties[i]->shape->getLabel();
+            QString lbl = properties[i]->shape->idString();
             //lbl += "\n--------------------";
             for(int j=0;j<properties[i]->ranges.length();j++)
             {
@@ -668,7 +668,7 @@ QString OwlOntology::getFormula(QString qstr)
 }
 
 ShapeObj * OwlOntology::drawEquivalentClass(QString qstr,Canvas *canvas)
-{    
+{
     ShapeObj * rshape=NULL;
 
     /** Need to be verified all syntax!! **/
@@ -1015,7 +1015,7 @@ ShapeObj * OwlOntology::drawEquivalentClass(QString qstr,Canvas *canvas)
         entityshape->setSize(QSizeF(150,30));
         entityshape->setFillColour(QColor("orange"));
         canvas->addItem(entityshape);
-        rshape = entityshape;        
+        rshape = entityshape;
     }
 
     if(rshape!=NULL)rshape->setToolTip(getFormula(qstr));
@@ -1052,20 +1052,16 @@ void OwlOntology::drawLogicalView(Canvas *canvas){
 /** SLOTS to handle the shape signals **/
 void OwlOntology::ontoclass_clicked(OntologyClassShape *classshape)
 {
-    int idx = this->getIndexOfClasses(classshape->getLabel());
-    if(!classes[idx]->isIndividualsShowed)
-        classes[idx]->showIndividuals(this->maincanvas);
-    if(!classes[idx]->isFocused)
-        classes[idx]->setFocused(true,this->maincanvas);
+    int idx = this->getIndexOfClasses(classshape->idString());
+    classes[idx]->showIndividuals(this->maincanvas);
+    classes[idx]->setFocused(true,this->maincanvas);
 }
 
 void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
 {
-    int idx = this->getIndexOfClasses(classshape->getLabel());
-    if(classes[idx]->isIndividualsShowed)
-        classes[idx]->hideIndividuals(this->maincanvas);
-    if(classes[idx]->isFocused)
-        classes[idx]->setFocused(false,this->maincanvas);
+    int idx = this->getIndexOfClasses(classshape->idString());
+    classes[idx]->hideIndividuals(this->maincanvas);
+    classes[idx]->setFocused(false,this->maincanvas);
 }
 
 void OwlOntology::ontoindividual_clicked(OntologyIndividualShape *individualshape)

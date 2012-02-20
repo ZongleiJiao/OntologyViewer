@@ -159,7 +159,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    onto->drawPropertyView(canvas);
 
     /** Overview of classes (not finished) **/
-    //    onto->drawClassOverview(canvas);
+//        onto->drawClassOverview(canvas);
 
     /** the getFormula() and logicalview() display
       * the anonymous class strings into formula
