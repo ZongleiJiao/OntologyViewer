@@ -16,6 +16,7 @@ using namespace std;
 OwlOntology::OwlOntology(Canvas *canvas)
 {
     this->maincanvas = canvas;
+    this->currentfocusedclassidx = -1;
 }
 
 /** TODO List:
@@ -1069,10 +1070,12 @@ void OwlOntology::drawLogicalView(Canvas *canvas){
 /** SLOTS to handle the shape signals **/
 void OwlOntology::ontoclass_clicked(OntologyClassShape *classshape)
 {
+    if(this->currentfocusedclassidx!=-1)this->ontoclass_doubleclicked(classes[currentfocusedclassidx]->shape);
     int idx = this->getIndexOfClasses(classshape->idString());
     if(idx!=-1){
         classes[idx]->showIndividuals(this->maincanvas);
         classes[idx]->setFocused(true,this->maincanvas);
+        this->currentfocusedclassidx = idx;
     }
 }
 
@@ -1083,6 +1086,7 @@ void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
         classes[idx]->hideIndividuals(this->maincanvas);
         classes[idx]->setFocused(false,this->maincanvas);
     }
+    this->currentfocusedclassidx = -1;
 }
 
 void OwlOntology::ontoindividual_clicked(OntologyIndividualShape *individualshape)

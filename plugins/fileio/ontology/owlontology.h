@@ -33,6 +33,8 @@ public:
     QList<OwlIndividual *> individuals;
     QList<OwlProperty *> properties;
 
+    int currentfocusedclassidx;
+
     //methods
     OwlOntology(Canvas * canvas);
     int getIndexOfIndividuals(QString shortname);
