@@ -153,6 +153,9 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     **/
     //classview
     onto->drawClassView(canvas);
+    onto->classes[2]->shape->setSize(QSizeF(50,10));
+
+    onto->classes[3]->shape->addContainedShape(onto->classes[2]->shape);
     //individualview
 //    onto->drawIndividualView(canvas);
     //propertyview
