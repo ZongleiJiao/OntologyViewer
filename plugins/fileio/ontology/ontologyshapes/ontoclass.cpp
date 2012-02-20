@@ -8,12 +8,6 @@ using namespace std;
 
 OntologyClassShape::OntologyClassShape() : ShapeObj("ontoclass")
 {
-//    levelLabels[0] = QString("1");
-//    levelLabels[1] = QString("2222222222222222222222222");
-//    levelLabels[2] = QString("33333333333333333333333333333333333333333");
-//    levelLabels[3] = QString("444444444444444444444444444");
-//    levelLabels[4] = QString("55555555555555555555555555555555");
-//    levelLabels[5] = QString("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
     levelLabels[0] = QString("");
     levelLabels[1] = QString("");
     levelLabels[2] = QString("");
@@ -34,13 +28,7 @@ QPainterPath OntologyClassShape::buildPainterPath(void)
 {
     QPainterPath painter_path;
 
-    double yround = (height() / 2);
-    double xround = (width() / 2);
-
-    double round = (xround <= yround) ? xround : yround;
-
-    painter_path.addRoundedRect(-width() / 2, -height() / 2, width(), height(),
-            round, round);
+    painter_path.addRect(-width() / 2, -height() / 2, width(), height());
 
     return painter_path;
 }
@@ -94,7 +82,7 @@ QSizeF OntologyClassShape::sizeForDetailLevel(uint level){
             if(temp > maxLength){
                 maxLength = temp;
             }
-            maxWidth += 12;
+            maxWidth += 13;
         }
         this->setLabel(lbl);
 
