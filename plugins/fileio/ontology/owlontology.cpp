@@ -122,16 +122,10 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         //create shape
         tmpclass->shape = new OntologyClassShape();
         tmpclass->shape->setIdString(tmpclass->shortname);
-        tmpclass->shape->setLabel(tmpclass->shortname);
         tmpclass->shape->setToolTip(tmpclass->URI);
-        tmpclass->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));
-        tmpclass->shape->setLabelByLevels(1,tmpclass->shortname);
-        tmpclass->shape->setLabelByLevels(2,"Sub:");
-        tmpclass->shape->setLabelByLevels(3,"Super:");
-        tmpclass->shape->setLabelByLevels(4,"Disjoint:");
-        tmpclass->shape->setLabelByLevels(5,"Individuals:");
-        tmpclass->shape->setLabelByLevels(6,"Equivalent");
-
+        tmpclass->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));        
+        tmpclass->shape->setMyLabel(tmpclass->shortname);
+        tmpclass->shape->setLabelByLevels(1,tmpclass->shortname); //set level 1 label
         tmpclass->shape->setFillColour(this->CLASS_SHAPE_COLOR);
 
         //connect signals
@@ -141,6 +135,8 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         //get equivalent class (Warn!!! only 1 or more???)
         QString tmpstr = QString(wp->getEquivalentClasses(tmpclass->shortname.toLocal8Bit().data()));
         tmpclass->equivalentclass = tmpstr;
+        tmpclass->shape->setLabelByLevels(5,"[EQU]:"+ this->getFormula(tmpstr)); //set level 5 label
+
         //append tmpclass to list
         this->classes.append(tmpclass);
     }
@@ -149,10 +145,13 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
     for(int i=0;i<classes.length();i++)
     {
         //get&set subclasses
+        QString substr = "[SUB]:"; //for level 2 label
         JavaObjectArray *resGetSubClasses = wp->getSubClasses(owlclasses[i]->toString());
         if(resGetSubClasses!=NULL){
             java::lang::String ** owlsubclasses = (java::lang::String **)resGetSubClasses->getArrayData();
+
             for(int j=0;j<resGetSubClasses->getArrayLength();j++){
+                substr += QString(owlsubclasses[j]->toString())+" "; //add to level 2 label
                 int idx = getIndexOfClasses(owlsubclasses[j]->toString());
                 if(idx!=-1)classes[i]->subclasses<<classes[idx];
 
@@ -164,34 +163,43 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
 
                 classes[i]->classesconnectors<<conn;
                 classes[idx]->classesconnectors<<conn;
-            }
+            }            
         }
+        classes[i]->shape->setLabelByLevels(2,substr); //set level 2 label
 
         //get&set superclasses
+        QString supstr= "[SUP]:";
         JavaObjectArray *resGetSuperClasses = wp->getSuperClasses(owlclasses[i]->toString());
         if(resGetSuperClasses!=NULL){
             java::lang::String ** owlsuperclasses = (java::lang::String **)resGetSuperClasses->getArrayData();
             for(int j=0;j<resGetSuperClasses->getArrayLength();j++){
+                supstr += QString(owlsuperclasses[j]->toString())+" "; //add to level 3 label
                 int idx = getIndexOfClasses(owlsuperclasses[j]->toString());
                 if(idx!=-1)classes[i]->superclasses<<classes[idx];
-            }
+            }            
         }
+        classes[i]->shape->setLabelByLevels(3,supstr); //set level 3 label
 
         //get&set disjointclasses
+        QString disstr= "[DIS]:";
         JavaObjectArray *resGetDisjointClasses = wp->getDisjointClasses(owlclasses[i]->toString());
         if(resGetDisjointClasses!=NULL){
             java::lang::String ** owldisjointclasses = (java::lang::String **)resGetDisjointClasses->getArrayData();
             for(int j=0;j<resGetDisjointClasses->getArrayLength();j++){
+                disstr += QString(owldisjointclasses[j]->toString()); //add to level 4 label
                 int idx = getIndexOfClasses(owldisjointclasses[j]->toString());
                 if(idx!=-1)classes[i]->disjointclasses<<classes[idx];
-            }
+            }            
         }
+        classes[i]->shape->setLabelByLevels(4,disstr); //set level 4 label
 
         //get&set individuals
+        QString indstr = "[IND]:";
         JavaObjectArray *resGetIndividuals = wp->getIndividuals(owlclasses[i]->toString());
         if(resGetIndividuals!=NULL){
             java::lang::String ** owlclassindividuals = (java::lang::String **)resGetIndividuals->getArrayData();
             for(int j=0;j<resGetIndividuals->getArrayLength();j++){
+                indstr += QString(owlclassindividuals[j]->toString()); //add to level 6 label
                 int idx = getIndexOfIndividuals(owlclassindividuals[j]->toString());
                 //if found the individual in the list
                 if(idx!=-1){
@@ -208,8 +216,9 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
                     classes[i]->individualconnectors<<conn;
                     individuals[idx]->classesconnectors<<conn;
                 }
-            }
+            }            
         }
+        classes[i]->shape->setLabelByLevels(6,indstr); //set level 6 label
     }
 
     //get all ontology properties name and type encoded string from JVM
