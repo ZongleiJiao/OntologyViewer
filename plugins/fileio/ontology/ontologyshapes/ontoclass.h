@@ -3,6 +3,8 @@
 
 #include "libdunnartcanvas/shape.h"
 #include <QGraphicsSceneMouseEvent>
+#include <QString>
+
 using dunnart::ShapeObj;
 
 class OntologyClassShape: public ShapeObj
@@ -20,6 +22,19 @@ class OntologyClassShape: public ShapeObj
         //mouse events sending singnals
         void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
         void mousePressEvent(QGraphicsSceneMouseEvent *event);
+
+        //shape expanding levels
+        uint levelsOfDetail(void) const;
+        QSizeF sizeForDetailLevel(uint level);
+        void setLabelByLevels(int level, QString text);
+        void setSizeByLevels(int level, QSizeF size);
+
+        //testing
+        void focusInEvent(QFocusEvent *event);
+        void focusOutEvent(QFocusEvent *event);
+
+        QString levelLabels[5] ;
+        QSizeF * levelSizes;
 };
 
 
