@@ -14,14 +14,6 @@ OntologyClassShape::OntologyClassShape() : ShapeObj("ontoclass")
     levelLabels[3] = QString("");
     levelLabels[4] = QString("");
     levelLabels[5] = QString("");
-
-    levelSizes = new QSizeF[6];
-    levelSizes[0] = QSizeF(150,20);
-    levelSizes[1] = QSizeF(200,35);
-    levelSizes[2] = QSizeF(300,50);
-    levelSizes[3] = QSizeF(400,65);
-    levelSizes[4] = QSizeF(500,80);
-    levelSizes[4] = QSizeF(600,95);
 }
 
 QPainterPath OntologyClassShape::buildPainterPath(void)
@@ -93,10 +85,6 @@ QSizeF OntologyClassShape::sizeForDetailLevel(uint level){
 
 void OntologyClassShape::setLabelByLevels(int level, QString text){
     levelLabels[level-1] = text;
-}
-
-void OntologyClassShape::setSizeByLevels(int level, QSizeF size){
-    levelSizes[level-1] = size;
 }
 
 void OntologyClassShape::setMyLabel(QString label){

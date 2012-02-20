@@ -27,7 +27,6 @@ class OntologyClassShape: public ShapeObj
         uint levelsOfDetail(void) const;
         QSizeF sizeForDetailLevel(uint level);
         void setLabelByLevels(int level, QString text);
-        void setSizeByLevels(int level, QSizeF size);
         void setMyLabel(QString label);
 
         //testing
@@ -35,7 +34,6 @@ class OntologyClassShape: public ShapeObj
         void focusOutEvent(QFocusEvent *event);
 
         QString levelLabels[6] ;
-        QSizeF * levelSizes;
 };
 
 
