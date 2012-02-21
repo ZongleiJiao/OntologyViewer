@@ -352,7 +352,8 @@ HEADERS       = \
     libontology/edu_monash_infotech_OWLAPIWrapper.h \
     ontologyshapes/ontoproperty.h \
     ontologyshapes/ontoindividual.h \
-    ontologyshapes/ontoclass.h
+    ontologyshapes/ontoclass.h \
+    detaildockwidget.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -683,7 +684,8 @@ SOURCES       = plugin.cpp \
     libontology/edu_monash_infotech_OWLAPIWrapper.cpp \
     ontologyshapes/ontoproperty.cpp \
     ontologyshapes/ontoindividual.cpp \
-    ontologyshapes/ontoclass.cpp
+    ontologyshapes/ontoclass.cpp \
+    detaildockwidget.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm
@@ -696,3 +698,6 @@ INCLUDEPATH += /System/Library/Frameworks
 DEPENDPATH += /System/Library/Frameworks
 
 INCLUDEPATH += /System/Library/Frameworks/JavaVM.framework/Headers
+
+FORMS += \
+    detaildockwidget.ui
