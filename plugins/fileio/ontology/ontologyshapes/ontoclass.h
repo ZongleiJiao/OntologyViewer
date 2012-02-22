@@ -13,6 +13,7 @@ class OntologyClassShape: public ShapeObj
     signals:
     void myclick(OntologyClassShape *shape);
     void myDoubleClick(OntologyClassShape *shape);
+    void myRightClick(OntologyClassShape *shape);
 
     public:
         OntologyClassShape();

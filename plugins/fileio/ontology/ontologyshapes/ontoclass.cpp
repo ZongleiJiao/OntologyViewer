@@ -40,6 +40,8 @@ void OntologyClassShape::mousePressEvent(QGraphicsSceneMouseEvent *event){
 
     if (event->button() == Qt::LeftButton) {
         emit myclick(this);
+    }else if(event->button() == Qt::RightButton){
+        emit this->myRightClick(this);
     }
 //    QGraphicsScene *scene = new QGraphicsScene( this );
 
