@@ -46,6 +46,9 @@
 #include <ontoclass.h>
 #include <ontoindividual.h>
 #include <ontoproperty.h>
+#include <detaildockwidget.h>
+#include <editor/mainwindow.h>
+#include <canvasview.h>
 
 using namespace std;
 using namespace dunnart;
@@ -153,9 +156,6 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     **/
     //classview
     onto->drawClassView(canvas);
-    onto->classes[2]->shape->setSize(QSizeF(50,10));
-
-    onto->classes[3]->shape->addContainedShape(onto->classes[2]->shape);
     //individualview
 //    onto->drawIndividualView(canvas);
     //propertyview
@@ -168,12 +168,6 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
       * the anonymous class strings into formula
       *  and graphs.
     **/
-//    QString s = "ObjectIntersectionOf(<http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#Student> ObjectIntersectionOf(ObjectAllValuesFrom(<http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#hasChildren> <http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#Male>) ObjectHasValue(<http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#hasGender> <http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#female>)) ObjectUnionOf(ObjectUnionOf(ObjectHasValue(<http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#hasGender> <http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#male>) ObjectExactCardinality(3 <http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#hasChildren> owl:Thing)) ObjectAllValuesFrom(<http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#hasChildren> <http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#Female>)))";
-//    QString ss = "ObjectIntersectionOf(<http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#Student> ObjectAllValuesFrom(<http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#hasChildren> <http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#Female>) ObjectHasValue(<http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#hasGender> <http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#male>) 	ObjectExactCardinality(3 <http://protege.stanford.edu/plugins/owl/owl-library/koala.owl#hasChildren> owl:Thing))";
-//    cout<<">>>>> "<<onto->getFormula(ss).toStdString()<<endl;
-//    canvas->addText(onto->getFormula(ss));
-//    onto->drawLogical(ss,canvas);
-
 //    onto->drawLogicalView(canvas);
 
 

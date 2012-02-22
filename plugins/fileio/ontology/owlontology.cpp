@@ -132,6 +132,8 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         //connect signals
         connect(tmpclass->shape,SIGNAL(myclick(OntologyClassShape*)),this,SLOT(ontoclass_clicked(OntologyClassShape*)));
         connect(tmpclass->shape,SIGNAL(myDoubleClick(OntologyClassShape*)),this,SLOT(ontoclass_doubleclicked(OntologyClassShape*)));
+        connect(tmpclass->shape,SIGNAL(myRightClick(OntologyClassShape*)),this,SLOT(ontoclass_rightclicked(OntologyClassShape*)));
+
 
         //get equivalent class (Warn!!! only 1 or more???)
         QString tmpstr = QString(wp->getEquivalentClasses(tmpclass->shortname.toLocal8Bit().data()));
@@ -715,8 +717,8 @@ ShapeObj * OwlOntology::drawEquivalentClass(QString qstr,Canvas *canvas)
     //<> element ??? consider about multiple namespace!!!
     if (str.startsWith("<"))
     {
-        int i = str.indexOf("#",0);
-        QString sname = str.mid(i+1,str.length() - 2-i);
+        int cidx = str.indexOf("#",0);
+        QString sname = str.mid(cidx+1,str.length() - 2-cidx);
 
         ShapeObj * entityshape;
 
@@ -726,7 +728,24 @@ ShapeObj * OwlOntology::drawEquivalentClass(QString qstr,Canvas *canvas)
             idx=this->getIndexOfClasses(sname);
             if(idx != -1)
             {
-                entityshape=classes[idx]->shape;
+                OntologyClassShape * classshape = new OntologyClassShape();
+                classshape->setIdString(">"+classes[idx]->shortname);
+                classshape->setToolTip(classes[idx]->URI);
+                classshape->setSize(QSizeF(150,20));
+                classshape->setMyLabel(classes[idx]->shortname);
+                classshape->setFillColour(this->CLASS_SHAPE_COLOR);
+                /** set level labels
+                    1 shortname
+                    2 individuals
+                    3 sub
+                    4 super
+                    5 disjoint
+                    6 equivalent
+                **/
+                for(int i=0;i<6;i++)
+                    classshape->setLabelByLevels(i+1,classes[idx]->shape->levelLabels[i]);
+
+                entityshape = classshape;
             }
         }
 
@@ -735,7 +754,14 @@ ShapeObj * OwlOntology::drawEquivalentClass(QString qstr,Canvas *canvas)
             idx=this->getIndexOfIndividuals(sname);
             if(idx != -1)
             {
-                entityshape=individuals[idx]->shape;
+                OntologyIndividualShape * individualshape = new OntologyIndividualShape();
+                individualshape->setIdString(">" + individuals[idx]->shortname);
+                individualshape->setLabel(individuals[idx]->shortname);
+                individualshape->setToolTip(individuals[idx]->URI);
+                individualshape->setSize(QSizeF(150,20));
+                individualshape->setFillColour(this->INDIVIDUAL_SHAPE_COLOR);
+
+                entityshape = individualshape;
             }
         }
 
@@ -744,7 +770,14 @@ ShapeObj * OwlOntology::drawEquivalentClass(QString qstr,Canvas *canvas)
             idx=this->getIndexOfProperties(sname);
             if(idx != -1)
             {
-                entityshape=properties[idx]->shape;
+                OntologyPropertyShape * propertyshape = new OntologyPropertyShape();
+                propertyshape->setIdString(">"+properties[idx]->encodedPropertyNameAndType);
+                propertyshape->setLabel("["+properties[idx]->propertytype +"]\n" + properties[idx]->shortname);
+                propertyshape->setToolTip(properties[idx]->URI);
+                propertyshape->setSize(QSizeF(200,35));
+                propertyshape->setFillColour(this->PROPERTY_SHAPE_COLOR);
+
+                entityshape = propertyshape;
             }
         }
 
@@ -1087,6 +1120,40 @@ void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
         classes[idx]->setFocused(false,this->maincanvas);
     }
     this->currentfocusedclassidx = -1;
+}
+
+void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
+{
+    int idx = this->getIndexOfClasses(classshape->idString());
+    if(idx!=-1&&classes[idx]->equivalentclass.trimmed()!="")
+    {
+        DetailDockWidget * wid = new DetailDockWidget();
+        wid->show();
+        //root class
+        OntologyClassShape * classshape = new OntologyClassShape();
+        classshape->setIdString(">"+classes[idx]->shortname);
+        classshape->setToolTip(classes[idx]->URI);
+        classshape->setSize(QSizeF(150,20));
+        classshape->setMyLabel(classes[idx]->shortname);
+        classshape->setFillColour(this->CLASS_SHAPE_COLOR);
+        for(int i=0;i<6;i++)
+            classshape->setLabelByLevels(i+1,classes[idx]->shape->levelLabels[i]);
+        wid->my_canvas->addItem(classshape);
+        //formula view
+        ShapeObj * fshape = drawEquivalentClass(classes[idx]->equivalentclass,wid->my_canvas);
+        //connection
+        Connector * conn = new Connector();
+        conn->initWithConnection(classshape,fshape);
+        conn->setColour(QColor("black"));
+        conn->setDirected(true);
+        wid->my_canvas->addItem(conn);
+        wid->my_canvas->setOptPreventOverlaps(true);
+        wid->my_canvas->setOptAutomaticGraphLayout(true);
+        wid->my_canvas->setOptLayoutMode(1);
+        wid->my_canvas->fully_restart_graph_layout();
+        wid->setGeometry(0,0,600,600);
+
+    }
 }
 
 void OwlOntology::ontoindividual_clicked(OntologyIndividualShape *individualshape)

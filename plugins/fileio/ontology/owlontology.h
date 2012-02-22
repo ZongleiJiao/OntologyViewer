@@ -6,6 +6,7 @@
 #include <ontoclass.h>
 #include <ontoindividual.h>
 #include <ontoproperty.h>
+#include <detaildockwidget.h>
 
 class OwlOntology:public QObject
 {
@@ -13,6 +14,8 @@ class OwlOntology:public QObject
 public slots:
     void ontoclass_clicked(OntologyClassShape * classshape);
     void ontoclass_doubleclicked(OntologyClassShape * classshape);
+    void ontoclass_rightclicked(OntologyClassShape * classshape);
+
     void ontoindividual_clicked(OntologyIndividualShape * individualshape);
     void ontoproperty_clicked(OntologyPropertyShape * propertyshape);
 public:
