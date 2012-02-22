@@ -3,7 +3,7 @@
 
 #include <QDockWidget>
 #include "libdunnartcanvas/canvas.h"
-
+#include "libdunnartcanvas/canvasview.h"
 using namespace dunnart;
 
 namespace Ui {
@@ -18,6 +18,7 @@ public:
     explicit DetailDockWidget(QWidget *parent = 0);
     ~DetailDockWidget();
     Canvas *my_canvas;
+    CanvasView * my_view;
     
 private:
     Ui::DetailDockWidget *ui;
