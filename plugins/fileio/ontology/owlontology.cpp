@@ -322,22 +322,30 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
 //draw the ontology classes
 void OwlOntology::drawClassView(Canvas *canvas)
 {
+    cout<<"Start drawing classes..."<<endl;
     //draw classes
     for(int i=0;i<classes.length();i++)
     {
+        cout<<"Node "<<i<<". ";
         //**** do not draw thing ****
         if(classes[i]->shortname.toLower()!="thing")
             canvas->addItem(classes[i]->shape);       
     }
 
+    cout<<"\nStart drawing edges..."<<endl;
     //draw subclasses connections
     for(int i=0;i<classes.length();i++)
     {
+        cout<<"\nedges of class["<<i<<"]("
+            <<classes[i]->shortname.toStdString()<<"):"
+            <<"total connectors="<<classes[i]->classesconnectors.size()<<endl;
         //**** do not draw thing ****
         if(classes[i]->shortname.toLower()!="thing")
-        {
+        {           
             for(int j=0;j<classes[i]->classesconnectors.size();j++)
+            {   cout<<"<"<<j<<">";
                 canvas->addItem(classes[i]->classesconnectors[j]);
+            }
         }
     }
 
