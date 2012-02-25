@@ -1155,11 +1155,11 @@ void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
         conn->setColour(QColor("black"));
         conn->setDirected(true);
         wid->my_canvas->addItem(conn);
-        wid->my_canvas->setOptPreventOverlaps(true);
         wid->my_canvas->setOptAutomaticGraphLayout(true);
         wid->my_canvas->setOptLayoutMode(1);
+        wid->my_canvas->setOptPreventOverlaps(true);
         wid->my_canvas->fully_restart_graph_layout();
-        wid->setGeometry(0,0,600,600);
+        wid->setGeometry(100,0,600,600);
 
     }
 }
