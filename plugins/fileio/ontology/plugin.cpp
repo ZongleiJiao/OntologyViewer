@@ -145,8 +145,11 @@ bool OntologyFileIOPlugin::saveDiagramToFile(Canvas *canvas,
 bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
         const QFileInfo& fileInfo, QString& errorMessage)
 {
+    cout<<"Start loading ontology :"<<fileInfo.completeBaseName().toStdString()<<endl;
     OwlOntology * onto = new OwlOntology(canvas);
     onto->loadontology(fileInfo);
+
+    cout<<"Finish loading. Total " <<onto->classes.size()<<" class notes."<<endl;
 
     /** text output **/
     //cout<<onto->toQString().toStdString();
