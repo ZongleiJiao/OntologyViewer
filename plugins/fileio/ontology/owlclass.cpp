@@ -1,5 +1,5 @@
 #include "owlclass.h"
-
+using namespace std;
 OwlClass::OwlClass()
 {    
     this->equivalentclass="";
@@ -48,9 +48,13 @@ void OwlClass::showIndividuals(Canvas *canvas)
 
 void OwlClass::hideIndividuals(Canvas *canvas)
 {
+
     if(isIndividualsShowed)
     {
-        for(int i=0; i<individuals.size();i++)canvas->removeItem(individuals[i]->shape);
+        for(int i=0; i<individuals.size();i++)
+        {
+            canvas->removeItem(individuals[i]->shape);
+        }
         for(int i=0; i<individualconnectors.size();i++)canvas->removeItem(individualconnectors[i]);
         this->isIndividualsShowed=false;
     }
@@ -71,6 +75,7 @@ void OwlClass::setFocused(bool focus, Canvas *canvas)
             classesconnectors[i]->setColour(CLASS_CONNECTOR_FOCUSED_COLOR);
         }
         isFocused = true;
+        canvas->setFocusItem(shape,Qt::OtherFocusReason);
     }
     //is focused --> release it
     if(!focus&&isFocused){

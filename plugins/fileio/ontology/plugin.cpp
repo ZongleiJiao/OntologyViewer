@@ -178,6 +178,11 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     **/
     //classview
     onto->drawClassView(canvas);
+
+    canvas->setOptAutomaticGraphLayout(true);
+    canvas->setOptLayoutMode(1);
+    canvas->setOptPreventOverlaps(true);
+    canvas->fully_restart_graph_layout();
     //individualview
 //    onto->drawIndividualView(canvas);
     //propertyview

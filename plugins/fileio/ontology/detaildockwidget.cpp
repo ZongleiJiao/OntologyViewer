@@ -8,6 +8,7 @@ DetailDockWidget::DetailDockWidget(QWidget *parent) :
     ui->setupUi(this);
     my_canvas = new Canvas();
     my_view = new CanvasView(my_canvas);
+//    my_view->scale(0.4,0.4);
     this->setWidget(my_view);
 }
 
@@ -17,6 +18,7 @@ void DetailDockWidget::clearall()
     my_canvas = new Canvas();
     my_view->~CanvasView();
     my_view = new CanvasView(my_canvas);
+//    my_view->scale(0.6,0.6);
     this->setWidget(my_view);
 }
 

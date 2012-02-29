@@ -1121,6 +1121,7 @@ void OwlOntology::ontoclass_clicked(OntologyClassShape *classshape)
     if(idx!=-1){
         classes[idx]->showIndividuals(this->maincanvas);
         classes[idx]->setFocused(true,this->maincanvas);
+        this->maincanvas->fully_restart_graph_layout();
         this->currentfocusedclassidx = idx;
     }
 }
@@ -1131,6 +1132,7 @@ void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
     if(idx!=-1){
         classes[idx]->hideIndividuals(this->maincanvas);
         classes[idx]->setFocused(false,this->maincanvas);
+        this->maincanvas->fully_restart_graph_layout();
     }
     this->currentfocusedclassidx = -1;
 }
