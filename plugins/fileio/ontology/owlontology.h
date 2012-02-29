@@ -7,6 +7,7 @@
 #include <ontoindividual.h>
 #include <ontoproperty.h>
 #include <detaildockwidget.h>
+#include <QtGui>
 
 class OwlOntology:public QObject
 {
@@ -30,7 +31,10 @@ public:
     static const QColor PROPERTY_CONNECTOR_COLOR;
 
     //variable
+    QMainWindow * appmainwindow;
     Canvas * maincanvas;
+    DetailDockWidget * wid;
+
     QString ontologyname;
     QList<OwlClass *> classes;
     QList<OwlIndividual *> individuals;
@@ -39,7 +43,7 @@ public:
     int currentfocusedclassidx;
 
     //methods
-    OwlOntology(Canvas * canvas);
+    OwlOntology(Canvas * canvas,QMainWindow *mainwin);
     int getIndexOfIndividuals(QString shortname);
     int getIndexOfClasses(QString shortname);
     int getIndexOfProperties(QString shortname);

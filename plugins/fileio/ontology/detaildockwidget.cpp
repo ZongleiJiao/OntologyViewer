@@ -11,6 +11,15 @@ DetailDockWidget::DetailDockWidget(QWidget *parent) :
     this->setWidget(my_view);
 }
 
+void DetailDockWidget::clearall()
+{
+    my_canvas->~Canvas();
+    my_canvas = new Canvas();
+    my_view->~CanvasView();
+    my_view = new CanvasView(my_canvas);
+    this->setWidget(my_view);
+}
+
 DetailDockWidget::~DetailDockWidget()
 {
     delete ui;

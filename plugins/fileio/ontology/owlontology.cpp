@@ -7,16 +7,21 @@
 #include <edu_monash_infotech_OWLAPIWrapper.h>
 #include <iostream>
 #include <stack>
-
-#include <QMessageBox>
+#include <libdunnartcanvas/canvas.h>
 
 using namespace dunnart;
 using namespace std;
 
-OwlOntology::OwlOntology(Canvas *canvas)
+OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
 {
     this->maincanvas = canvas;
     this->currentfocusedclassidx = -1;
+    this->appmainwindow = mainwin;
+
+    wid = new DetailDockWidget();
+    this->appmainwindow->addDockWidget(Qt::RightDockWidgetArea,wid);
+    wid->setWindowTitle("Equivalent Class");
+    wid->show();
 }
 
 /** TODO List:
@@ -1135,8 +1140,7 @@ void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
     int idx = this->getIndexOfClasses(classshape->idString());
     if(idx!=-1&&classes[idx]->equivalentclass.trimmed()!="")
     {
-        DetailDockWidget * wid = new DetailDockWidget();
-        wid->show();
+        wid->clearall();
         //root class
         OntologyClassShape * classshape = new OntologyClassShape();
         classshape->setIdString(">"+classes[idx]->shortname);
@@ -1147,19 +1151,27 @@ void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
         for(int i=0;i<6;i++)
             classshape->setLabelByLevels(i+1,classes[idx]->shape->levelLabels[i]);
         wid->my_canvas->addItem(classshape);
+        wid->setWindowTitle("[EQU]"+classes[idx]->shortname);
         //formula view
         ShapeObj * fshape = drawEquivalentClass(classes[idx]->equivalentclass,wid->my_canvas);
         //connection
         Connector * conn = new Connector();
         conn->initWithConnection(classshape,fshape);
-        conn->setColour(QColor("black"));
+        conn->setColour(QColor("brown"));
         conn->setDirected(true);
+        conn->setLabel("[EQU]");
+        Connector * conn1 = new Connector();
+        conn1->initWithConnection(fshape,classshape);
+        conn1->setColour(QColor("brown"));
+        conn1->setDirected(true);
+
         wid->my_canvas->addItem(conn);
+        wid->my_canvas->addItem(conn1);
         wid->my_canvas->setOptAutomaticGraphLayout(true);
         wid->my_canvas->setOptLayoutMode(1);
         wid->my_canvas->setOptPreventOverlaps(true);
         wid->my_canvas->fully_restart_graph_layout();
-        wid->setGeometry(100,0,600,600);
+        //wid->setGeometry(100,0,600,600);
 
     }
 }

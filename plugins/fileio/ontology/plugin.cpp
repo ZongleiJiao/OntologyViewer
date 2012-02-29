@@ -31,12 +31,15 @@
 
 #include "libdunnartcanvas/shapeplugininterface.h"
 #include "libdunnartcanvas/fileioplugininterface.h"
+#include "libdunnartcanvas/applicationplugininterface.h"
 #include "libdunnartcanvas/canvas.h"
 #include "libdunnartcanvas/canvasitem.h"
 #include "libdunnartcanvas/pluginshapefactory.h"
 #include "libdunnartcanvas/shape.h"
 #include "libdunnartcanvas/connector.h"
 #include "libdunnartcanvas/undo.h"
+#include "libdunnartcanvas/canvasapplication.h"
+
 
 #include <java_magic.h>
 #include <edu_monash_infotech_OWLAPIWrapper.h>
@@ -49,6 +52,7 @@
 #include <detaildockwidget.h>
 #include <editor/mainwindow.h>
 #include <canvasview.h>
+#include <QMainWindow>
 
 using namespace std;
 using namespace dunnart;
@@ -65,16 +69,23 @@ using namespace dunnart;
 //! software built on top of Dunnart can easily exclude this functionality
 //! if desired.
 //!
-class OntologyFileIOPlugin : public QObject, public ShapePluginInterface,public FileIOPluginInterface
+class OntologyFileIOPlugin :
+        public QObject,
+        public ShapePluginInterface,
+        public FileIOPluginInterface,
+        public ApplicationPluginInterface
 {
     Q_OBJECT
         Q_INTERFACES (dunnart::FileIOPluginInterface)
         Q_INTERFACES (dunnart::ShapePluginInterface)
+        Q_INTERFACES (dunnart::ApplicationPluginInterface)
 
     public:
+        QMainWindow * appmainwin;
         OntologyFileIOPlugin()
         {
         }
+        //methods for FileIOPluginInterface
         QStringList saveableFileExtensions(void) const
         {
             QStringList fileTypes;
@@ -133,6 +144,14 @@ class OntologyFileIOPlugin : public QObject, public ShapePluginInterface,public 
             }
             return NULL;
         }
+
+        //methods for ApplicationPluginInterface
+        void applicationMainWindowInitialised(CanvasApplication *canvasApplication)
+        {
+            this->appmainwin = canvasApplication->mainWindow();
+        }
+
+        void applicationWillClose(CanvasApplication *canvasApplication){}
 };
 
 bool OntologyFileIOPlugin::saveDiagramToFile(Canvas *canvas,
@@ -146,7 +165,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
         const QFileInfo& fileInfo, QString& errorMessage)
 {
     cout<<"Start loading ontology :"<<fileInfo.completeBaseName().toStdString()<<endl;
-    OwlOntology * onto = new OwlOntology(canvas);
+    OwlOntology * onto = new OwlOntology(canvas,this->appmainwin);
     onto->loadontology(fileInfo);
 
     cout<<"Finish loading. Total " <<onto->classes.size()<<" class notes."<<endl;

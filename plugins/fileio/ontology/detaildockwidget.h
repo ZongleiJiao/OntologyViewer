@@ -19,6 +19,7 @@ public:
     ~DetailDockWidget();
     Canvas *my_canvas;
     CanvasView * my_view;
+    void clearall();
     
 private:
     Ui::DetailDockWidget *ui;
