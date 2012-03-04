@@ -353,7 +353,11 @@ HEADERS       = \
     ontologyshapes/ontoproperty.h \
     ontologyshapes/ontoindividual.h \
     ontologyshapes/ontoclass.h \
-    detaildockwidget.h
+    detaildockwidget.h \
+    searchdockwidget.h \
+    filterdockwidget.h \
+    zoomdockwidget.h \
+    historydockwidget.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -685,7 +689,11 @@ SOURCES       = plugin.cpp \
     ontologyshapes/ontoproperty.cpp \
     ontologyshapes/ontoindividual.cpp \
     ontologyshapes/ontoclass.cpp \
-    detaildockwidget.cpp
+    detaildockwidget.cpp \
+    searchdockwidget.cpp \
+    filterdockwidget.cpp \
+    zoomdockwidget.cpp \
+    historydockwidget.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm
@@ -700,4 +708,8 @@ DEPENDPATH += /System/Library/Frameworks
 INCLUDEPATH += /System/Library/Frameworks/JavaVM.framework/Headers
 
 FORMS += \
-    detaildockwidget.ui
+    detaildockwidget.ui \
+    searchdockwidget.ui \
+    filterdockwidget.ui \
+    zoomdockwidget.ui \
+    historydockwidget.ui
