@@ -14,16 +14,6 @@
    <string>Zoom</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <widget class="Phonon::SeekSlider" name="seekSlider">
-    <property name="geometry">
-     <rect>
-      <x>31</x>
-      <y>11</y>
-      <width>141</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QSpinBox" name="spinBox">
     <property name="geometry">
      <rect>
@@ -34,15 +24,39 @@
      </rect>
     </property>
    </widget>
+   <widget class="QSlider" name="zoomSlider">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>10</y>
+      <width>176</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>23</height>
+     </size>
+    </property>
+    <property name="minimum">
+     <number>1</number>
+    </property>
+    <property name="maximum">
+     <number>1000</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
   </widget>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>Phonon::SeekSlider</class>
-   <extends>QWidget</extends>
-   <header location="global">phonon/seekslider.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

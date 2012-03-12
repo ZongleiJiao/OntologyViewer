@@ -19,9 +19,25 @@ OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
     this->appmainwindow = mainwin;
 
     wid = new DetailDockWidget();
-    this->appmainwindow->addDockWidget(Qt::RightDockWidgetArea,wid);
+    this->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,wid);
     wid->setWindowTitle("Equivalent Class");
     wid->show();
+
+    zoomdwgt = new ZoomDockWidget();
+    this->appmainwindow->addDockWidget(Qt::BottomDockWidgetArea,zoomdwgt);
+    zoomdwgt->show();
+
+    filterdwgt = new FilterDockWidget();
+    appmainwindow->addDockWidget(Qt::BottomDockWidgetArea,filterdwgt);
+    filterdwgt->show();
+
+    historydwgt = new HistoryDockWidget();
+    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,historydwgt);
+    historydwgt->show();
+
+    searchdwgt = new SearchDockWidget();
+    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,searchdwgt);
+    searchdwgt->show();
 }
 
 /** TODO List:
