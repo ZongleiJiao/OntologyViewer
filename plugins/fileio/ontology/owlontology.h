@@ -11,6 +11,7 @@
 #include <searchdockwidget.h>
 #include <filterdockwidget.h>
 #include <historydockwidget.h>
+#include <informationboxdockwidget.h>
 #include <QtGui>
 
 class OwlOntology:public QObject
@@ -42,6 +43,7 @@ public:
     FilterDockWidget * filterdwgt;
     HistoryDockWidget * historydwgt;
     SearchDockWidget * searchdwgt;
+    InformationBoxDockWidget *infoboxdwgt;
 
     QString ontologyname;
     QList<OwlClass *> classes;

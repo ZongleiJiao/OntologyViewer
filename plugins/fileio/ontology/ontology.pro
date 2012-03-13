@@ -357,7 +357,8 @@ HEADERS       = \
     searchdockwidget.h \
     filterdockwidget.h \
     zoomdockwidget.h \
-    historydockwidget.h
+    historydockwidget.h \
+    informationboxdockwidget.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -693,7 +694,8 @@ SOURCES       = plugin.cpp \
     searchdockwidget.cpp \
     filterdockwidget.cpp \
     zoomdockwidget.cpp \
-    historydockwidget.cpp
+    historydockwidget.cpp \
+    informationboxdockwidget.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm
@@ -712,4 +714,5 @@ FORMS += \
     searchdockwidget.ui \
     filterdockwidget.ui \
     zoomdockwidget.ui \
-    historydockwidget.ui
+    historydockwidget.ui \
+    informationboxdockwidget.ui

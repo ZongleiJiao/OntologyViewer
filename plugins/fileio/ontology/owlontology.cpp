@@ -24,11 +24,11 @@ OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
     wid->show();
 
     zoomdwgt = new ZoomDockWidget();
-    this->appmainwindow->addDockWidget(Qt::BottomDockWidgetArea,zoomdwgt);
+    this->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,zoomdwgt);
     zoomdwgt->show();
 
     filterdwgt = new FilterDockWidget();
-    appmainwindow->addDockWidget(Qt::BottomDockWidgetArea,filterdwgt);
+    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,filterdwgt);
     filterdwgt->show();
 
     historydwgt = new HistoryDockWidget();
@@ -38,6 +38,15 @@ OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
     searchdwgt = new SearchDockWidget();
     appmainwindow->addDockWidget(Qt::RightDockWidgetArea,searchdwgt);
     searchdwgt->show();
+
+    infoboxdwgt = new InformationBoxDockWidget();
+    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,infoboxdwgt);
+    infoboxdwgt->show();
+
+    //temp
+    InformationBoxDockWidget * detailinforofnode = new InformationBoxDockWidget();
+    appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,detailinforofnode);
+    detailinforofnode->show();
 }
 
 /** TODO List:

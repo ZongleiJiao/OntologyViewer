@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>229</width>
-    <height>68</height>
+    <width>243</width>
+    <height>173</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,53 +17,102 @@
    <widget class="QCheckBox" name="checkBox">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>-1</y>
-      <width>65</width>
+      <x>11</x>
+      <y>61</y>
+      <width>89</width>
       <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>Labels</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBox_2">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>20</y>
-      <width>63</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Edges</string>
+     <string>Properties</string>
     </property>
    </widget>
    <widget class="QCheckBox" name="checkBox_3">
     <property name="geometry">
      <rect>
-      <x>95</x>
-      <y>-1</y>
-      <width>85</width>
+      <x>11</x>
+      <y>31</y>
+      <width>73</width>
       <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>Instances</string>
+     <string>Classes</string>
     </property>
    </widget>
    <widget class="QCheckBox" name="checkBox_4">
     <property name="geometry">
      <rect>
-      <x>95</x>
-      <y>20</y>
-      <width>125</width>
+      <x>100</x>
+      <y>31</y>
+      <width>93</width>
       <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>Disjoint Classes</string>
+     <string>Individuals</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>101</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Filter by type:</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_2">
+    <property name="geometry">
+     <rect>
+      <x>101</x>
+      <y>61</y>
+      <width>99</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Label of arc</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>90</y>
+      <width>231</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Highlight nodes with name pattern:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>114</y>
+      <width>144</width>
+      <height>22</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>157</x>
+      <y>111</y>
+      <width>60</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Go</string>
     </property>
    </widget>
   </widget>

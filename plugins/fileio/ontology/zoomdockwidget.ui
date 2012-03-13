@@ -6,22 +6,25 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>322</width>
-    <height>78</height>
+    <width>215</width>
+    <height>71</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Zoom</string>
+   <string>Zoom &amp;&amp; Level of hierarchy</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <widget class="QSpinBox" name="spinBox">
     <property name="geometry">
      <rect>
-      <x>213</x>
-      <y>11</y>
+      <x>160</x>
+      <y>10</y>
       <width>45</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="value">
+     <number>5</number>
     </property>
    </widget>
    <widget class="QSlider" name="zoomSlider">
@@ -29,7 +32,7 @@
      <rect>
       <x>20</x>
       <y>10</y>
-      <width>176</width>
+      <width>111</width>
       <height>23</height>
      </rect>
     </property>
