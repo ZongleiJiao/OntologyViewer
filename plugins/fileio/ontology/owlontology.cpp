@@ -49,7 +49,7 @@ int OwlOntology::getIndexOfIndividuals(QString shortname)
 {
     for(int i=0;i<individuals.length();i++)
     {
-        if(individuals[i]->shortname == shortname) return i;
+        if(individuals[i]->shortname.toLower() == shortname.toLower()) return i;
     }
     return -1;
 }
@@ -59,7 +59,7 @@ int OwlOntology::getIndexOfClasses(QString shortname)
 {
     for(int i=0;i<classes.length();i++)
     {
-        if(classes[i]->shortname == shortname) return i;
+        if(classes[i]->shortname.toLower() == shortname.toLower()) return i;
     }
     return -1;
 }
@@ -69,7 +69,7 @@ int OwlOntology::getIndexOfProperties(QString shortname)
 {
     for(int i=0;i<properties.length();i++)
     {
-        if(properties[i]->shortname == shortname) return i;
+        if(properties[i]->shortname.toLower() == shortname.toLower()) return i;
     }
     return -1;
 }
@@ -320,8 +320,40 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         }
     }
 
-
-
+    /**
+      Check "Thing" Class, if it does not exist, create one and link it.
+      Then set the superclass of classes without superclasses to "Thing".
+      **/
+    int idxThing = this->getIndexOfClasses("Thing");
+    if(idxThing==-1)
+    {
+        cout<<"Thing not found! Creating..."<<endl;
+        OwlClass * thingClass = new OwlClass();
+        thingClass->shortname = "Thing";
+        thingClass->URI ="owl:Thing";
+        thingClass->shape = new OntologyClassShape();
+        thingClass->shape->setIdString(thingClass->shortname);
+        thingClass->shape->setToolTip(thingClass->URI);
+        thingClass->shape->setPosAndSize(QPointF(200,0),QSizeF(150,20));
+        thingClass->shape->setMyLabel(thingClass->shortname);
+        thingClass->shape->setLabelByLevels(1,thingClass->shortname); //set level 1 label
+        thingClass->shape->setFillColour(this->CLASS_SHAPE_COLOR);
+        classes.append(thingClass);
+        idxThing = classes.size()-1;
+    }
+    for(int i=0;i<classes.size();i++)
+    {
+        if(i!=idxThing&&classes[i]->superclasses.size()==0){
+            classes[i]->superclasses.append(classes[idxThing]);
+            classes[i]->shape->setLabelByLevels(4,"[SUP]:Thing");
+            classes[idxThing]->subclasses.append(classes[i]);
+        }
+    }
+    QString thingsub = "[SUB]:";
+    for(int i=0;i<classes[idxThing]->subclasses.size();i++){
+        thingsub +=classes[idxThing]->subclasses[i]->shortname+" ";
+    }
+    classes[idxThing]->shape->setLabelByLevels(3,thingsub);
 }
 
 //draw the ontology classes

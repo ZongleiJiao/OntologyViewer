@@ -183,6 +183,8 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     canvas->setOptLayoutMode(1);
     canvas->setOptPreventOverlaps(true);
     canvas->fully_restart_graph_layout();
+
+    canvas->addItem(onto->classes[onto->getIndexOfClasses("Thing")]->shape);
     //individualview
 //    onto->drawIndividualView(canvas);
     //propertyview
