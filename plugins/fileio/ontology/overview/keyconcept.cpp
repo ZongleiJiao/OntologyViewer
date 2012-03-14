@@ -1,46 +1,13 @@
 #include "keyconcept.h"
 #include <ontoclass.h>
+#include <stack>
+
+using namespace std;
 
 KeyConcept::KeyConcept(QList<OwlClass *> classes)
 {
     this->originClasses = classes;
-}
-/* preformat the class set, any class without superclass
-   will be set the 'Thing' as its superclass. And if there
-   is no 'Thing' class, it will be created. */
-QList<OwlClass> KeyConcept::preformat(QList<OwlClass*> classes)
-{
-    //check whether "Thing" exist and get its index
-    int idxThing = -1;
-    for(int i=0;i<classes.size();i++)
-    {
-        if(classes[i]->shortname.toLower() == "thing")
-        {
-            idxThing = i;
-            break;
-        }
-    }
-    //if "Thing" does not exist, create a "Thing" class
-//    if(idxThing==-1)
-//    {
-//        OwlClass * thingClass = new OwlClass();
-//        thingClass->shortname = "Thing";
-//        thingClass->URI ="owl:Thing";
-//        thingClass->shape = new OntologyClassShape();
-//        thingClass->shape->setIdString(thingClass->shortname);
-//        thingClass->shape->setToolTip(thingClass->URI);
-//        thingClass->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));
-//        thingClass->shape->setMyLabel(tmpclass->shortname);
-//        thingClass->shape->setLabelByLevels(1,tmpclass->shortname); //set level 1 label
-//        thingClass->shape->setFillColour(this->CLASS_SHAPE_COLOR);
-//        classes.append(thingClass);
-//        idxThing = classes.size()-1;
-//    }
-
-    //check all classes(except Thing) without superclasses
-
-
-
+    this->maxpath=-1;
 }
 
 //measure -- density
@@ -81,14 +48,103 @@ double KeyConcept::naturalCategoryValue(OwlClass *node)
 
 }
 
+int KeyConcept::getPath(OwlClass *node)
+{
+    /** found how many times is this node in the middle of path.
+        use superclasses number(to the Thing) multiple the leaves.
+     **/
+    //find leaves
+    int nleaves=0;
+
+    stack<OwlClass *> nodestack;
+    for(int i=0;i<node->subclasses.size();i++)
+    {
+        nodestack.push(node->subclasses[i]);
+    }
+    while(!nodestack.empty())
+    {
+        OwlClass * tmpclass = nodestack.top();
+        nodestack.pop();
+        if(tmpclass->subclasses.size()==0)
+        {
+            nleaves++;
+        }
+        else
+        {
+            for(int i=0;i<tmpclass->subclasses.size();i++)
+            {
+                nodestack.push(tmpclass->subclasses[i]);
+            }
+        }
+    }
+
+    cout<<"Leaves of <"<<node->shortname.toStdString()<<">:"
+        <<nleaves<<endl;
+
+    //find roots
+    int nroots=0;
+    for(int i=0;i<node->superclasses.size();i++)
+    {
+        nodestack.push(node->superclasses[i]);
+    }
+    while(!nodestack.empty())
+    {
+        OwlClass * tmpclass = nodestack.top();
+        nodestack.pop();
+        if(tmpclass->superclasses.size()==0)
+        {
+            nroots++;
+        }
+        else
+        {
+            for(int i=0;i<tmpclass->superclasses.size();i++)
+            {
+                nodestack.push(tmpclass->superclasses[i]);
+            }
+        }
+    }
+
+    cout<<"Roots of <"<<node->shortname.toStdString()<<">:"
+        <<nroots<<endl;
+    cout<<"Paths of <"<<node->shortname.toStdString()<<">:"
+        <<nroots*nleaves<<endl;
+    return nleaves*nroots;
+}
+
 double KeyConcept::basicLevel(OwlClass *node)
 {
+    /** Compute the basicLevel which is the normalised path number. **/
 
+    // Warn: Must caculate all the paths to get the maxpath first!
+    if(maxpath==-1||maxpath==0) return 0.0;
 }
 
 double KeyConcept::nameSimplicity(OwlClass *node)
 {
-
+    /**
+        NS(C) = 1 - c(nc-1), 0<=NS(C)<=1
+        nc being the number of compounds in the label
+        c is a constant — use c = 0.3.
+    **/
+    /**
+        How to check whether it is a word?
+        space? capital letter? or string length?
+        Here, I use the method: check whether its shortname contains other shortnames.
+        then, each time we found, NS(C)-c.
+        Limitation: PizzaTopping -- VegetableTopping -- XXXTopping cannot be recognized
+    **/
+    double ns=1.00;
+    for(int i=0;i<originClasses.size();i++)
+    {
+        if(node->shortname!=originClasses[i]->shortname
+           &&node->shortname.contains(originClasses[i]->shortname))
+        {
+            ns = ns-nameSimplicity_c;
+        }
+    }
+    //ensure ns>=0
+    if(ns<0)ns=0;
+    return ns;
 }
 
 //coverage contribution

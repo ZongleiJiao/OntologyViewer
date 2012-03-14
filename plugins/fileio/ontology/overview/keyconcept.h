@@ -3,16 +3,27 @@
 #include <owlclass.h>
 class KeyConcept
 {
-private:
+public:
+    //init with all classes
+    KeyConcept(QList<OwlClass *> classes);
+
+    /** Variables **/
+
+    //get n key classes in the set
+    QList<OwlClass *> getKeyClasses(int n);
+
     //the classes
     QList<OwlClass *> originClasses;
     //the scores
     QList<double> scores;
+    //how many times in the middle of path
+    QList<int> pathnums;
+    int maxpath;
 
-    /* preformat the class set, any class without superclass
-       will be set the 'Thing' as its superclass. And if there
-       is no 'Thing' class, it will be created. */
-    QList<OwlClass> preformat(QList<OwlClass*> classes);
+    /** constants **/
+    const static double nameSimplicity_c = 0.3;
+
+    /** functions **/
 
     //measure -- density
     double globalDensity(OwlClass *node);
@@ -26,17 +37,12 @@ private:
     double naturalCategoryValue(OwlClass *node);
     double basicLevel(OwlClass *node);
     double nameSimplicity(OwlClass *node);
+    int getPath(OwlClass *node);
     //coverage contribution
     double contribution();
     //score
     double score(OwlClass *node);
     double overallScore();
-
-public:
-    //init with all classes
-    KeyConcept(QList<OwlClass *> classes);
-    //get n key classes in the set
-    QList<OwlClass *> getKeyClasses(int n);
 };
 
 #endif // KEYCONCEPT_H

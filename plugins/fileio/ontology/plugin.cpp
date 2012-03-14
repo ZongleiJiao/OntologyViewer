@@ -54,6 +54,8 @@
 #include <canvasview.h>
 #include <QMainWindow>
 
+#include <overview/keyconcept.h>
+
 using namespace std;
 using namespace dunnart;
 
@@ -171,7 +173,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     cout<<"Finish loading. Total " <<onto->classes.size()<<" class notes."<<endl;
 
     /** text output **/
-    //cout<<onto->toQString().toStdString();
+    cout<<onto->toQString().toStdString();
 
     /** classview, individualview, propertyview can
       * be displayed together or individually.
@@ -182,16 +184,28 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     canvas->setOptAutomaticGraphLayout(true);
     canvas->setOptLayoutMode(1);
     canvas->setOptPreventOverlaps(true);
-    canvas->fully_restart_graph_layout();
-
-    canvas->addItem(onto->classes[onto->getIndexOfClasses("Thing")]->shape);
-    //individualview
-//    onto->drawIndividualView(canvas);
-    //propertyview
-//    onto->drawPropertyView(canvas);
+    canvas->fully_restart_graph_layout();    
 
     /** Overview of classes (not finished) **/
 //        onto->drawClassOverview(canvas);
+    //test Thing class
+    canvas->addItem(onto->classes[onto->getIndexOfClasses("Thing")]->shape);
+    //test key concept
+    KeyConcept *kc = new KeyConcept(onto->classes);
+    cout<<"KeyConcept -- Origin Classes:" << kc->originClasses.size() <<endl;
+    for(int i=0;i<kc->originClasses.size();i++){
+        cout<<"KeyConcept NameSimplicity:"
+           <<kc->originClasses[i]->shortname.toStdString() << " - "
+           <<kc->nameSimplicity(kc->originClasses[i])
+           <<endl;
+        kc->getPath(kc->originClasses[i]);
+    }
+
+
+    //individualview
+//    onto->drawIndividualView(canvas);
+    //propertyview
+//    onto->drawPropertyView(canvas);    
 
     /** the getFormula() and logicalview() display
       * the anonymous class strings into formula

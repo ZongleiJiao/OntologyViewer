@@ -164,13 +164,17 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
                 if(idx!=-1)classes[i]->subclasses<<classes[idx];
 
                 //create connectors
-                Connector * conn = new Connector();
-                conn->initWithConnection(classes[idx]->shape,classes[i]->shape);
-                conn->setDirected(true);
-                conn->setColour(CLASS_CONNECTOR_COLOR);
+                /** Do not create connectors for "Thing" **/
+                if(classes[i]->shortname.toLower()!="thing")
+                {
+                    Connector * conn = new Connector();
+                    conn->initWithConnection(classes[idx]->shape,classes[i]->shape);
+                    conn->setDirected(true);
+                    conn->setColour(CLASS_CONNECTOR_COLOR);
 
-                classes[i]->classesconnectors<<conn;
-                classes[idx]->classesconnectors<<conn;
+                    classes[i]->classesconnectors<<conn;
+                    classes[idx]->classesconnectors<<conn;
+                }
             }            
         }
         classes[i]->shape->setLabelByLevels(3,substr); //set level 3 label
@@ -354,20 +358,69 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         thingsub +=classes[idxThing]->subclasses[i]->shortname+" ";
     }
     classes[idxThing]->shape->setLabelByLevels(3,thingsub);
+
+    /** dealwith unmatched super/sub relation**/
+    for(int i=0;i<classes.size();i++)
+    {
+        //classes[i]'s superclass does not has subclass(classes[i])
+        //Warn:This needs to add the sub relation connector
+        //Moreover, if the superclass is "Thing", do not create the connector
+        for(int j=0;j<classes[i]->superclasses.size();j++)
+        {
+            if(!classes[i]->superclasses[j]->subclasses.contains(classes[i]))
+            {
+                classes[i]->superclasses[j]->subclasses.append(classes[i]);
+                //set level label, add this subclass
+                classes[i]->superclasses[j]->shape->levelLabels[2] += classes[i]->shortname+" ";
+                //create connectors
+                if(classes[i]->superclasses[j]->shortname.toLower()!="thing")
+                {
+                    Connector * conn = new Connector();
+                    conn->initWithConnection(classes[i]->shape,classes[i]->superclasses[j]->shape);
+                    conn->setDirected(true);
+                    conn->setColour(CLASS_CONNECTOR_COLOR);
+
+                    classes[i]->classesconnectors<<conn;
+                    classes[i]->superclasses[j]->classesconnectors<<conn;
+                }
+            }
+        }
+
+        //classes[i]'s subclass does not has superclass(classes[i])
+        //Since we only use the subclasses to draw the classview, so this does not need add connector
+        for(int j=0;j<classes[i]->subclasses.size();j++)
+        {
+            if(!classes[i]->subclasses[j]->superclasses.contains(classes[i]))
+            {
+                classes[i]->subclasses[j]->superclasses.append(classes[i]);
+                //set level label, add this superclass
+                classes[i]->subclasses[j]->shape->levelLabels[3] += classes[i]->shortname+" ";
+            }
+        }
+    }
+
 }
 
 //draw the ontology classes
 void OwlOntology::drawClassView(Canvas *canvas)
 {
     cout<<"Start drawing classes..."<<endl;
-    //draw classes
+    //draw classes, check whether thing is a subclass of them
+    bool issubthing=false;
+    int idxthing=getIndexOfClasses("Thing");
+    OwlClass * thingclass=new OwlClass();
+    if(idxthing!=-1)thingclass=classes[idxthing];
     for(int i=0;i<classes.length();i++)
     {
         cout<<"Node "<<i<<". ";
+        //check if "Thing" is one subclass
+        if(classes[i]->subclasses.contains(thingclass))issubthing=true;
         //**** do not draw thing ****
-        if(classes[i]->shortname.toLower()!="thing")
+        if(i!=idxthing)
             canvas->addItem(classes[i]->shape);       
     }
+    //if "Thing" is a subclass, draw it
+    if(issubthing)canvas->addItem(thingclass->shape);
 
     cout<<"\nStart drawing edges..."<<endl;
     //draw subclasses connections
@@ -376,8 +429,8 @@ void OwlOntology::drawClassView(Canvas *canvas)
         cout<<"\nedges of class["<<i<<"]("
             <<classes[i]->shortname.toStdString()<<"):"
             <<"total connectors="<<classes[i]->classesconnectors.size()<<endl;
-        //**** do not draw thing ****
-        if(classes[i]->shortname.toLower()!="thing")
+        //**** do not draw thing's connectors ****
+        if(i!=idxthing)
         {           
             for(int j=0;j<classes[i]->classesconnectors.size();j++)
             {   cout<<"<"<<j<<">";
@@ -385,35 +438,6 @@ void OwlOntology::drawClassView(Canvas *canvas)
             }
         }
     }
-
-    //adjust postions -- level only
-//    stack<OwlClass *> sts;
-//    for(int i=0;i<classes.length();i++)
-//    {
-//        if((classes[i]->superclasses.length()==0)||(classes[i]->superclasses.length()==1&&classes[i]->superclasses[0]->shortname=="Thing"))
-//        {
-//            classes[i]->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));
-//            sts.push(classes[i]);
-//            //cout<<"-->Stack size:" <<sts.size() << "Top: " << classes[i]->shortname.toStdString() <<endl;
-//        }
-//        if(classes[i]->shortname=="Thing"){
-//            classes[i]->shape->setPosAndSize(QPointF(-200,i*25),QSizeF(150,20));
-//        }
-//    }
-//    while(!sts.empty()){
-//        OwlClass * tmp = sts.top();
-//        sts.pop();
-//        qreal x = tmp->shape->pos().x();
-
-//        for(int i=0;i<tmp->subclasses.length();i++)
-//        {
-//            qreal y = tmp->subclasses[i]->shape->pos().y();
-//            tmp->subclasses[i]->shape->setPosAndSize(QPointF(x+200,y),QSizeF(150,20));
-//            sts.push(tmp->subclasses[i]);
-//            //cout<<"==>Stack size:" <<sts.size() << "Top: " << tmp->subclasses[i]->shortname.toStdString() <<endl;
-//        }
-
-//    }
 
 }
 
