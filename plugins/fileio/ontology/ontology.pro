@@ -354,7 +354,7 @@ HEADERS       = \
     ontologyshapes/ontoindividual.h \
     ontologyshapes/ontoclass.h \
     detaildockwidget.h \
-    overview/keyconcept.h
+    overview/keyconceptclass.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -687,7 +687,7 @@ SOURCES       = plugin.cpp \
     ontologyshapes/ontoindividual.cpp \
     ontologyshapes/ontoclass.cpp \
     detaildockwidget.cpp \
-    overview/keyconcept.cpp
+    overview/keyconceptclass.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm
@@ -703,5 +703,13 @@ INCLUDEPATH += /System/Library/Frameworks/JavaVM.framework/Headers
 
 FORMS += \
     detaildockwidget.ui
+
+
+
+
+
+
+
+
 
 

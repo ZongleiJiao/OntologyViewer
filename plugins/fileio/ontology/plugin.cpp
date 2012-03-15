@@ -54,7 +54,7 @@
 #include <canvasview.h>
 #include <QMainWindow>
 
-#include <overview/keyconcept.h>
+#include <overview/keyconceptclass.h>
 
 using namespace std;
 using namespace dunnart;
@@ -191,14 +191,22 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     //test Thing class
     canvas->addItem(onto->classes[onto->getIndexOfClasses("Thing")]->shape);
     //test key concept
-    KeyConcept *kc = new KeyConcept(onto->classes);
-    cout<<"KeyConcept -- Origin Classes:" << kc->originClasses.size() <<endl;
-    for(int i=0;i<kc->originClasses.size();i++){
-        cout<<"KeyConcept NameSimplicity:"
-           <<kc->originClasses[i]->shortname.toStdString() << " - "
-           <<kc->nameSimplicity(kc->originClasses[i])
-           <<endl;
-        kc->getPath(kc->originClasses[i]);
+//    KeyConcept *kc = new KeyConcept(onto->classes);
+//    cout<<"KeyConcept -- Origin Classes:" << kc->originClasses.size() <<endl;
+//    for(int i=0;i<kc->originClasses.size();i++){
+//        cout<<"KeyConcept NameSimplicity:"
+//           <<kc->originClasses[i]->shortname.toStdString() << " - "
+//           <<kc->nameSimplicity(kc->originClasses[i])
+//           <<endl;
+//        kc->getPath(kc->originClasses[i]);
+//    }
+    KeyConceptClass *kc=new KeyConceptClass(onto->classes);
+    kc->computeNCValues();
+    for(int i=0;i<kc->namesimplicities.size();i++){
+        cout<<"<<"<< kc->originclasses[i]->shortname.toStdString()
+           <<">>:[NS]"<<kc->namesimplicities[i]
+           <<" [BL]"<<kc->basiclevels[i]
+           <<" [NC]"<<kc->ncvalues[i]<<endl;
     }
 
 

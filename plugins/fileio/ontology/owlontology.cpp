@@ -277,7 +277,10 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
                 //get the domain class index
                 int domainclassidx = this->getIndexOfClasses(domainname);
                 //if found the class, insert the domain class pointer
-                if(domainclassidx!=-1) properties[i]->domains<<classes[domainclassidx];
+                if(domainclassidx!=-1){
+                    properties[i]->domains<<classes[domainclassidx];
+                    classes[domainclassidx]->propertydomains<<properties[i]->shortname;
+                }
             }
         }
 
@@ -289,7 +292,13 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
             for(int j=0;j<resGetPropertyRangesByName->getArrayLength();j++){
                 QString range = owlpropertyranges[j]->toString();
                 if(range.trimmed()=="")continue;
-                else properties[i]->ranges<<range;
+                else {
+                    properties[i]->ranges<<range;
+                    if(properties[i]->isObjectProperty()){
+                        int idx=getIndexOfClasses(range);
+                        if(idx!=-1)classes[idx]->propertyranges<<properties[i]->shortname;
+                    }
+                }
             }
         }
         //sub properties
