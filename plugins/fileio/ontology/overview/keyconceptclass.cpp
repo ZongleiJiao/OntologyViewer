@@ -320,3 +320,201 @@ void KeyConceptClass::computeScore()
         scores.append(sc);
     }
 }
+
+int KeyConceptClass::contribution(OwlClass *node, QList<OwlClass *> ontoset)
+{
+    int result=0;
+    //get the list which coverd by node
+    QList<OwlClass *> nodecovered;
+    nodecovered.append(node);
+    for(int i=0;i<node->subclasses.size();i++)
+        nodecovered.append(node->subclasses[i]);
+    for(int i=0;i<node->superclasses.size();i++)
+        nodecovered.append(node->superclasses[i]);
+    //remove the classes covered by others
+    for(int i=0;i<ontoset.size();i++){
+        if(node!=ontoset[i]){
+            nodecovered.removeOne(ontoset[i]);
+            for(int j=0;j<ontoset[i]->subclasses.size();j++)
+                nodecovered.removeOne(ontoset[i]->subclasses[j]);
+            for(int j=0;j<ontoset[i]->superclasses.size();j++)
+                nodecovered.removeOne(ontoset[i]->superclasses[j]);
+        }
+    }
+    return nodecovered.size();
+}
+
+QList<OwlClass *> KeyConceptClass::getKeyClasses(int n)
+{
+    /**
+      0. if n>=classnum return ontology(O)
+      1. compute scores
+      --2. select k(k<=n,default k=15) top score classes in ontology(O) -> S
+      --3. select n-k top score classes in O-S -> T
+      --4. if(T=NULL) return S; (k=n???)
+
+      replace 2.3.4.: select top n classes in O ->S
+
+      5. c = avg(contribution(Ci,(S and T)),
+            contribution means the number of classes only coverd by Ci in (S and T).
+            Coverd means itself & sub & super
+         a = avg(overallscore(ci, (S and T)),
+            overallscore(ci,(S and T)) =
+             wCO * contribution(Ci,(S and T)/maxcontribution(Ci,(S and T)
+            +wCR * score(ci)
+      6. classW = worseOverallscore of (S and T)
+        foreach classB in (O-S-T){
+            if(avg a' of S+T-classW+classB > a
+            and avg c' of S+T-classW+classB >=c)
+            {
+                swap(classW,classB in S&T) goback to step 5.
+            }
+        }
+       7. return (S&T)
+
+    **/
+    QList<OwlClass *> result;
+    //n must>=1
+    if(n<1) return result;
+    //total class num less than the require number,return all classes
+    if(n>=classnum)return originclasses;
+
+    //compute scores
+    computeScore();
+
+    //get n Top score classes, and other classes
+    QList<int> orderedIndexOfScore;
+    for(int i=0;i<classnum;i++){
+        int position = 0;
+        for(position=0;position<orderedIndexOfScore.size();position++){
+            if(scores[i]>scores[orderedIndexOfScore[position]]){
+                break;
+            }
+        }
+        orderedIndexOfScore.insert(position,i);
+    }
+
+    QList<OwlClass *> ontosetS; //top n
+    QList<OwlClass *> ontosetR; //others
+    for(int i=0;i<classnum;i++){
+        if(i<n){
+            ontosetS<<originclasses[orderedIndexOfScore[i]];
+//            cout<<"[S]"<<i;
+        }
+        else{
+            ontosetR<<originclasses[orderedIndexOfScore[i]];
+//            cout<<"[R]"<<i;
+        }
+
+        cout<<">>>>>>>>-----"
+            <<originclasses[orderedIndexOfScore[i]]->shortname.toStdString()
+            <<" index:" << orderedIndexOfScore[i]
+            <<" score:" << scores[orderedIndexOfScore[i]]
+            <<endl;
+    }
+
+//    for(int i=0;i<ontosetS.size();i++){
+//        cout<<"Contribution of "<<ontosetS[i]->shortname.toStdString()
+//           <<" in S:"<<contribution(ontosetS[i],ontosetS)<<endl;
+//    }
+
+    //step 5:
+    bool foundbetter = false;
+    do{
+        foundbetter = false;
+        //compute c= avg contribution of ontosetS
+        int totalcontribution=0;
+        int maxcontribution=0;
+        QList<int> contributions;
+        for(int i=0;i<ontosetS.size();i++){
+            int ci = contribution(ontosetS[i],ontosetS);
+            if(ci>maxcontribution)maxcontribution=ci;
+            totalcontribution +=ci;
+            contributions.append(ci);
+        }
+        double avgContribution = 0.0;
+        if(ontosetS.size()!=0)
+            avgContribution = double(totalcontribution)/double(ontosetS.size());
+        cout << "AVG C: "<<avgContribution<<endl;
+
+        //compute a= avg overallscore
+        QList<double> overallscores;
+        double totaloverallscore=0.0;
+        double worseoverallscore=9999;
+        int idxworseoverallscore=-1;
+        for(int i=0;i<ontosetS.size();i++){
+            int globalidx = getIndexOfClasses(ontosetS[i]->shortname);
+            double os = overallscore_wCO * (contributions[i]/maxcontribution)
+                    + overallscore_wCR * scores[globalidx];
+            totaloverallscore+=os;
+            overallscores<<os;
+            if(worseoverallscore>os){
+                worseoverallscore=os;
+                idxworseoverallscore=i;
+            }
+        }
+        double avgOverallscore = 0.0;
+        if(ontosetS.size()!=0)
+            avgOverallscore = double(totaloverallscore)/double(ontosetS.size());
+        cout << "AVG A: "<<avgOverallscore<<endl;
+
+
+        //step 6
+        for(int i=0;i<ontosetR.size();i++){
+            QList<OwlClass *> stmp;
+            stmp.append(ontosetS);
+            stmp.removeAt(idxworseoverallscore);
+            stmp.append(ontosetR[i]);
+            //compute c'= avg contribution of ontosetS'
+            int totalc=0;
+            int maxc=0;
+            QList<int> cons;
+            for(int j=0;j<stmp.size();j++){
+                int cj = contribution(stmp[j],stmp);
+                if(cj>maxc)maxc=cj;
+                totalc +=cj;
+                cons.append(cj);
+            }
+            double avgc = 0.0;
+            if(stmp.size()!=0)
+                avgc = double(totalc)/double(stmp.size());
+
+            cout<<"avg c["<<i<<"] = "<<avgc<<endl;
+
+            //compute a'= avg overallscore of ontosetS'
+            QList<double> ovscores;
+            double totalovscore=0.0;
+            for(int j=0;j<stmp.size();j++){
+                int globalidx = getIndexOfClasses(stmp[j]->shortname);
+                double os = overallscore_wCO * (cons[j]/maxc)
+                        + overallscore_wCR * scores[globalidx];
+                totalovscore+=os;
+                ovscores<<os;
+            }
+            double avgovscore = 0.0;
+            if(stmp.size()!=0)
+                avgovscore = double(totalovscore)/double(stmp.size());
+            cout<<"avg a["<<i<<"] = "<<avgovscore<<endl;
+            //compare a a',c c'
+            if(avgc>=avgContribution&&avgovscore>avgOverallscore){
+                foundbetter=true;
+
+                OwlClass * w = ontosetS[idxworseoverallscore];
+                OwlClass * r = ontosetR[i];
+                ontosetS.removeOne(w);
+                ontosetS.append(r);
+                ontosetR.removeOne(r);
+                ontosetR.append(w);
+
+                cout<<"Found better class : "<<r->shortname.toStdString()
+                   <<" c="<<avgContribution << " c1="<<avgc
+                  <<" a="<<avgOverallscore<<" a1="<<avgovscore<<endl;
+                break;
+            }
+        }
+    }while(foundbetter);
+
+    result.clear();
+    result.append(ontosetS);
+    return result;
+}

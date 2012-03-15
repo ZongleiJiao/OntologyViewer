@@ -16,7 +16,6 @@ public:
     QList<double> densities;
     QList<double> popularities;
     QList<double> ncvalues;
-    QList<double> contributions;
     //for ncvalues
     QList<double> namesimplicities;
     QList<double> basiclevels;
@@ -50,6 +49,10 @@ public:
     const static double popularity_wLP = 0.1;
     const static double popularity_wGP = 0.2;
 
+    const static double overallscore_wCO = 0.6;
+    const static double overallscore_wCR = 0.4;
+
+
     /** functions **/
     QList<OwlClass *> getKeyClasses(int n);
     //NCValue
@@ -71,6 +74,10 @@ public:
 
     //score
     void computeScore();
+
+    //contribution
+    int contribution(OwlClass *node, QList<OwlClass *> ontoset);
+
 };
 
 #endif // KEYCONCEPTCLASS_H

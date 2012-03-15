@@ -201,7 +201,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //        kc->getPath(kc->originClasses[i]);
 //    }
     KeyConceptClass *kc=new KeyConceptClass(onto->classes);
-    kc->computeScore();
+    QList<OwlClass *> keyclasses=kc->getKeyClasses(30);
     for(int i=0;i<kc->classnum;i++){
         cout<<"<<"<< kc->originclasses[i]->shortname.toStdString()
            <<">>:[NS]"<<kc->namesimplicities[i]
@@ -217,9 +217,9 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
            <<" [P]"<<kc->popularities[i]
            <<"\n[SCORE]"<<kc->scores[i]
            <<endl;
-
-
     }
+    for(int i=0;i<keyclasses.size();i++)
+        keyclasses[i]->shape->setFillColour(QColor("red"));
 
 
     //individualview
