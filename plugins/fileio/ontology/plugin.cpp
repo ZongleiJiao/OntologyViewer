@@ -201,17 +201,21 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //        kc->getPath(kc->originClasses[i]);
 //    }
     KeyConceptClass *kc=new KeyConceptClass(onto->classes);
-    kc->computeNCValues();
-    kc->computeDensities();
-    for(int i=0;i<kc->namesimplicities.size();i++){
+    kc->computeScore();
+    for(int i=0;i<kc->classnum;i++){
         cout<<"<<"<< kc->originclasses[i]->shortname.toStdString()
            <<">>:[NS]"<<kc->namesimplicities[i]
            <<" [BL]"<<kc->basiclevels[i]
            <<" [NC]"<<kc->ncvalues[i]
-           <<" [aGD]"<<kc->aGlobalDensities[i]
+           <<"\n[aGD]"<<kc->aGlobalDensities[i]
            <<" [GD]"<<kc->globaldensities[i]
            <<" [LD]"<<kc->localdensities[i]
            <<" [D]"<<kc->densities[i]
+           <<"\n[Hit]"<<kc->hits[i]
+           <<" [GP]"<<kc->globalpopularities[i]
+           <<" [LP]"<<kc->localpopularities[i]
+           <<" [P]"<<kc->popularities[i]
+           <<"\n[SCORE]"<<kc->scores[i]
            <<endl;
 
 
