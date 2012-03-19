@@ -210,39 +210,41 @@ Router::Router(const unsigned int flags)
       avoid_screen(NULL),
 #endif
       m_largest_assigned_id(0),
-      _consolidateActions(true),
+      m_consolidate_actions(true),
       m_currently_calling_destructors(false),
-      _orthogonalNudgeDistance(4.0),
+      m_orthogonal_nudge_distance(4.0),
       m_slow_routing_callback(NULL),
       // Mode options:
-      _polyLineRouting(false),
-      _orthogonalRouting(false),
-      _staticGraphInvalidated(true),
-      _inCrossingPenaltyReroutingStage(false)
+      m_allows_polyline_routing(false),
+      m_allows_orthogonal_routing(false),
+      m_static_orthogonal_graph_invalidated(true),
+      m_in_crossing_rerouting_stage(false)
 {
     // At least one of the Routing modes must be set.
     COLA_ASSERT(flags & (PolyLineRouting | OrthogonalRouting));
 
     if (flags & PolyLineRouting)
     {
-        _polyLineRouting = true;
+        m_allows_polyline_routing = true;
     }
     if (flags & OrthogonalRouting)
     {
-        _orthogonalRouting = true;
+        m_allows_orthogonal_routing = true;
     }
 
-    for (size_t p = 0; p < lastPenaltyMarker; ++p)
+    for (size_t p = 0; p < lastRoutingParameterMarker; ++p)
     {
-        _routingPenalties[p] = 0.0;
+        m_routing_parameters[p] = 0.0;
     }
-    _routingPenalties[segmentPenalty] = 10;
-    _routingPenalties[clusterCrossingPenalty] = 4000;
-    _routingPenalties[portDirectionPenalty] = 100;
-    _routingOptions[nudgeOrthogonalSegmentsConnectedToShapes] = false;
-    _routingOptions[improveHyperedgeRoutesMovingJunctions] = true;
-    _routingOptions[penaliseOrthogonalSharedPathsAtConnEnds] = false;
-      
+    m_routing_parameters[segmentPenalty] = 10;
+    m_routing_parameters[clusterCrossingPenalty] = 4000;
+    m_routing_parameters[portDirectionPenalty] = 100;
+
+    m_routing_options[nudgeOrthogonalSegmentsConnectedToShapes] = false;
+    m_routing_options[improveHyperedgeRoutesMovingJunctions] = true;
+    m_routing_options[penaliseOrthogonalSharedPathsAtConnEnds] = false;
+    m_routing_options[nudgeOrthogonalTouchingColinearSegments] = false;
+
     m_hyperedge_rerouter.setRouter(this);
 }
 
@@ -306,7 +308,7 @@ void Router::modifyConnector(ConnRef *conn, const unsigned int type,
         found->addConnEndUpdate(type, connEnd, connPinMoveUpdate);
     }
 
-    if (!_consolidateActions)
+    if (!m_consolidate_actions)
     {
         processTransaction();
     }
@@ -324,7 +326,7 @@ void Router::modifyConnector(ConnRef *conn)
         actionList.push_back(modInfo);
     }
 
-    if (!_consolidateActions)
+    if (!m_consolidate_actions)
     {
         processTransaction();
     }
@@ -342,7 +344,7 @@ void Router::modifyConnectionPin(ShapeConnectionPin *pin)
         actionList.push_back(modInfo);
     }
 
-    if (!_consolidateActions)
+    if (!m_consolidate_actions)
     {
         processTransaction();
     }
@@ -385,7 +387,7 @@ void Router::addShape(ShapeRef *shape)
         actionList.push_back(addInfo);
     }
 
-    if (!_consolidateActions)
+    if (!m_consolidate_actions)
     {
         processTransaction();
     }
@@ -416,7 +418,7 @@ void Router::deleteShape(ShapeRef *shape)
         actionList.push_back(remInfo);
     }
 
-    if (!_consolidateActions)
+    if (!m_consolidate_actions)
     {
         processTransaction();
     }
@@ -475,7 +477,7 @@ void Router::moveShape(ShapeRef *shape, const Polygon& newPoly,
         actionList.push_back(moveInfo);
     }
 
-    if (!_consolidateActions)
+    if (!m_consolidate_actions)
     {
         processTransaction();
     }
@@ -484,7 +486,7 @@ void Router::moveShape(ShapeRef *shape, const Polygon& newPoly,
 
 void Router::setStaticGraphInvalidated(const bool invalidated)
 {
-    _staticGraphInvalidated = invalidated;
+    m_static_orthogonal_graph_invalidated = invalidated;
 }
 
 
@@ -513,9 +515,9 @@ void Router::regenerateStaticBuiltGraph(void)
 {
     // Here we do talks involved in updating the static-built visibility 
     // graph (if necessary) before we do any routing.
-    if (_staticGraphInvalidated)
+    if (m_static_orthogonal_graph_invalidated)
     {
-        if (_orthogonalRouting)
+        if (m_allows_orthogonal_routing)
         {
             destroyOrthogonalVisGraph();
 
@@ -525,20 +527,20 @@ void Router::regenerateStaticBuiltGraph(void)
             
             timers.Stop();
         }
-        _staticGraphInvalidated = false;
+        m_static_orthogonal_graph_invalidated = false;
     }
 }
 
 
 bool Router::transactionUse(void) const
 {
-    return _consolidateActions;
+    return m_consolidate_actions;
 }
 
 
 void Router::setTransactionUse(const bool transactions)
 {
-    _consolidateActions = transactions;
+    m_consolidate_actions = transactions;
 }
 
 
@@ -618,7 +620,7 @@ bool Router::processTransaction(void)
         }
     }
     
-    if (seenShapeMovesOrDeletes && _polyLineRouting)
+    if (seenShapeMovesOrDeletes && m_allows_polyline_routing)
     {
         if (InvisibilityGrph)
         {
@@ -682,7 +684,7 @@ bool Router::processTransaction(void)
 
         adjustContainsWithAdd(shapePoly, pid);
 
-        if (_polyLineRouting)
+        if (m_allows_polyline_routing)
         {
             // o  Check all visibility edges to see if this one shape
             //    blocks them.
@@ -721,7 +723,7 @@ bool Router::processTransaction(void)
     // Clear the actionList.
     actionList.clear();
     
-    _staticGraphInvalidated = true;
+    m_static_orthogonal_graph_invalidated = true;
     rerouteAndCallbackConnectors();
 
     return true;
@@ -747,7 +749,7 @@ void Router::addJunction(JunctionRef *junction)
         actionList.push_back(addInfo);
     }
 
-    if (!_consolidateActions)
+    if (!m_consolidate_actions)
     {
         processTransaction();
     }
@@ -778,7 +780,7 @@ void Router::deleteJunction(JunctionRef *junction)
         actionList.push_back(remInfo);
     }
 
-    if (!_consolidateActions)
+    if (!m_consolidate_actions)
     {
         processTransaction();
     }
@@ -829,7 +831,7 @@ void Router::moveJunction(JunctionRef *junction, const Point& newPosition)
         actionList.push_back(moveInfo);
     }
 
-    if (!_consolidateActions)
+    if (!m_consolidate_actions)
     {
         processTransaction();
     }
@@ -859,13 +861,13 @@ void Router::deleteCluster(ClusterRef *cluster)
 void Router::setOrthogonalNudgeDistance(const double dist)
 {
     COLA_ASSERT(dist >= 0);
-    _orthogonalNudgeDistance = dist;
+    m_orthogonal_nudge_distance = dist;
 }
 
 
 double Router::orthogonalNudgeDistance(void) const
 {
-    return _orthogonalNudgeDistance;
+    return m_orthogonal_nudge_distance;
 }
 
 
@@ -1182,7 +1184,7 @@ void Router::performSlowRoutingCallBack(double completeFraction)
         if (!shouldContinueWithPenalties)
         {
             // Host program has asked us not to continue with penalties.
-            _inCrossingPenaltyReroutingStage = false;
+            m_in_crossing_rerouting_stage = false;
             m_abort_transaction = true;
         }
     }
@@ -1191,8 +1193,8 @@ void Router::performSlowRoutingCallBack(double completeFraction)
 
 void Router::improveCrossings(void)
 {
-    const double crossing_penalty = routingPenalty(crossingPenalty);
-    const double shared_path_penalty = routingPenalty(fixedSharedPathPenalty);
+    const double crossing_penalty = routingParameter(crossingPenalty);
+    const double shared_path_penalty = routingParameter(fixedSharedPathPenalty);
     if ((crossing_penalty == 0) && (shared_path_penalty == 0))
     {
         // No penalties, return.
@@ -1208,7 +1210,7 @@ void Router::improveCrossings(void)
     }
     
     // Find crossings and reroute connectors.
-    _inCrossingPenaltyReroutingStage = true;
+    m_in_crossing_rerouting_stage = true;
     ConnCostRefSet crossingConns;
     ConnCostRefSetList fixedSharedPathConns;
     ConnRefList::iterator fin = connRefs.end();
@@ -1238,7 +1240,7 @@ void Router::improveCrossings(void)
                 if ((shared_path_penalty > 0) && 
                     (cross.crossingFlags & CROSSING_SHARES_PATH) && 
                     (cross.crossingFlags & CROSSING_SHARES_FIXED_SEGMENT) &&
-                    (_routingOptions[penaliseOrthogonalSharedPathsAtConnEnds] || 
+                    (m_routing_options[penaliseOrthogonalSharedPathsAtConnEnds] || 
                      !(cross.crossingFlags & CROSSING_SHARES_PATH_AT_END))) 
                 {
                     // We are penalising fixedSharedPaths and there is a
@@ -1366,7 +1368,7 @@ void Router::improveCrossings(void)
             }
         }
     }
-    _inCrossingPenaltyReroutingStage = false;
+    m_in_crossing_rerouting_stage = false;
 }
 
 
@@ -1780,21 +1782,21 @@ ConnType Router::validConnType(const ConnType select) const
 {
     if (select != ConnType_None)
     {
-        if ((select == ConnType_Orthogonal) && _orthogonalRouting)
+        if ((select == ConnType_Orthogonal) && m_allows_orthogonal_routing)
         {
             return ConnType_Orthogonal;
         }
-        else if ((select == ConnType_PolyLine) && _polyLineRouting)
+        else if ((select == ConnType_PolyLine) && m_allows_polyline_routing)
         {
             return ConnType_PolyLine;
         }
     }
 
-    if (_polyLineRouting)
+    if (m_allows_polyline_routing)
     {
         return ConnType_PolyLine;
     }
-    else if (_orthogonalRouting)
+    else if (m_allows_orthogonal_routing)
     {
         return ConnType_Orthogonal;
     }
@@ -1802,72 +1804,79 @@ ConnType Router::validConnType(const ConnType select) const
 }
 
 
-void Router::setRoutingPenalty(const PenaltyType penType, const double penVal)
+void Router::setRoutingParameter(const RoutingParameter parameter,
+        const double value)
 {
-    COLA_ASSERT(penType < lastPenaltyMarker);
-    if (penVal < 0)
+    COLA_ASSERT(parameter < lastRoutingParameterMarker);
+    if (value < 0)
     {
-        // Set some sensible penalty.
-        switch (penType)
+        // Set some sensible parameter value for the parameter being 'active'..
+        switch (parameter)
         {
             case segmentPenalty:
-                _routingPenalties[penType] = 50;
+                m_routing_parameters[parameter] = 50;
                 break;
             case fixedSharedPathPenalty:
-                _routingPenalties[penType] = 110;
+                m_routing_parameters[parameter] = 110;
                 break;
             case anglePenalty:
-                _routingPenalties[penType] = 50;
+                m_routing_parameters[parameter] = 50;
                 break;
             case crossingPenalty:
-                _routingPenalties[penType] = 200;
+                m_routing_parameters[parameter] = 200;
                 break;
             case clusterCrossingPenalty:
-                _routingPenalties[penType] = 4000;
+                m_routing_parameters[parameter] = 4000;
                 break;
             default:
-                _routingPenalties[penType] = 50;
+                m_routing_parameters[parameter] = 50;
                 break;
         }
     }
     else
     {
-        _routingPenalties[penType] = penVal;
+        m_routing_parameters[parameter] = value;
     }
 }
 
 
-double Router::routingPenalty(const PenaltyType penType) const
+double Router::routingParameter(const RoutingParameter parameter) const
 {
-    COLA_ASSERT(penType < lastPenaltyMarker);
-    return _routingPenalties[penType];
+    COLA_ASSERT(parameter < lastRoutingParameterMarker);
+    return m_routing_parameters[parameter];
 }
 
 
 void Router::setRoutingOption(const RoutingOption option, const bool value)
 {
     COLA_ASSERT(option < lastRoutingOptionMarker);
-    _routingOptions[option] = value;
+    m_routing_options[option] = value;
 }
 
 
 bool Router::routingOption(const RoutingOption option) const
 {
     COLA_ASSERT(option < lastRoutingOptionMarker);
-    return _routingOptions[option];
+    return m_routing_options[option];
 }
 
 
-double& Router::penaltyRef(const PenaltyType penType)
+void Router::setRoutingPenalty(const RoutingParameter penType,
+        const double penValue)
 {
-    COLA_ASSERT(penType < lastPenaltyMarker);
-    return _routingPenalties[penType];
+    setRoutingParameter(penType, penValue);
 }
 
 
 HyperedgeRerouter *Router::hyperedgeRerouter(void)
 {
     return &m_hyperedge_rerouter;
+}
+
+
+bool Router::isInCrossingPenaltyReroutingStage(void) const
+{
+    return m_in_crossing_rerouting_stage;
 }
 
 
@@ -2165,15 +2174,15 @@ void Router::outputInstanceToSVG(std::string instanceName)
     fprintf(fp, "int main(void) {\n");
     fprintf(fp, "    Router *router = new Router(\n");
     fprintf(fp, "            PolyLineRouting | OrthogonalRouting);\n");
-    for (size_t p = 0; p < lastPenaltyMarker; ++p)
+    for (size_t p = 0; p < lastRoutingParameterMarker; ++p)
     {
-        fprintf(fp, "    router->setRoutingPenalty((PenaltyType)%lu, %g);\n", 
-                (unsigned long)p, _routingPenalties[p]);
+        fprintf(fp, "    router->setRoutingParameter((RoutingParameter)%lu, %g);\n", 
+                (unsigned long)p, m_routing_parameters[p]);
     }
     for (size_t p = 0; p < lastRoutingOptionMarker; ++p)
     {
         fprintf(fp, "    router->setRoutingOption((RoutingOption)%lu, %s);\n", 
-                (unsigned long)p, (_routingOptions[p]) ? "true" : "false");
+                (unsigned long)p, (m_routing_options[p]) ? "true" : "false");
     }
     fprintf(fp, "    router->setOrthogonalNudgeDistance(%g);\n\n",
             orthogonalNudgeDistance());
@@ -2204,38 +2213,7 @@ void Router::outputInstanceToSVG(std::string instanceName)
     while (revConnRefIt != connRefs.rend())
     {
         ConnRef *connRef = *revConnRefIt;
-        fprintf(fp, "    ConnRef *connRef%u = new ConnRef(router, %u);\n",
-                connRef->id(), connRef->id());
-        if (connRef->m_src_connend)
-        {
-            connRef->m_src_connend->outputCode(fp, "src");
-            fprintf(fp, "    connRef%u->setSourceEndpoint(srcPt%u);\n",
-                    connRef->id(), connRef->id());
-        }
-        else if (connRef->src())
-        {
-            fprintf(fp, "    ConnEnd srcPt%u(Point(%g, %g), %u);\n",
-                    connRef->id(), connRef->src()->point.x,
-                    connRef->src()->point.y, connRef->src()->visDirections);
-            fprintf(fp, "    connRef%u->setSourceEndpoint(srcPt%u);\n",
-                    connRef->id(), connRef->id());
-        }
-        if (connRef->m_dst_connend)
-        {
-            connRef->m_dst_connend->outputCode(fp, "dst");
-            fprintf(fp, "    connRef%u->setDestEndpoint(dstPt%u);\n",
-                    connRef->id(), connRef->id());
-        }
-        else if (connRef->dst())
-        {
-            fprintf(fp, "    ConnEnd dstPt%u(Point(%g, %g), %u);\n",
-                    connRef->id(), connRef->dst()->point.x,
-                    connRef->dst()->point.y, connRef->dst()->visDirections);
-            fprintf(fp, "    connRef%u->setDestEndpoint(dstPt%u);\n",
-                    connRef->id(), connRef->id());
-        }
-        fprintf(fp, "    connRef%u->setRoutingType((ConnType)%u);\n\n", 
-                connRef->id(), connRef->routingType());
+        connRef->outputCode(fp);
         ++revConnRefIt;
     }
     fprintf(fp, "    router->processTransaction();\n");
@@ -2467,7 +2445,7 @@ void Router::outputInstanceToSVG(std::string instanceName)
             fprintf(fp, "style=\"fill: none; stroke: black; "
                     "stroke-width: 1px;\" />\n");
         }
-        
+
         ++connRefIt;
     }
     fprintf(fp, "</g>\n");
@@ -2544,6 +2522,27 @@ void Router::outputInstanceToSVG(std::string instanceName)
             }
             fprintf(fp, "style=\"fill: none; stroke: black; "
                     "stroke-width: 1px;\" />\n");
+        }
+        
+        ++connRefIt;
+    }
+    fprintf(fp, "</g>\n");
+
+    fprintf(fp, "<g inkscape:groupmode=\"layer\" "
+            "inkscape:label=\"ConnectorCheckpoints\""
+            ">\n");
+    connRefIt = connRefs.begin();
+    while (connRefIt != connRefs.end())
+    {
+        ConnRef *connRef = *connRefIt;
+    
+        for (size_t i = 0; i < connRef->m_checkpoints.size(); ++i)
+        {
+            fprintf(fp, "<circle id=\"checkpoint-%u-%d\" cx=\"%g\" cy=\"%g\" "
+                    "r=\"8\" style=\"stroke: none; fill: red; "
+                    "fill-opacity: 0.25;\"  />\n", connRef->id(), (int) i,
+                    connRef->m_checkpoints[i].x, 
+                    connRef->m_checkpoints[i].y);
         }
         
         ++connRefIt;
