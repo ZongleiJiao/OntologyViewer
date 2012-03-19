@@ -43,7 +43,7 @@ OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
     appmainwindow->addDockWidget(Qt::RightDockWidgetArea,infoboxdwgt);
     infoboxdwgt->show();
 
-    //temp
+    //temp TODO create new widget (QListWidget)
     InformationBoxDockWidget * detailinforofnode = new InformationBoxDockWidget();
     appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,detailinforofnode);
     detailinforofnode->show();
