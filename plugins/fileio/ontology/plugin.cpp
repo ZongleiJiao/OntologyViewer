@@ -184,7 +184,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     canvas->setOptAutomaticGraphLayout(true);
     canvas->setOptLayoutMode(1);
     canvas->setOptPreventOverlaps(true);
-    canvas->fully_restart_graph_layout();    
+    canvas->fully_restart_graph_layout();
 
     /** Overview of classes (not finished) **/
 //        onto->drawClassOverview(canvas);
@@ -201,7 +201,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //        kc->getPath(kc->originClasses[i]);
 //    }
     KeyConceptClass *kc=new KeyConceptClass(onto->classes);
-    QList<OwlClass *> keyclasses=kc->getKeyClasses(30);
+    QList<OwlClass *> keyclasses=kc->getKeyClasses(10);
     for(int i=0;i<kc->classnum;i++){
         cout<<"<<"<< kc->originclasses[i]->shortname.toStdString()
            <<">>:[NS]"<<kc->namesimplicities[i]
@@ -225,7 +225,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     //individualview
 //    onto->drawIndividualView(canvas);
     //propertyview
-//    onto->drawPropertyView(canvas);    
+//    onto->drawPropertyView(canvas);
 
     /** the getFormula() and logicalview() display
       * the anonymous class strings into formula

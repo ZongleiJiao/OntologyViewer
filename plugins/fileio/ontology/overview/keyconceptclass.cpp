@@ -373,14 +373,17 @@ QList<OwlClass *> KeyConceptClass::getKeyClasses(int n)
        7. return (S&T)
 
     **/
-    QList<OwlClass *> result;
-    //n must>=1
-    if(n<1) return result;
-    //total class num less than the require number,return all classes
-    if(n>=classnum)return originclasses;
-
     //compute scores
     computeScore();
+
+    QList<OwlClass *> result;
+
+    //total class num less than the require number,return all classes
+    cout<<"Class NUM:::"<<classnum<<endl;
+    if(n>=classnum)return originclasses;
+
+    //n must>=1
+    if(n<1) return result;
 
     //get n Top score classes, and other classes
     QList<int> orderedIndexOfScore;
