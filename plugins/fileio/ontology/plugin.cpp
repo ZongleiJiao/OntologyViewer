@@ -53,6 +53,7 @@
 #include <editor/mainwindow.h>
 #include <canvasview.h>
 #include <QMainWindow>
+#include <overview/overviewclass.h>
 
 #include <overview/keyconceptclass.h>
 
@@ -173,7 +174,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     cout<<"Finish loading. Total " <<onto->classes.size()<<" class notes."<<endl;
 
     /** text output **/
-    cout<<onto->toQString().toStdString();
+//    cout<<onto->toQString().toStdString();
 
     /** classview, individualview, propertyview can
       * be displayed together or individually.
@@ -191,15 +192,6 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     //test Thing class
     canvas->addItem(onto->classes[onto->getIndexOfClasses("Thing")]->shape);
     //test key concept
-//    KeyConcept *kc = new KeyConcept(onto->classes);
-//    cout<<"KeyConcept -- Origin Classes:" << kc->originClasses.size() <<endl;
-//    for(int i=0;i<kc->originClasses.size();i++){
-//        cout<<"KeyConcept NameSimplicity:"
-//           <<kc->originClasses[i]->shortname.toStdString() << " - "
-//           <<kc->nameSimplicity(kc->originClasses[i])
-//           <<endl;
-//        kc->getPath(kc->originClasses[i]);
-//    }
     KeyConceptClass *kc=new KeyConceptClass(onto->classes);
     QList<OwlClass *> keyclasses=kc->getKeyClasses(10);
     for(int i=0;i<kc->classnum;i++){
@@ -221,6 +213,11 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     for(int i=0;i<keyclasses.size();i++)
         keyclasses[i]->shape->setFillColour(QColor("red"));
 
+    //test overview
+    ShapeObj *test = new OverviewClass();
+    test->setPosAndSize(QPointF(200,200),QSizeF(5,5));
+    test->setFillColour(QColor("red"));
+    canvas->addItem(test);
 
     //individualview
 //    onto->drawIndividualView(canvas);
