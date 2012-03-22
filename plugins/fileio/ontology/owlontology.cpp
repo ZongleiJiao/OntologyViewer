@@ -1235,7 +1235,7 @@ void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
         wid->my_canvas->addItem(conn);
         wid->my_canvas->addItem(conn1);
         wid->my_canvas->setOptAutomaticGraphLayout(true);
-        wid->my_canvas->setOptLayoutMode(1);
+        wid->my_canvas->setOptLayoutMode(maincanvas->FlowLayout);
         wid->my_canvas->setOptPreventOverlaps(true);
         wid->my_canvas->fully_restart_graph_layout();
         //wid->setGeometry(100,0,600,600);
