@@ -4,17 +4,23 @@
 #include "libdunnartcanvas/shape.h"
 using dunnart::ShapeObj;
 
-class OverviewClassShape
+class OverviewClassShape:public ShapeObj
 {
 public:
     OverviewClassShape();
-    virtual ~OverviewClass() { }
+    virtual ~OverviewClassShape() { }
     virtual QPainterPath buildPainterPath(void);
 
-    const static QColor DEFAULT_COLOR = QColor("gray");
-    const static QColor HIGHLIGHT_COLOR = QColor("blue");
-    const static QColor DEFAULT_SIZE = QSizeF(5,5);
-    const static QColor HIGHLIGHT_SIZE = QSizeF(8,8);
+    enum status{
+        STATUS_Hide = 0,
+        STATUS_OutDetailview = 1,
+        STATUS_InDetailview_Default = 2,
+        STATUS_InDetailview_Focused = 3,
+        STATUS_InDetailview_SubFocused = 4,
+        STATUS_InDetailview_SuperFocused = 5
+    };
+
+    void setStatus(status stats);
 };
 
 #endif // OVERVIEWCLASSSHAPE_H

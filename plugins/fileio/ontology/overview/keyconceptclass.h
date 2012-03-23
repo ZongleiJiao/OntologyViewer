@@ -37,7 +37,7 @@ public:
     const static double globaldensity_wS = 0.8;
     const static double globaldensity_wP = 0.1;
     const static double globaldensity_wI = 0.1;
-    const static int    localdensity_k = 2;
+    const static int    localdensity_k = 1;
     const static double localdensity_ratioD = 0.1;
     const static double localdensity_wGDL = 0.5;
     const static double density_wLD = 0.32;

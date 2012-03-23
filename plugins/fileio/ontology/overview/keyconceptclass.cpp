@@ -98,8 +98,7 @@ int KeyConceptClass::computeNumberOfPath(OwlClass *node)
         }
     }
 
-    cout<<"Leaves of <"<<node->shortname.toStdString()<<">:"
-        <<nleaves<<endl;
+//    cout<<"Leaves of <"<<node->shortname.toStdString()<<">:"<<nleaves<<endl;
 
     //find roots
     int nroots=0;
@@ -124,10 +123,8 @@ int KeyConceptClass::computeNumberOfPath(OwlClass *node)
         }
     }
 
-    cout<<"Roots of <"<<node->shortname.toStdString()<<">:"
-        <<nroots<<endl;
-    cout<<"Paths of <"<<node->shortname.toStdString()<<">:"
-        <<nroots*nleaves<<endl;
+//    cout<<"Roots of <"<<node->shortname.toStdString()<<">:"<<nroots<<endl;
+//    cout<<"Paths of <"<<node->shortname.toStdString()<<">:"<<nroots*nleaves<<endl;
     return nleaves*nroots;
 }
 
@@ -182,13 +179,24 @@ void KeyConceptClass::computeLocalDensities()
         //search k level/distance classes
         for(int j=1;j<=localdensity_k;j++){
             QList<OwlClass *> cls;
-            cls = getKDistanceClasses(originclasses[i],j,0);
+//            cout<<"KD:"<<originclasses[i]->shortname.toStdString()
+//               <<" k = "<<j<<" ...";
+//            cls = getKDistanceClasses(originclasses[i],j,0);
+//            cout<<" OK!"<<endl;
+
+//            cout<<"KD:"<<originclasses[i]->shortname.toStdString()<<endl;
+            /** modify for speed up!!! only calculate k=1 without call KDistance**/
+            cls.append(originclasses[i]->subclasses);
+            cls.append(originclasses[i]->subclasses);
             //calculate weightedGD
             for(int k=0;k<cls.size();k++){
                 int idx = getIndexOfClasses(cls[k]->shortname);
                 double wgd=0.0;
                 if(idx!=-1) wgd = (1-localdensity_ratioD*j)*globaldensities[idx];
-                if(wgd>maxWeightedGD)maxWeightedGD=wgd;
+                if(wgd>maxWeightedGD){
+                    maxWeightedGD=wgd;
+//                    cout<<"maxWeightedGD change to : "<<maxWeightedGD<<endl;
+                }
             }
         }
         double ld = localdensity_wGDL * globaldensities[i];
@@ -228,7 +236,9 @@ void KeyConceptClass::computeDensities()
     /**
         D=wLD*localdensity + wGD*globaldensity
     **/
+    cout<<"Computing densities--GlobalDensities..."<<endl;
     computeGlobalDensities();
+    cout<<"Computing densities--LocalDensities..."<<endl;
     computeLocalDensities();
     for(int i=0;i<classnum;i++)
     {
@@ -280,7 +290,10 @@ void KeyConceptClass::computeLocalPopularities()
         //search k level/distance classes
         for(int j=1;j<=localpopularity_k;j++){
             QList<OwlClass *> cls;
-            cls = getKDistanceClasses(originclasses[i],j,0);
+//            cls = getKDistanceClasses(originclasses[i],j,0);
+            /** direct use level 1 classes(sub & sup) to speed up **/
+            cls.append(originclasses[i]->subclasses);
+            cls.append(originclasses[i]->superclasses);
             //calculate weightedGP
             for(int k=0;k<cls.size();k++){
                 int idx = getIndexOfClasses(cls[k]->shortname);
@@ -298,7 +311,9 @@ void KeyConceptClass::computeLocalPopularities()
 void KeyConceptClass::computePopularities()
 {
     /** P=wLP*LP + wGP*GP **/
+    cout<<"Computing GlobalPopularities..."<<endl;
     computeGlobalPopularities();
+    cout<<"Computing LocalPopularities..."<<endl;
     computeLocalPopularities();
     for(int i=0;i<classnum;i++)
     {
@@ -311,8 +326,11 @@ void KeyConceptClass::computePopularities()
 void KeyConceptClass::computeScore()
 {
     /** score = NCValue + D + P **/
+    cout<<"Computing NCValues..."<<endl;
     computeNCValues();
+    cout<<"Computing Densities..."<<endl;
     computeDensities();
+    cout<<"Computing Popularities..."<<endl;
     computePopularities();
     for(int i=0;i<classnum;i++)
     {
@@ -373,14 +391,16 @@ QList<OwlClass *> KeyConceptClass::getKeyClasses(int n)
        7. return (S&T)
 
     **/
-    //compute scores
-    computeScore();
+
 
     QList<OwlClass *> result;
 
     //total class num less than the require number,return all classes
     cout<<"Class NUM:::"<<classnum<<endl;
     if(n>=classnum)return originclasses;
+
+    //compute scores
+    computeScore();
 
     //n must>=1
     if(n<1) return result;
@@ -421,6 +441,9 @@ QList<OwlClass *> KeyConceptClass::getKeyClasses(int n)
 //           <<" in S:"<<contribution(ontosetS[i],ontosetS)<<endl;
 //    }
 
+    /** this part almost make no sense, but highly affect performance.
+      So, delete it!!! ***/
+    /**
     //step 5:
     bool foundbetter = false;
     do{
@@ -516,8 +539,7 @@ QList<OwlClass *> KeyConceptClass::getKeyClasses(int n)
             }
         }
     }while(foundbetter);
-
-    result.clear();
+**/
     result.append(ontosetS);
     return result;
 }

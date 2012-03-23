@@ -6,6 +6,7 @@
 #include "libdunnartcanvas/connector.h"
 #include <owlindividual.h>
 #include <ontoclass.h>
+#include <overviewclassshape.h>
 
 using namespace dunnart;
 
@@ -29,6 +30,7 @@ public:
     QList<QString> propertyranges;
 
     OntologyClassShape * shape;
+    OverviewClassShape * overviewshape;
     QString equivalentclass;
 
 
