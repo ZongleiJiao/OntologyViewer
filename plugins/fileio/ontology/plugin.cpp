@@ -52,6 +52,7 @@
 #include <overviewclassshape.h>
 #include <overview/overview.h>
 #include <detaildockwidget.h>
+#include <overview/overviewdockwidget.h>
 #include <editor/mainwindow.h>
 #include <canvasview.h>
 #include <QMainWindow>
@@ -223,12 +224,22 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
       3. draw overview
       **/
 
+    OverviewDockWidget *wid = new OverviewDockWidget();
+    onto->appmainwindow->addDockWidget(Qt::RightDockWidgetArea,wid);
+    wid->show();
+
     Overview * ov = new Overview();
-    ov->numOfClasses=200;
+    ov->numOfClasses=50;
     cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
     ov->getOverviewClasses(onto->classes);
     cout<<"drawing overview..."<<endl;
-    ov->drawOverview(canvas);
+    ov->overviewFMSLayout(canvas);
+
+    wid->my_canvas->setOptAutomaticGraphLayout(true);
+    wid->my_canvas->setOptLayoutMode(Canvas::FlowLayout);
+    wid->my_canvas->setOptPreventOverlaps(true);
+    wid->my_canvas->setOptFlowDirection(Canvas::FlowUp);
+    wid->my_canvas->fully_restart_graph_layout();
 
     //individualview
 //    onto->drawIndividualView(canvas);
