@@ -16,7 +16,7 @@ OntologyClassShape::OntologyClassShape() : ShapeObj("ontoclass")
     levelLabels[5] = QString("");
 
     //make class shape focusable
-    setFlag(ItemIsFocusable, true);
+//    setFlag(ItemIsFocusable, true);
 }
 
 QPainterPath OntologyClassShape::buildPainterPath(void)
@@ -51,14 +51,14 @@ void OntologyClassShape::mousePressEvent(QGraphicsSceneMouseEvent *event){
 }
 
 //TODO focusin event
-void OntologyClassShape::focusInEvent(QFocusEvent *event){
-//    std::cout << "1111111--" << event->type()<<endl;
-}
+//void OntologyClassShape::focusInEvent(QFocusEvent *event){
+////    std::cout << "1111111--" << event->type()<<endl;
+//}
 
-//TODO focusout event
-void OntologyClassShape::focusOutEvent(QFocusEvent *event){
-//    std::cout << "22222--" << event->type()<<endl;
-}
+////TODO focusout event
+//void OntologyClassShape::focusOutEvent(QFocusEvent *event){
+////    std::cout << "22222--" << event->type()<<endl;
+//}
 
 uint OntologyClassShape::levelsOfDetail(void) const{
     return 7;

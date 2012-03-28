@@ -23,6 +23,7 @@ OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
 //    wid->setWindowTitle("Equivalent Class");
 //    wid->show();
 
+
     zoomdwgt = new ZoomDockWidget();
     this->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,zoomdwgt);
     zoomdwgt->show();
@@ -51,6 +52,9 @@ OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
     DetailInfoDockWidget * deatildwgt = new DetailInfoDockWidget();
     appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,deatildwgt);
     deatildwgt->show();
+
+    //TODO restore position of widgets--doesn't work right now, may need to restore them when lunach dunnart???
+//    appmainwindow->restoreDockWidget(zoomdwgt);
 }
 
 /** TODO List:

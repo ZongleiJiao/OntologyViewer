@@ -6,14 +6,14 @@
 #include <ontoclass.h>
 #include <ontoindividual.h>
 #include <ontoproperty.h>
-#include <detaildockwidget.h>
-#include <zoomdockwidget.h>
-#include <searchdockwidget.h>
-#include <filterdockwidget.h>
-#include <historydockwidget.h>
-#include <informationboxdockwidget.h>
-#include <shownodesdockwidget.h>
-#include <detailinfodockwidget.h>
+#include <widgets/detaildockwidget.h>
+#include <widgets/zoomdockwidget.h>
+#include <widgets/searchdockwidget.h>
+#include <widgets/filterdockwidget.h>
+#include <widgets/historydockwidget.h>
+#include <widgets/informationboxdockwidget.h>
+#include <widgets/shownodesdockwidget.h>
+#include <widgets/detailinfodockwidget.h>
 #include <QtGui>
 
 class OwlOntology:public QObject

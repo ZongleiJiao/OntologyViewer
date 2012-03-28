@@ -31,8 +31,8 @@ class OntologyClassShape: public ShapeObj
         void setMyLabel(QString label);
 
         //testing
-        void focusInEvent(QFocusEvent *event);
-        void focusOutEvent(QFocusEvent *event);
+//        void focusInEvent(QFocusEvent *event);
+//        void focusOutEvent(QFocusEvent *event);
 
         QString levelLabels[6] ;
 };

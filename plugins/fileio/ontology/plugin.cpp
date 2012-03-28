@@ -51,7 +51,7 @@
 #include <ontoproperty.h>
 #include <overviewclassshape.h>
 #include <overview/overview.h>
-#include <detaildockwidget.h>
+#include <widgets/detaildockwidget.h>
 #include <overview/overviewdockwidget.h>
 #include <editor/mainwindow.h>
 #include <canvasview.h>
@@ -182,12 +182,12 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
       * be displayed together or individually.
     **/
     //classview
-//    onto->drawClassView(canvas);
-//    canvas->setOptAutomaticGraphLayout(true);
-//    canvas->setOptLayoutMode(canvas->FlowLayout);
-//    canvas->setOptPreventOverlaps(true);
-//    canvas->setOptFlowDirection(Canvas::FlowUp);
-//    canvas->fully_restart_graph_layout();
+    onto->drawClassView(canvas);
+    canvas->setOptAutomaticGraphLayout(true);
+    canvas->setOptLayoutMode(canvas->FlowLayout);
+    canvas->setOptPreventOverlaps(true);
+    canvas->setOptFlowDirection(Canvas::FlowUp);
+    canvas->fully_restart_graph_layout();
 
     /** Overview of classes (not finished) **/
     //test Thing class
@@ -224,16 +224,16 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
       3. draw overview
       **/
 
-    OverviewDockWidget *wid = new OverviewDockWidget();
-    onto->appmainwindow->addDockWidget(Qt::RightDockWidgetArea,wid);
-    wid->show();
+//    OverviewDockWidget *wid = new OverviewDockWidget();
+//    onto->appmainwindow->addDockWidget(Qt::RightDockWidgetArea,wid);
+//    wid->show();
 
-    Overview * ov = new Overview();
-    ov->numOfClasses=200;
-    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
-    ov->getOverviewClasses(onto->classes);
-    cout<<"drawing overview..."<<endl;
-    ov->overviewFMSLayout(canvas);
+//    Overview * ov = new Overview();
+//    ov->numOfClasses=200;
+//    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
+//    ov->getOverviewClasses(onto->classes);
+//    cout<<"drawing overview..."<<endl;
+//    ov->overviewFMSLayout(canvas);
 
 //    wid->my_canvas->setOptAutomaticGraphLayout(true);
 //    wid->my_canvas->setOptLayoutMode(Canvas::FlowLayout);

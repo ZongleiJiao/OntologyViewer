@@ -353,18 +353,18 @@ HEADERS       = \
     ontologyshapes/ontoproperty.h \
     ontologyshapes/ontoindividual.h \
     ontologyshapes/ontoclass.h \
-    detaildockwidget.h \
-    overview/keyconceptclass.h \
     ontologyshapes/overviewclassshape.h \
+    overview/keyconceptclass.h \
     overview/overview.h \
-    overview/overviewdockwidget.h
-    searchdockwidget.h \
-    filterdockwidget.h \
-    zoomdockwidget.h \
-    historydockwidget.h \
-    informationboxdockwidget.h \
-    shownodesdockwidget.h \
-    detailinfodockwidget.h
+    overview/overviewdockwidget.h\
+    widgets/detaildockwidget.h \
+    widgets/searchdockwidget.h \
+    widgets/filterdockwidget.h \
+    widgets/zoomdockwidget.h \
+    widgets/historydockwidget.h \
+    widgets/informationboxdockwidget.h \
+    widgets/shownodesdockwidget.h \
+    widgets/detailinfodockwidget.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -696,18 +696,18 @@ SOURCES       = plugin.cpp \
     ontologyshapes/ontoproperty.cpp \
     ontologyshapes/ontoindividual.cpp \
     ontologyshapes/ontoclass.cpp \
-    detaildockwidget.cpp \
-    overview/keyconceptclass.cpp \
     ontologyshapes/overviewclassshape.cpp \
+    overview/keyconceptclass.cpp \
     overview/overview.cpp \
-    overview/overviewdockwidget.cpp
-    searchdockwidget.cpp \
-    filterdockwidget.cpp \
-    zoomdockwidget.cpp \
-    historydockwidget.cpp \
-    informationboxdockwidget.cpp \
-    shownodesdockwidget.cpp \
-    detailinfodockwidget.cpp
+    overview/overviewdockwidget.cpp\
+    widgets/detaildockwidget.cpp \
+    widgets/searchdockwidget.cpp \
+    widgets/filterdockwidget.cpp \
+    widgets/zoomdockwidget.cpp \
+    widgets/historydockwidget.cpp \
+    widgets/informationboxdockwidget.cpp \
+    widgets/shownodesdockwidget.cpp \
+    widgets/detailinfodockwidget.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm
@@ -722,43 +722,12 @@ DEPENDPATH += /System/Library/Frameworks
 INCLUDEPATH += /System/Library/Frameworks/JavaVM.framework/Headers
 
 FORMS += \
-    detaildockwidget.ui \
-    overview/overviewdockwidget.ui
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-=======
-    searchdockwidget.ui \
-    filterdockwidget.ui \
-    zoomdockwidget.ui \
-    historydockwidget.ui \
-    informationboxdockwidget.ui \
-    shownodesdockwidget.ui \
-    detailinfodockwidget.ui
->>>>>>> newGUI2Implement
+    overview/overviewdockwidget.ui\
+    widgets/detaildockwidget.ui \
+    widgets/searchdockwidget.ui \
+    widgets/filterdockwidget.ui \
+    widgets/zoomdockwidget.ui \
+    widgets/historydockwidget.ui \
+    widgets/informationboxdockwidget.ui \
+    widgets/shownodesdockwidget.ui \
+    widgets/detailinfodockwidget.ui
