@@ -181,13 +181,8 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     /** classview, individualview, propertyview can
       * be displayed together or individually.
     **/
-    //classview
-    onto->drawClassView(canvas);
-    canvas->setOptAutomaticGraphLayout(true);
-    canvas->setOptLayoutMode(canvas->FlowLayout);
-    canvas->setOptPreventOverlaps(true);
-    canvas->setOptFlowDirection(Canvas::FlowUp);
-    canvas->fully_restart_graph_layout();
+
+
 
     /** Overview of classes (not finished) **/
     //test Thing class
@@ -241,10 +236,19 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    wid->my_canvas->setOptFlowDirection(Canvas::FlowUp);
 //    wid->my_canvas->fully_restart_graph_layout();
 
+    //classview
+    onto->drawClassView(canvas);
     //individualview
 //    onto->drawIndividualView(canvas);
     //propertyview
 //    onto->drawPropertyView(canvas);
+
+    //set automatic layout
+    canvas->setOptAutomaticGraphLayout(true);
+    canvas->setOptLayoutMode(canvas->FlowLayout);
+    canvas->setOptPreventOverlaps(true);
+    canvas->setOptFlowDirection(Canvas::FlowUp);
+    canvas->fully_restart_graph_layout();
 
     /** the getFormula() and logicalview() display
       * the anonymous class strings into formula
