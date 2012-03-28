@@ -18,10 +18,10 @@ OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
     this->currentfocusedclassidx = -1;
     this->appmainwindow = mainwin;
 
-//    wid = new DetailDockWidget();
-//    this->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,wid);
-//    wid->setWindowTitle("Equivalent Class");
-//    wid->show();
+    wid = new DetailDockWidget();
+    this->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,wid);
+    wid->setWindowTitle("Equivalent Class");
+    wid->show();
 
 
     zoomdwgt = new ZoomDockWidget();
@@ -894,7 +894,7 @@ ShapeObj * OwlOntology::drawEquivalentClass(QString qstr,Canvas *canvas)
 
         //not class, individual, or property
         if(idx==-1){
-            entityshape = new RectangleShape();
+            entityshape = new OntologyClassShape();
             entityshape->setLabel(sname);
             entityshape->setFillColour(QColor("orange"));
         }
