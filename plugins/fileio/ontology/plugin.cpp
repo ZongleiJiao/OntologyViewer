@@ -178,12 +178,6 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     /** text output **/
 //    cout<<onto->toQString().toStdString();
 
-    /** classview, individualview, propertyview can
-      * be displayed together or individually.
-    **/
-
-
-
     /** Overview of classes (not finished) **/
     //test Thing class
 //    canvas->addItem(onto->classes[onto->getIndexOfClasses("Thing")]->shape);
@@ -223,12 +217,12 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    onto->appmainwindow->addDockWidget(Qt::RightDockWidgetArea,wid);
 //    wid->show();
 
-//    Overview * ov = new Overview();
-//    ov->numOfClasses=200;
-//    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
-//    ov->getOverviewClasses(onto->classes);
-//    cout<<"drawing overview..."<<endl;
-//    ov->overviewFMSLayout(canvas);
+    Overview * ov = new Overview();
+    ov->numOfClasses=200;
+    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
+    ov->getOverviewClasses(onto->classes);
+    cout<<"drawing overview..."<<endl;
+    ov->overviewFMSLayout(canvas);
 
 //    wid->my_canvas->setOptAutomaticGraphLayout(true);
 //    wid->my_canvas->setOptLayoutMode(Canvas::FlowLayout);
@@ -236,8 +230,12 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    wid->my_canvas->setOptFlowDirection(Canvas::FlowUp);
 //    wid->my_canvas->fully_restart_graph_layout();
 
+
+    /** classview, individualview, propertyview can
+      * be displayed together or individually.
+    **/
     //classview
-    onto->drawClassView(canvas);
+//    onto->drawClassView(canvas);
     //individualview
 //    onto->drawIndividualView(canvas);
     //propertyview
