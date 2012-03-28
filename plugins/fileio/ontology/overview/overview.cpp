@@ -3,7 +3,11 @@
 #include <stack>
 #include "plugins/fileio/ontology/overview/keyconceptclass.h"
 #include <cmath>
+#include "libvpsc/solve_VPSC.h"
+#include "libvpsc/variable.h"
+#include "libvpsc/constraint.h"
 
+using namespace vpsc;
 using namespace std;
 Overview::Overview()
 {
@@ -338,21 +342,59 @@ void Overview::overviewFMSLayout(Canvas *canvas)
     //compute all distances
     computeShortestPath();
 
-    //k = minsize
-    int k=this->MIN_K;
-
-    while(k<=classes.size())
+    //projection -- dim Y
+    cout<<"Doing projection..."<<endl;
+    Variables vs;
+    Constraints cs;
+    int n = classes.size();
+    vs.resize(n);
+    for(int i=0;i<n;i++)
     {
-        QList<OwlClass *> centers = k_centers(classes,k);
-
-        for(int i=0;i<classes.size();i++)
-        {
-            OwlClass * ncenter = getNearestCenter(centers,classes[i]);
-            cout<<"Node["<<classes[i]->shortname.toStdString()
-               <<"] --> center["<<ncenter->shortname.toStdString()<<"]"<<endl;
-        }
-        cout<<k<<" Neighbor Energy :"<<energy(k)<<endl;
-        k=k*this->RATIO;
+        double yp = classes[i]->overviewshape->pos().y();
+        vs[i]=new Variable(i,yp);
     }
+    for(int i=0;i<n;i++)
+    {
+        QList<int> subidx;
+        for(int j=0;j<classes[i]->subclasses.size();j++){
+            int idx=getIndexByShortname(classes,classes[i]->subclasses[j]->shortname);
+            subidx.append(idx);
+            Constraint * c = new Constraint(vs[i],vs[idx],80);
+            cs.push_back(c);
+        }
+        for(int j=0;j<subidx.size()-1;j++)
+        {
+            Constraint * c = new Constraint(vs[subidx[j]],vs[subidx[j+1]],0,false);
+            cs.push_back(c);
+        }
+    }
+
+    vpsc::Solver * vpsc_solver = new Solver(vs,cs);
+    bool rs = vpsc_solver->solve();
+    if(rs){
+        cout<<"Y projection OK!"<<endl;
+        for(int i=0;i<n;i++){
+            QPointF op = classes[i]->overviewshape->pos();
+            Variable * v=vs[i];
+            op.setY(v->finalPosition);
+            classes[i]->overviewshape->setCentrePos(op);
+        }
+    }
+//    //k = minsize
+//    int k=this->MIN_K;
+
+//    while(k<=classes.size())
+//    {
+//        QList<OwlClass *> centers = k_centers(classes,k);
+
+//        for(int i=0;i<classes.size();i++)
+//        {
+//            OwlClass * ncenter = getNearestCenter(centers,classes[i]);
+//            cout<<"Node["<<classes[i]->shortname.toStdString()
+//               <<"] --> center["<<ncenter->shortname.toStdString()<<"]"<<endl;
+//        }
+//        cout<<k<<" Neighbor Energy :"<<energy(k)<<endl;
+//        k=k*this->RATIO;
+//    }
 
 }

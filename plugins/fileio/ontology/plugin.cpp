@@ -229,17 +229,17 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     wid->show();
 
     Overview * ov = new Overview();
-    ov->numOfClasses=50;
+    ov->numOfClasses=200;
     cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
     ov->getOverviewClasses(onto->classes);
     cout<<"drawing overview..."<<endl;
     ov->overviewFMSLayout(canvas);
 
-    wid->my_canvas->setOptAutomaticGraphLayout(true);
-    wid->my_canvas->setOptLayoutMode(Canvas::FlowLayout);
-    wid->my_canvas->setOptPreventOverlaps(true);
-    wid->my_canvas->setOptFlowDirection(Canvas::FlowUp);
-    wid->my_canvas->fully_restart_graph_layout();
+//    wid->my_canvas->setOptAutomaticGraphLayout(true);
+//    wid->my_canvas->setOptLayoutMode(Canvas::FlowLayout);
+//    wid->my_canvas->setOptPreventOverlaps(true);
+//    wid->my_canvas->setOptFlowDirection(Canvas::FlowUp);
+//    wid->my_canvas->fully_restart_graph_layout();
 
     //individualview
 //    onto->drawIndividualView(canvas);
