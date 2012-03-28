@@ -303,6 +303,11 @@ QList<OwlClass *> Overview::k_neighborhood(OwlClass *node, int k)
 //    return eng;
 //}
 
+double Overview::EuclideanDistance(OwlClass *u, OwlClass *v)
+{
+
+}
+
 double Overview::deltakv(int k, OwlClass *node)
 {
     //deltakv = sqrt((∂Ek/∂xv)^2+(∂Ek/∂yv)^2)
@@ -342,6 +347,7 @@ void Overview::overviewFMSLayout(Canvas *canvas)
     //compute all distances
     computeShortestPath();
 
+    /** test projection **/
     //projection -- dim Y
 //    cout<<"Doing projection..."<<endl;
 //    Variables vs;
@@ -369,6 +375,7 @@ void Overview::overviewFMSLayout(Canvas *canvas)
 //        }
 //    }
 
+
 //    vpsc::Solver * vpsc_solver = new Solver(vs,cs);
 //    bool rs = vpsc_solver->solve();
 //    if(rs){
@@ -380,20 +387,28 @@ void Overview::overviewFMSLayout(Canvas *canvas)
 //            classes[i]->overviewshape->setCentrePos(op);
 //        }
 //    }
-//    //k = minsize
+
+    //k = minsize
 //    int k=this->MIN_K;
 
 //    while(k<=classes.size())
 //    {
+//        //center=k-centers
 //        QList<OwlClass *> centers = k_centers(classes,k);
+//        //radius
 
+//        //locallayout
+
+//        //for every v in V, do L(v)=L(center(v))+rand
 //        for(int i=0;i<classes.size();i++)
 //        {
 //            OwlClass * ncenter = getNearestCenter(centers,classes[i]);
 //            cout<<"Node["<<classes[i]->shortname.toStdString()
 //               <<"] --> center["<<ncenter->shortname.toStdString()<<"]"<<endl;
 //        }
-//        cout<<k<<" Neighbor Energy :"<<energy(k)<<endl;
+//        //projection
+
+//        //k=k*radio
 //        k=k*this->RATIO;
 //    }
 
