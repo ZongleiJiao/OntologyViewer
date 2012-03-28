@@ -48,6 +48,7 @@ private:
     void localLayout(QList<OwlClass *>nodes,int k,int iteratioon);
     QList<OwlClass *> k_neighborhood(OwlClass * node,int k);
     double energy(int k);
+    double EuclideanDistance(OwlClass *u,OwlClass *v);
     double deltakv(int k,OwlClass *node);
     //projection
     void projection();    

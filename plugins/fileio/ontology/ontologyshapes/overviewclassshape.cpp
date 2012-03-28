@@ -13,7 +13,7 @@ QPainterPath OverviewClassShape::buildPainterPath(void)
 {
     QPainterPath painter_path;
 
-    painter_path.addEllipse(0,0,width(),height());
+    painter_path.addEllipse(-width()/2,-height()/2,width(),height());
     painter_path.closeSubpath();
 
     return painter_path;
