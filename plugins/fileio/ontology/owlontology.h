@@ -7,6 +7,13 @@
 #include <ontoindividual.h>
 #include <ontoproperty.h>
 #include <detaildockwidget.h>
+#include <zoomdockwidget.h>
+#include <searchdockwidget.h>
+#include <filterdockwidget.h>
+#include <historydockwidget.h>
+#include <informationboxdockwidget.h>
+#include <shownodesdockwidget.h>
+#include <detailinfodockwidget.h>
 #include <QtGui>
 
 class OwlOntology:public QObject
@@ -34,6 +41,13 @@ public:
     QMainWindow * appmainwindow;
     Canvas * maincanvas;
     DetailDockWidget * wid;
+    ZoomDockWidget * zoomdwgt;
+    FilterDockWidget * filterdwgt;
+    HistoryDockWidget * historydwgt;
+    SearchDockWidget * searchdwgt;
+    InformationBoxDockWidget *infoboxdwgt;
+    ShowNodesDockWidget * typedwgt;
+    DetailInfoDockWidget * deatildwgt;
 
     QString ontologyname;
     QList<OwlClass *> classes;

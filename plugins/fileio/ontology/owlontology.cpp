@@ -18,10 +18,39 @@ OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
     this->currentfocusedclassidx = -1;
     this->appmainwindow = mainwin;
 
-    wid = new DetailDockWidget();
-    this->appmainwindow->addDockWidget(Qt::RightDockWidgetArea,wid);
-    wid->setWindowTitle("Equivalent Class");
-    wid->show();
+//    wid = new DetailDockWidget();
+//    this->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,wid);
+//    wid->setWindowTitle("Equivalent Class");
+//    wid->show();
+
+    zoomdwgt = new ZoomDockWidget();
+    this->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,zoomdwgt);
+    zoomdwgt->show();
+
+    filterdwgt = new FilterDockWidget();
+    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,filterdwgt);
+    filterdwgt->show();
+
+    historydwgt = new HistoryDockWidget();
+    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,historydwgt);
+    historydwgt->show();
+
+    searchdwgt = new SearchDockWidget();
+    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,searchdwgt);
+    searchdwgt->show();
+
+    infoboxdwgt = new InformationBoxDockWidget();
+    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,infoboxdwgt);
+    infoboxdwgt->show();
+
+    typedwgt = new ShowNodesDockWidget;
+    appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,typedwgt);
+    typedwgt->show();
+
+    //temp TODO create new widget (QListWidget)
+    DetailInfoDockWidget * deatildwgt = new DetailInfoDockWidget();
+    appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,deatildwgt);
+    deatildwgt->show();
 }
 
 /** TODO List:

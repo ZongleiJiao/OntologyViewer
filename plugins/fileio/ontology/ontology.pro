@@ -358,6 +358,13 @@ HEADERS       = \
     ontologyshapes/overviewclassshape.h \
     overview/overview.h \
     overview/overviewdockwidget.h
+    searchdockwidget.h \
+    filterdockwidget.h \
+    zoomdockwidget.h \
+    historydockwidget.h \
+    informationboxdockwidget.h \
+    shownodesdockwidget.h \
+    detailinfodockwidget.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -694,6 +701,13 @@ SOURCES       = plugin.cpp \
     ontologyshapes/overviewclassshape.cpp \
     overview/overview.cpp \
     overview/overviewdockwidget.cpp
+    searchdockwidget.cpp \
+    filterdockwidget.cpp \
+    zoomdockwidget.cpp \
+    historydockwidget.cpp \
+    informationboxdockwidget.cpp \
+    shownodesdockwidget.cpp \
+    detailinfodockwidget.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm
@@ -739,3 +753,12 @@ FORMS += \
 
 
 
+=======
+    searchdockwidget.ui \
+    filterdockwidget.ui \
+    zoomdockwidget.ui \
+    historydockwidget.ui \
+    informationboxdockwidget.ui \
+    shownodesdockwidget.ui \
+    detailinfodockwidget.ui
+>>>>>>> newGUI2Implement

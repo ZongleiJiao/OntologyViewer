@@ -276,32 +276,32 @@ QList<OwlClass *> Overview::k_neighborhood(OwlClass *node, int k)
     return result;
 }
 
-double Overview::energy(int k)
-{
-    double eng=0.0;
-    for(int v=0;v<classes.size();v++)
-    {
-        QList<OwlClass *> kneighbors = k_neighborhood(classes[v],k);
-        cout<<"KN size:"<<kneighbors.size()<<endl;
-        for(int u=0;u<kneighbors.size();u++)
-        {
-            int idxu=getIndexByShortname(classes,kneighbors[u]->shortname);
-            int duv=distance[idxu][v];
-            //compute (||L(u)-L(v)||-l*duv)2 / duv2
-            QPointF pv = classes[v]->overviewshape->pos();
-            QPointF pu = kneighbors[u]->overviewshape->pos();
-            double luv=sqrt(
-                        pow(pv.x()-pu.x(),2)
-                       +pow(pv.y()-pu.y(),2)
-                        );
-            eng += pow((luv - this->SINGLE_EDGE_LENGTH * duv),2)/pow(duv,2);
-            cout<<"duv:"<<duv<<" |lu-lv|:"<<luv<<" INC:"
-               <<pow((luv - this->SINGLE_EDGE_LENGTH * duv),2)/pow(duv,2)
-              <<" E:"<<eng<<endl;
-        }
-    }
-    return eng;
-}
+//double Overview::energy(int k)
+//{
+//    double eng=0.0;
+//    for(int v=0;v<classes.size();v++)
+//    {
+//        QList<OwlClass *> kneighbors = k_neighborhood(classes[v],k);
+//        cout<<"KN size:"<<kneighbors.size()<<endl;
+//        for(int u=0;u<kneighbors.size();u++)
+//        {
+//            int idxu=getIndexByShortname(classes,kneighbors[u]->shortname);
+//            int duv=distance[idxu][v];
+//            //compute (||L(u)-L(v)||-l*duv)2 / duv2
+//            QPointF pv = classes[v]->overviewshape->pos();
+//            QPointF pu = kneighbors[u]->overviewshape->pos();
+//            double luv=sqrt(
+//                        pow(pv.x()-pu.x(),2)
+//                       +pow(pv.y()-pu.y(),2)
+//                        );
+//            eng += pow((luv - this->SINGLE_EDGE_LENGTH * duv),2)/pow(duv,2);
+//            cout<<"duv:"<<duv<<" |lu-lv|:"<<luv<<" INC:"
+//               <<pow((luv - this->SINGLE_EDGE_LENGTH * duv),2)/pow(duv,2)
+//              <<" E:"<<eng<<endl;
+//        }
+//    }
+//    return eng;
+//}
 
 double Overview::deltakv(int k, OwlClass *node)
 {
@@ -343,43 +343,43 @@ void Overview::overviewFMSLayout(Canvas *canvas)
     computeShortestPath();
 
     //projection -- dim Y
-    cout<<"Doing projection..."<<endl;
-    Variables vs;
-    Constraints cs;
-    int n = classes.size();
-    vs.resize(n);
-    for(int i=0;i<n;i++)
-    {
-        double yp = classes[i]->overviewshape->pos().y();
-        vs[i]=new Variable(i,yp);
-    }
-    for(int i=0;i<n;i++)
-    {
-        QList<int> subidx;
-        for(int j=0;j<classes[i]->subclasses.size();j++){
-            int idx=getIndexByShortname(classes,classes[i]->subclasses[j]->shortname);
-            subidx.append(idx);
-            Constraint * c = new Constraint(vs[i],vs[idx],80);
-            cs.push_back(c);
-        }
-        for(int j=0;j<subidx.size()-1;j++)
-        {
-            Constraint * c = new Constraint(vs[subidx[j]],vs[subidx[j+1]],0,false);
-            cs.push_back(c);
-        }
-    }
+//    cout<<"Doing projection..."<<endl;
+//    Variables vs;
+//    Constraints cs;
+//    int n = classes.size();
+//    vs.resize(n);
+//    for(int i=0;i<n;i++)
+//    {
+//        double yp = classes[i]->overviewshape->pos().y();
+//        vs[i]=new Variable(i,yp);
+//    }
+//    for(int i=0;i<n;i++)
+//    {
+//        QList<int> subidx;
+//        for(int j=0;j<classes[i]->subclasses.size();j++){
+//            int idx=getIndexByShortname(classes,classes[i]->subclasses[j]->shortname);
+//            subidx.append(idx);
+//            Constraint * c = new Constraint(vs[i],vs[idx],80);
+//            cs.push_back(c);
+//        }
+//        for(int j=0;j<subidx.size()-1;j++)
+//        {
+//            Constraint * c = new Constraint(vs[subidx[j]],vs[subidx[j+1]],0,false);
+//            cs.push_back(c);
+//        }
+//    }
 
-    vpsc::Solver * vpsc_solver = new Solver(vs,cs);
-    bool rs = vpsc_solver->solve();
-    if(rs){
-        cout<<"Y projection OK!"<<endl;
-        for(int i=0;i<n;i++){
-            QPointF op = classes[i]->overviewshape->pos();
-            Variable * v=vs[i];
-            op.setY(v->finalPosition);
-            classes[i]->overviewshape->setCentrePos(op);
-        }
-    }
+//    vpsc::Solver * vpsc_solver = new Solver(vs,cs);
+//    bool rs = vpsc_solver->solve();
+//    if(rs){
+//        cout<<"Y projection OK!"<<endl;
+//        for(int i=0;i<n;i++){
+//            QPointF op = classes[i]->overviewshape->pos();
+//            Variable * v=vs[i];
+//            op.setY(v->finalPosition);
+//            classes[i]->overviewshape->setCentrePos(op);
+//        }
+//    }
 //    //k = minsize
 //    int k=this->MIN_K;
 
