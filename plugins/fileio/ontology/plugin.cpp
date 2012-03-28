@@ -49,7 +49,10 @@
 #include <ontoclass.h>
 #include <ontoindividual.h>
 #include <ontoproperty.h>
+#include <overviewclassshape.h>
+#include <overview/overview.h>
 #include <detaildockwidget.h>
+#include <overview/overviewdockwidget.h>
 #include <editor/mainwindow.h>
 #include <canvasview.h>
 #include <QMainWindow>
@@ -173,54 +176,70 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     cout<<"Finish loading. Total " <<onto->classes.size()<<" class notes."<<endl;
 
     /** text output **/
-    cout<<onto->toQString().toStdString();
+//    cout<<onto->toQString().toStdString();
 
     /** classview, individualview, propertyview can
       * be displayed together or individually.
     **/
     //classview
-    onto->drawClassView(canvas);
-
-    canvas->setOptAutomaticGraphLayout(true);
-    canvas->setOptLayoutMode(canvas->FlowLayout);
-    canvas->setOptPreventOverlaps(true);
-    canvas->fully_restart_graph_layout();
+//    onto->drawClassView(canvas);
+//    canvas->setOptAutomaticGraphLayout(true);
+//    canvas->setOptLayoutMode(canvas->FlowLayout);
+//    canvas->setOptPreventOverlaps(true);
+//    canvas->setOptFlowDirection(Canvas::FlowUp);
+//    canvas->fully_restart_graph_layout();
 
     /** Overview of classes (not finished) **/
-//        onto->drawClassOverview(canvas);
     //test Thing class
-    canvas->addItem(onto->classes[onto->getIndexOfClasses("Thing")]->shape);
+//    canvas->addItem(onto->classes[onto->getIndexOfClasses("Thing")]->shape);
     //test key concept
-//    KeyConcept *kc = new KeyConcept(onto->classes);
-//    cout<<"KeyConcept -- Origin Classes:" << kc->originClasses.size() <<endl;
-//    for(int i=0;i<kc->originClasses.size();i++){
-//        cout<<"KeyConcept NameSimplicity:"
-//           <<kc->originClasses[i]->shortname.toStdString() << " - "
-//           <<kc->nameSimplicity(kc->originClasses[i])
-//           <<endl;
-//        kc->getPath(kc->originClasses[i]);
-//    }
-    KeyConceptClass *kc=new KeyConceptClass(onto->classes);
-    QList<OwlClass *> keyclasses=kc->getKeyClasses(10);
-    for(int i=0;i<kc->classnum;i++){
-        cout<<"<<"<< kc->originclasses[i]->shortname.toStdString()
-           <<">>:[NS]"<<kc->namesimplicities[i]
-           <<" [BL]"<<kc->basiclevels[i]
-           <<" [NC]"<<kc->ncvalues[i]
-           <<"\n[aGD]"<<kc->aGlobalDensities[i]
-           <<" [GD]"<<kc->globaldensities[i]
-           <<" [LD]"<<kc->localdensities[i]
-           <<" [D]"<<kc->densities[i]
-           <<"\n[Hit]"<<kc->hits[i]
-           <<" [GP]"<<kc->globalpopularities[i]
-           <<" [LP]"<<kc->localpopularities[i]
-           <<" [P]"<<kc->popularities[i]
-           <<"\n[SCORE]"<<kc->scores[i]
-           <<endl;
-    }
-    for(int i=0;i<keyclasses.size();i++)
-        keyclasses[i]->shape->setFillColour(QColor("red"));
 
+/*    cout<<"Getting overview keyconcept classes..."<<endl;
+    KeyConceptClass *kc=new KeyConceptClass(onto->classes);
+    QList<OwlClass *> keyclasses=kc->getKeyClasses(300);
+
+//    for(int i=0;i<kc->classnum;i++){
+//        cout<<"<<"<< kc->originclasses[i]->shortname.toStdString()
+//           <<">>:[NS]"<<kc->namesimplicities[i]
+//           <<" [BL]"<<kc->basiclevels[i]
+//           <<" [NC]"<<kc->ncvalues[i]
+//           <<"\n[aGD]"<<kc->aGlobalDensities[i]
+//           <<" [GD]"<<kc->globaldensities[i]
+//           <<" [LD]"<<kc->localdensities[i]
+//           <<" [D]"<<kc->densities[i]
+//           <<"\n[Hit]"<<kc->hits[i]
+//           <<" [GP]"<<kc->globalpopularities[i]
+//           <<" [LP]"<<kc->localpopularities[i]
+//           <<" [P]"<<kc->popularities[i]
+//           <<"\n[SCORE]"<<kc->scores[i]
+//           <<endl;
+//    }
+//    for(int i=0;i<keyclasses.size();i++)
+//        keyclasses[i]->shape->setFillColour(QColor("red"));
+*/
+
+    //test overview
+    /**
+      1. get N keyclasses from allclasses & reset sub/sup relations
+      3. draw overview
+      **/
+
+    OverviewDockWidget *wid = new OverviewDockWidget();
+    onto->appmainwindow->addDockWidget(Qt::RightDockWidgetArea,wid);
+    wid->show();
+
+    Overview * ov = new Overview();
+    ov->numOfClasses=50;
+    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
+    ov->getOverviewClasses(onto->classes);
+    cout<<"drawing overview..."<<endl;
+    ov->overviewFMSLayout(canvas);
+
+    wid->my_canvas->setOptAutomaticGraphLayout(true);
+    wid->my_canvas->setOptLayoutMode(Canvas::FlowLayout);
+    wid->my_canvas->setOptPreventOverlaps(true);
+    wid->my_canvas->setOptFlowDirection(Canvas::FlowUp);
+    wid->my_canvas->fully_restart_graph_layout();
 
     //individualview
 //    onto->drawIndividualView(canvas);

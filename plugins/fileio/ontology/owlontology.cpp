@@ -129,7 +129,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         tmpclass->shape = new OntologyClassShape();
         tmpclass->shape->setIdString(tmpclass->shortname);
         tmpclass->shape->setToolTip(tmpclass->URI);
-        tmpclass->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));        
+        tmpclass->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));
         tmpclass->shape->setMyLabel(tmpclass->shortname);
         tmpclass->shape->setLabelByLevels(1,tmpclass->shortname); //set level 1 label
         tmpclass->shape->setFillColour(this->CLASS_SHAPE_COLOR);
@@ -201,7 +201,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
                 disstr += QString(owldisjointclasses[j]->toString())+" "; //add to level 4 label
                 int idx = getIndexOfClasses(owldisjointclasses[j]->toString());
                 if(idx!=-1)classes[i]->disjointclasses<<classes[idx];
-            }            
+            }
         }
         classes[i]->shape->setLabelByLevels(5,disstr); //set level 5 label
 
