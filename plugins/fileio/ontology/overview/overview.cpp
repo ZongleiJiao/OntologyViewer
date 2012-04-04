@@ -6,7 +6,10 @@
 #include "libvpsc/solve_VPSC.h"
 #include "libvpsc/variable.h"
 #include "libvpsc/constraint.h"
+#include "libdunnartcanvas/graphlayout.h"
+#include "libdunnartcanvas/graphdata.h"
 
+using namespace dunnart;
 using namespace vpsc;
 using namespace std;
 Overview::Overview()
@@ -14,9 +17,9 @@ Overview::Overview()
     this->numOfClasses = 300;
 }
 
-void Overview::getOverviewClasses(QList<OwlClass *> allclasses)
+void Overview::getOverviewClasses(QList<OwlClass *> allclasses,QString ontoname)
 {
-    KeyConceptClass *kc=new KeyConceptClass(allclasses);
+    KeyConceptClass *kc=new KeyConceptClass(allclasses,ontoname);
     classes = convertOverviewShapes(kc->getKeyClasses(this->numOfClasses));
     numOfClasses=classes.size();
 }
@@ -125,7 +128,7 @@ void Overview::setInitialLayout()
     int x = 0;
     int y = -50;
     for(int i=0;i<classes.size();i++){
-        if(i%10==0){
+        if(i%5==0){
             x=0;
             y+=50;
         }
@@ -191,7 +194,7 @@ QList<OwlClass *> Overview::k_centers(QList<OwlClass *> nodes, int k)
     QList<OwlClass *> result;
     //add the first node as k0
     result.append(nodes[0]);
-    cout<<"K-centre[0]:"<<result.last()->shortname.toStdString()<<endl;
+    cout<<k<<" -- K-centre[0]:"<<result.last()->shortname.toStdString()<<endl;
     for(int i=1;i<k;i++)
     {
         result.append(getFarthestNode(result));
@@ -203,6 +206,7 @@ QList<OwlClass *> Overview::k_centers(QList<OwlClass *> nodes, int k)
 
 OwlClass * Overview::getFarthestNode(QList<OwlClass *> nodes)
 {
+    cout<<"=====getFarthestNode====="<<endl;
     int idxfstnode=-1;
     int fstdistance=0;
     for(int i=0;i<nodes.size();i++)
@@ -210,8 +214,9 @@ OwlClass * Overview::getFarthestNode(QList<OwlClass *> nodes)
         int idx=getIndexByShortname(classes,nodes[i]->shortname);
         for(int j=0;j<classes.size();j++)
         {
-//            cout<<"D["<<idx<<"]["<<j<<"]:"<<distance[idx][j]<<" ";
+
             if((!nodes.contains(classes[j]))&&(distance[idx][j]>fstdistance)){
+                cout<<"D["<<idx<<"]["<<j<<"]:"<<distance[idx][j]<<" "<<endl;
                 fstdistance=distance[idx][j];
                 idxfstnode = j;
             }
@@ -242,7 +247,7 @@ OwlClass * Overview::getNearestCenter(QList<OwlClass *> centers, OwlClass * node
     return classes[idxofmincenter];
 }
 
-void Overview::localLayout(QList<OwlClass *> nodes, int k, int iteratioon)
+void Overview::localLayout(QList<OwlClass *> graph, int k, int iteration)
 {
     /*
     LocalLayout(dV ×V , L, k, Iterations)
@@ -256,10 +261,37 @@ void Overview::localLayout(QList<OwlClass *> nodes, int k, int iteratioon)
         2. Compute δkv by solving the above mentioned equations
         3. L(v) ← L(v) + (δkv (x), δkv (y))
         end
-
-        delta(k,v) Energy(k) k-neighbourhood
-        deltax(k,v)
       */
+    for(int i=0;i<iteration*graph.size();i++){
+        int idx = getIndexOfMaxDeltaM(graph);
+        double ex = Ex(graph,graph[idx]);
+        double ey = Ey(graph,graph[idx]);
+        double ex2 = Ex2(graph,graph[idx]);
+        double exy = Exy(graph,graph[idx]);
+        double ey2 = Ey2(graph,graph[idx]);
+        double dmx = deltaMx(ex,ey,ex2,exy,ey2);
+        double dmy = deltaMy(ex,ey,ex2,exy,ey2);
+        qreal newposx = graph[idx]->overviewshape->pos().rx() + dmx;
+        qreal newposy = graph[idx]->overviewshape->pos().ry() + dmy;
+        graph[idx]->overviewshape->setCentrePos(QPointF(newposx,newposy));
+    }
+}
+
+int Overview::getIndexOfMaxDeltaM(QList<OwlClass *> graph)
+{
+    double max=0.0;
+    int maxidx = -1;
+    for(int i=0;i<graph.size();i++)
+    {
+        double ex = Ex(graph,graph[i]);
+        double ey = Ey(graph,graph[i]);
+        double tmp = deltaM(ex,ey);
+        if(max<tmp){
+            max=tmp;
+            maxidx=i;
+        }
+    }
+    return maxidx;
 }
 
 QList<OwlClass *> Overview::k_neighborhood(OwlClass *node, int k)
@@ -276,77 +308,123 @@ QList<OwlClass *> Overview::k_neighborhood(OwlClass *node, int k)
     return result;
 }
 
-//double Overview::energy(int k)
-//{
-//    double eng=0.0;
-//    for(int v=0;v<classes.size();v++)
-//    {
-//        QList<OwlClass *> kneighbors = k_neighborhood(classes[v],k);
-//        cout<<"KN size:"<<kneighbors.size()<<endl;
-//        for(int u=0;u<kneighbors.size();u++)
-//        {
-//            int idxu=getIndexByShortname(classes,kneighbors[u]->shortname);
-//            int duv=distance[idxu][v];
-//            //compute (||L(u)-L(v)||-l*duv)2 / duv2
-//            QPointF pv = classes[v]->overviewshape->pos();
-//            QPointF pu = kneighbors[u]->overviewshape->pos();
-//            double luv=sqrt(
-//                        pow(pv.x()-pu.x(),2)
-//                       +pow(pv.y()-pu.y(),2)
-//                        );
-//            eng += pow((luv - this->SINGLE_EDGE_LENGTH * duv),2)/pow(duv,2);
-//            cout<<"duv:"<<duv<<" |lu-lv|:"<<luv<<" INC:"
-//               <<pow((luv - this->SINGLE_EDGE_LENGTH * duv),2)/pow(duv,2)
-//              <<" E:"<<eng<<endl;
-//        }
-//    }
-//    return eng;
-//}
-
 double Overview::EuclideanDistance(OwlClass *u, OwlClass *v)
 {
-
+    double xu=u->overviewshape->pos().rx();
+    double yu=u->overviewshape->pos().ry();
+    double xv=v->overviewshape->pos().rx();
+    double yv=v->overviewshape->pos().ry();
+    return sqrt((xu-xv)*(xu-xv)+(yu-yv)*(yu-yv));
 }
 
-double Overview::deltakv(int k, OwlClass *node)
+double Overview::Ex(QList<OwlClass *> graph, OwlClass *node)
 {
-    //deltakv = sqrt((∂Ek/∂xv)^2+(∂Ek/∂yv)^2)
-    //Ek =sum (INC) (v=0..n-1,u=0..k-1)
-    //INC = (L(u,v)- l* duv)^2/duv^2
-    //L(u,v)=sqrt((xu-xv)^2+(yu-yv)^2)
+    double rs = 0.0;
+    int idxnode = getIndexByShortname(classes,node->shortname);
+    double xnode = node->overviewshape->pos().rx();
+    for(int i=0;i<graph.size();i++){
+        if(graph[i]!=node){
+            double kij = 1/(distance[i][idxnode] * distance[i][idxnode]);
+            double lij = this->SINGLE_EDGE_LENGTH * distance[i][idxnode];
+            double xi = graph[i]->overviewshape->pos().rx();
+            rs += kij*(xnode-xi)*(1-lij/EuclideanDistance(graph[i],node));
+        }
+    }
+    return rs;
+}
+double Overview::Ey(QList<OwlClass *> graph, OwlClass *node)
+{
+    double rs = 0.0;
+    int idxnode = getIndexByShortname(classes,node->shortname);
+    double ynode = node->overviewshape->pos().ry();
+    for(int i=0;i<graph.size();i++){
+        if(graph[i]!=node){
+            double kij = 1/(distance[i][idxnode] * distance[i][idxnode]);
+            double lij = this->SINGLE_EDGE_LENGTH * distance[i][idxnode];
+            double yi = graph[i]->overviewshape->pos().ry();
+            rs += kij*(ynode-yi)*(1-lij/EuclideanDistance(graph[i],node));
+        }
+    }
+    return rs;
 }
 
-void Overview::overviewFMSLayout(Canvas *canvas)
+double Overview::Ex2(QList<OwlClass *> graph, OwlClass *node)
 {
-    /*
-        LayoutG(V, E)
-        Goal: Find L, a nice layout of G
-        Constants:
-            Rad[= 7] — determines radius of local neighborhoods
-            Iterations[= 4] — determines number of iterations in local beautification
-            Ratio[= 3] — ratio between number of vertices in two consecutive levels
-            MinSize[= 10] — size of the coarsest graph
-        Compute the all-pairs shortest path length: dV ×V
-        Set up a random layout L
-        k ← MinSize
-        while k<=|V| do
-        centers ← K-Centers(G(V, E) ,k)
-        radius = maxv∈centers minu∈centers {dvu } · Rad
-        LocalLayout (dcenters×centers , L(centers),radius,Iterations)
-        for every v ∈ V do
-        L(v) ← L(center(v)) + rand
-        k ← k · Ratio
-        return L
-      */
-    //init layout
-    this->setInitialLayout();
+    double rs = 0.0;
+    int idxnode = getIndexByShortname(classes,node->shortname);
+    double ynode = node->overviewshape->pos().ry();
+    for(int i=0;i<graph.size();i++){
+        if(graph[i]!=node){
+            double kij = 1/(distance[i][idxnode] * distance[i][idxnode]);
+            double lij = this->SINGLE_EDGE_LENGTH * distance[i][idxnode];
+            double yi = graph[i]->overviewshape->pos().ry();
+            double ed = EuclideanDistance(graph[i],node);
+            double ed3= ed*ed*ed;
+            rs += kij*(1-(lij*(ynode-yi)*(ynode-yi))/ed3);
+        }
+    }
+    return rs;
+}
 
-    //draw
-    this->drawOverview(canvas);
+double Overview::Exy(QList<OwlClass *> graph, OwlClass *node)
+{
+    double rs = 0.0;
+    int idxnode = getIndexByShortname(classes,node->shortname);
+    double ynode = node->overviewshape->pos().ry();
+    double xnode = node->overviewshape->pos().rx();
+    for(int i=0;i<graph.size();i++){
+        if(graph[i]!=node){
+            double kij = 1/(distance[i][idxnode] * distance[i][idxnode]);
+            double lij = this->SINGLE_EDGE_LENGTH * distance[i][idxnode];
+            double yi = graph[i]->overviewshape->pos().ry();
+            double xi = graph[i]->overviewshape->pos().rx();
+            double ed = EuclideanDistance(graph[i],node);
+            double ed3= ed*ed*ed;
+            rs += kij * lij * (xnode - xi) * (ynode - yi) /ed3 ;
+        }
+    }
+    return rs;
+}
 
-    //compute all distances
-    computeShortestPath();
+double Overview::Ey2(QList<OwlClass *> graph, OwlClass *node)
+{
+    double rs = 0.0;
+    int idxnode = getIndexByShortname(classes,node->shortname);
+    double xnode = node->overviewshape->pos().rx();
+    for(int i=0;i<graph.size();i++){
+        if(graph[i]!=node){
+            double kij = 1/(distance[i][idxnode] * distance[i][idxnode]);
+            double lij = this->SINGLE_EDGE_LENGTH * distance[i][idxnode];
+            double xi = graph[i]->overviewshape->pos().rx();
+            double ed = EuclideanDistance(graph[i],node);
+            double ed3= ed*ed*ed;
+            rs += kij*(1-(lij*(xnode-xi)*(xnode-xi))/ed3);
+        }
+    }
+    return rs;
+}
 
+double Overview::deltaM(double ex, double ey)
+{
+    //deltaM = sqrt(ex*ex+ey*ey)
+//    double ex = wA(graph,node);
+//    double ey = wB(graph,node);
+    return sqrt(ex*ex+ey*ey);
+}
+
+double Overview::deltaMx(double ex,double ey,double ex2, double exy, double ey2)
+{
+    //deltaMx = (exy*ey - ex*ey2)/(ex2*ey2-exy*exy)
+    return (exy*ey - ex*ey2)/(ex2*ey2-exy*exy);
+}
+double Overview::deltaMy(double ex,double ey,double ex2, double exy, double ey2)
+{
+    //deltaMy = (exy*ex - ey*ex2)/(ex2*ey2-exy*exy)
+    return (exy*ex - ey*ex2)/(ex2*ey2-exy*exy);
+}
+
+void Overview::projection(QList<OwlClass *> graph)
+{
     /** test projection **/
 //    //projection -- dim Y
 //    cout<<"Doing projection..."<<endl;
@@ -387,7 +465,79 @@ void Overview::overviewFMSLayout(Canvas *canvas)
 //            classes[i]->overviewshape->setCentrePos(op);
 //        }
 //    }
+    cout<<"Doing projection..."<<endl;
+    Variables vs;
+    Constraints cs;
+    int n = graph.size();
+    vs.resize(n);
+    for(int i=0;i<n;i++)
+    {
+        double yp = graph[i]->overviewshape->pos().y();
+        vs[i]=new Variable(i,yp);
+    }
+    for(int i=0;i<n;i++)
+    {
+        QList<int> subidx;
+        for(int j=0;j<graph[i]->subclasses.size();j++){
+            int idx=getIndexByShortname(graph,graph[i]->subclasses[j]->shortname);
+            if(idx!=-1)
+            {
+                subidx.append(idx);
+                Constraint * c = new Constraint(vs[i],vs[idx],this->SINGLE_EDGE_LENGTH);
+                cs.push_back(c);
+            }
+        }
+        for(int j=0;j<subidx.size()-1;j++)
+        {
+            Constraint * c = new Constraint(vs[subidx[j]],vs[subidx[j+1]],0,false);
+            cs.push_back(c);
+        }
+    }
 
+
+    vpsc::Solver * vpsc_solver = new Solver(vs,cs);
+    bool rs = vpsc_solver->solve();
+    if(rs){
+        cout<<"Y projection OK!"<<endl;
+        for(int i=0;i<n;i++){
+            QPointF op = graph[i]->overviewshape->pos();
+            Variable * v=vs[i];
+            op.setY(v->finalPosition);
+            graph[i]->overviewshape->setCentrePos(op);
+        }
+    }
+}
+
+void Overview::overviewFMSLayout(Canvas *canvas)
+{
+    /*
+        LayoutG(V, E)
+        Goal: Find L, a nice layout of G
+        Constants:
+            Rad[= 7] — determines radius of local neighborhoods
+            Iterations[= 4] — determines number of iterations in local beautification
+            Ratio[= 3] — ratio between number of vertices in two consecutive levels
+            MinSize[= 10] — size of the coarsest graph
+        Compute the all-pairs shortest path length: dV ×V
+        Set up a random layout L
+        k ← MinSize
+        while k<=|V| do
+        centers ← K-Centers(G(V, E) ,k)
+        radius = maxv∈centers minu∈centers {dvu } · Rad
+        LocalLayout (dcenters×centers , L(centers),radius,Iterations)
+        for every v ∈ V do
+        L(v) ← L(center(v)) + rand
+        k ← k · Ratio
+        return L
+      */
+    //init layout
+    this->setInitialLayout();
+
+    //draw
+    this->drawOverview(canvas);
+
+    //compute all distances
+    computeShortestPath();
     //k = minsize
 //    int k=this->MIN_K;
 
@@ -396,20 +546,29 @@ void Overview::overviewFMSLayout(Canvas *canvas)
 //        //center=k-centers
 //        QList<OwlClass *> centers = k_centers(classes,k);
 //        //radius
-
+//        int radius =this->RATIO;
 //        //locallayout
+//        this->localLayout(centers,radius,this->ITERATIONS);
 
 //        //for every v in V, do L(v)=L(center(v))+rand
 //        for(int i=0;i<classes.size();i++)
 //        {
 //            OwlClass * ncenter = getNearestCenter(centers,classes[i]);
-//            cout<<"Node["<<classes[i]->shortname.toStdString()
-//               <<"] --> center["<<ncenter->shortname.toStdString()<<"]"<<endl;
+////            cout<<"Node["<<classes[i]->shortname.toStdString()
+////               <<"] --> center["<<ncenter->shortname.toStdString()<<"]"<<endl;
+//            if(ncenter!=classes[i]){
+//                qreal cx = ncenter->overviewshape->pos().rx();
+//                qreal cy = ncenter->overviewshape->pos().ry();
+//                qreal nx = cx + ((i*2)/classes.size())*this->SINGLE_EDGE_LENGTH;
+//                qreal ny = cy + this->SINGLE_EDGE_LENGTH;
+//                classes[i]->overviewshape->setCentrePos(QPointF(nx,ny));
+//            }
 //        }
 //        //projection
-
+//        this->projection(classes);
 //        //k=k*radio
 //        k=k*this->RATIO;
 //    }
-
+    this->localLayout(classes,10,4);
+    this->projection(classes);
 }

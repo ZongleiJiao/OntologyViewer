@@ -3,10 +3,11 @@
 
 using namespace std;
 
-KeyConceptClass::KeyConceptClass(QList<OwlClass *> classes)
+KeyConceptClass::KeyConceptClass(QList<OwlClass *> classes,QString ontoname)
 {
     this->originclasses = classes;
     this->classnum = originclasses.size();
+    this->ontologyname=ontoname;
 }
 
 //get index of classes by its shortname
@@ -336,6 +337,7 @@ void KeyConceptClass::computeScore()
     {
         double sc = ncvalues[i] + densities[i] + popularities[i];
         scores.append(sc);
+
     }
 }
 
@@ -395,9 +397,9 @@ QList<OwlClass *> KeyConceptClass::getKeyClasses(int n)
 
     QList<OwlClass *> result;
 
-    //total class num less than the require number,return all classes
-    cout<<"Class NUM:::"<<classnum<<endl;
-    if(n>=classnum)return originclasses;
+//    //total class num less than the require number,return all classes
+//    cout<<"Class NUM:::"<<classnum<<endl;
+//    if(n>=classnum)return originclasses;
 
     //compute scores
     computeScore();
@@ -405,8 +407,7 @@ QList<OwlClass *> KeyConceptClass::getKeyClasses(int n)
     //n must>=1
     if(n<1) return result;
 
-    //get n Top score classes, and other classes
-    QList<int> orderedIndexOfScore;
+    //get n Top score classes, and other classes    
     for(int i=0;i<classnum;i++){
         int position = 0;
         for(position=0;position<orderedIndexOfScore.size();position++){
@@ -541,5 +542,70 @@ QList<OwlClass *> KeyConceptClass::getKeyClasses(int n)
     }while(foundbetter);
 **/
     result.append(ontosetS);
+
+    //test xml writer
+    for(int i=0;i<classnum;i++){
+        int visit = 0;
+        visits.append(visit);
+    }
+    this->writeScoreFile();
     return result;
+}
+
+
+
+void KeyConceptClass::writeScoreFile()
+{
+    QDomDocument doc;
+    QDomProcessingInstruction instruction = doc.createProcessingInstruction("xml","version=\"1.0\" encoding=\"UTF-8\"");
+    doc.appendChild(instruction);
+
+    QDomElement root = doc.createElement("OntologyScore");
+    doc.appendChild(root);
+
+    QDomElement owlfile = doc.createElement("OWLFile");
+    root.appendChild(owlfile);
+    QDomText owlfilename = doc.createTextNode(this->ontologyname);
+    owlfile.appendChild(owlfilename);
+
+    QDomElement nclasses = doc.createElement("NumberOfClasses");
+    root.appendChild(nclasses);
+    QDomText n = doc.createTextNode(QString::number(this->classnum));
+    nclasses.appendChild(n);
+
+    QDomElement nodes = doc.createElement("Classes");
+    root.appendChild(nodes);
+    for(int i=0;i<orderedIndexOfScore.size();i++){
+        QDomElement node = doc.createElement("Class");
+
+        QDomElement clname = doc.createElement("Classname");
+        QDomText clnametxt = doc.createTextNode(originclasses[orderedIndexOfScore[i]]->shortname);
+        clname.appendChild(clnametxt);
+
+        QDomElement score = doc.createElement("Score");
+        QDomText scoretxt = doc.createTextNode(QString::number(scores[orderedIndexOfScore[i]],'g',10));
+        score.appendChild(scoretxt);
+
+        QDomElement visit = doc.createElement("visit");
+        QDomText visittxt = doc.createTextNode(QString::number(visits[orderedIndexOfScore[i]]));
+        visit.appendChild(visittxt);
+
+        node.appendChild(clname);
+        node.appendChild(score);
+        node.appendChild(visit);
+        nodes.appendChild(node);
+    }
+
+//    QDomElement owlfiletime = doc.createElement("OWL File last modify time");
+//    root.appendChild(owlfiletime);
+
+    QString scorefilename = ontologyname.left(ontologyname.length()-4)+"_score.xml";
+    cout<<"write score file : "<<scorefilename.toStdString()<<endl;
+    QFile file(scorefilename);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate |QIODevice::Text))
+         return ;
+    QTextStream out(&file);
+    out.setCodec("UTF-8");
+    doc.save(out,4,QDomNode::EncodingFromTextStream);
+    file.close();
 }

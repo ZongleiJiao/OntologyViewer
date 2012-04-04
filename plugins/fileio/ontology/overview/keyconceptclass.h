@@ -6,13 +6,15 @@ class KeyConceptClass
 {
 public:
     //init with all classes
-    KeyConceptClass(QList<OwlClass *> classes);
+    KeyConceptClass(QList<OwlClass *> classes,QString ontoname);
 
     int getIndexOfClasses(QString shortname);
 
+    QString ontologyname;
     int classnum;
     QList<OwlClass *> originclasses;
     QList<double> scores;
+    QList<int> orderedIndexOfScore;
     QList<double> densities;
     QList<double> popularities;
     QList<double> ncvalues;
@@ -28,6 +30,8 @@ public:
     QList<int> hits;
     QList<double> globalpopularities;
     QList<double> localpopularities;
+    //for user preference
+    QList<int> visits;
 
     /** constants **/
     const static double nameSimplicity_c = 0.3;
@@ -77,6 +81,11 @@ public:
 
     //contribution
     int contribution(OwlClass *node, QList<OwlClass *> ontoset);
+
+    //write to file();
+    void writeScoreFile();
+    void readScoreFile();
+    bool isOwlfileChanged();
 
 };
 
