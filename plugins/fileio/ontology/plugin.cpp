@@ -154,6 +154,7 @@ class OntologyFileIOPlugin :
         void applicationMainWindowInitialised(CanvasApplication *canvasApplication)
         {
             this->appmainwin = canvasApplication->mainWindow();
+
         }
 
         void applicationWillClose(CanvasApplication *canvasApplication){}
@@ -171,6 +172,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 {
     cout<<"Start loading ontology :"<<fileInfo.completeBaseName().toStdString()<<endl;
     OwlOntology * onto = new OwlOntology(canvas,this->appmainwin);
+
     onto->loadontology(fileInfo);
 
     cout<<"Finish loading. Total " <<onto->classes.size()<<" class notes."<<endl;
@@ -217,12 +219,12 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     onto->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,wid);
     wid->show();
 
-    Overview * ov = new Overview();
-    ov->numOfClasses=80;
-    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
-    ov->getOverviewClasses(onto->classes,onto->ontologyname);
-    cout<<"drawing overview..."<<endl;
-    ov->overviewFMSLayout(canvas);
+//    Overview * ov = new Overview();
+//    ov->numOfClasses=80;
+//    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
+//    ov->getOverviewClasses(onto->classes,onto->ontologyname);
+//    cout<<"drawing overview..."<<endl;
+//    ov->overviewFMSLayout(canvas);
 
 
 //    wid->my_canvas->setOptAutomaticGraphLayout(true);
@@ -234,7 +236,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
       * be displayed together or individually.
     **/
     //classview
-//    onto->drawClassView(canvas);
+    onto->drawClassView(canvas);
     //individualview
 //    onto->drawIndividualView(canvas);
     //propertyview
@@ -251,7 +253,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
       * the anonymous class strings into formula
       *  and graphs.
     **/
-    onto->drawLogicalView(canvas);
+//    onto->drawLogicalView(canvas);
 
     //set automatic layout
 //    canvas->setOptAutomaticGraphLayout(true);

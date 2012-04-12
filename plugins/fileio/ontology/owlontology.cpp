@@ -8,6 +8,12 @@
 #include <iostream>
 #include <stack>
 #include <libdunnartcanvas/canvas.h>
+#include <owlclass.h>
+#include <owlproperty.h>
+#include <owlindividual.h>
+#include <ontoclass.h>
+#include <ontoindividual.h>
+#include <ontoproperty.h>
 
 using namespace dunnart;
 using namespace std;
@@ -23,7 +29,7 @@ OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
     wid->setWindowTitle("Equivalent Class");
     wid->show();
 
-
+    //////////////need canvasview to initialize widgets///////////////////
     zoomdwgt = new ZoomDockWidget();
     this->appmainwindow->addDockWidget(Qt::BottomDockWidgetArea,zoomdwgt);
     zoomdwgt->show();
@@ -121,7 +127,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
 
     /** get owl namespace (Warn: only one namespace was handled!) **/
     //get namespace for the URI
-    QString owlnamespace = wp->getDefaultNameSpace();
+    owlnamespace = wp->getDefaultNameSpace();
 
     //get all individuals
     JavaObjectArray *resGetAllIndividuals = wp->getAllIndividuals();
@@ -441,6 +447,27 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         }
     }
 
+    cout<<"///////////get information of this ontology/////////////////"<<endl;
+    this->getOntoInfo();
+    cout<<"///////////get information of this ontology/////////////////"<<endl;
+}
+
+///////////get information of this ontology/////////////////
+QString OwlOntology::getOntoInfo(){
+
+    QString num_class="0";
+    QString num_individual="0";
+    QString num_property="0";
+    num_class = num_class.setNum(this->classes.size());
+    num_individual = num_individual.setNum(this->individuals.size());
+    num_property = num_property.setNum(this->properties.size());
+
+    this->ontoInfo.append("Name Space: "+this->owlnamespace+"\n");
+    this->ontoInfo.append("Number of Classes: "+num_class+"\n");
+    this->ontoInfo.append("Number of Individuals: "+num_individual+"\n");
+    this->ontoInfo.append("Number of Properties: "+num_property+"\n");
+
+    return this->ontoInfo;
 }
 
 //draw the ontology classes
@@ -1211,17 +1238,53 @@ void OwlOntology::drawLogicalView(Canvas *canvas){
     }
 }
 
+//get information of one class
+QString OwlOntology::getClassInfo(OwlClass *selectedClass){
+
+    this->classInfo.clear();
+
+    QString num_subclass="0";
+    QString num_superclass="0";
+    QString num_disjointclass="0";
+    QString num_individual="0";
+    num_subclass = num_subclass.setNum(selectedClass->subclasses.size());
+    num_superclass = num_superclass.setNum(selectedClass->superclasses.size());
+    num_disjointclass = num_disjointclass.setNum(selectedClass->disjointclasses.size());
+    num_individual = num_individual.setNum(selectedClass->individuals.size());
+
+    this->classInfo.append("Class Name: "+selectedClass->shortname+"\n");
+    this->classInfo.append("URI: "+selectedClass->URI+"\n");
+    this->classInfo.append("Number of Sub Classes: "+num_subclass+"\n");
+    this->classInfo.append("Number of Super Classes: "+num_superclass+"\n");
+    this->classInfo.append("Number of Disjoint Classes: "+num_disjointclass+"\n");
+    this->classInfo.append("Number of Individuals: "+num_individual+"\n");
+
+    if(selectedClass->equivalentclass.isNull() || selectedClass->equivalentclass.isEmpty()){
+
+        this->classInfo.append("Has Equivalent Class: NO\n");
+    }else{
+
+        this->classInfo.append("Has Equivalent Class: YES\n");
+    }
+
+    return this->classInfo;
+}
+
+
 /** SLOTS to handle the shape signals **/
 void OwlOntology::ontoclass_clicked(OntologyClassShape *classshape)
 {
     if(this->currentfocusedclassidx!=-1)this->ontoclass_doubleclicked(classes[currentfocusedclassidx]->shape);
     int idx = this->getIndexOfClasses(classshape->idString());
+    OwlClass *selectedClass = classes[idx];
     if(idx!=-1){
         classes[idx]->showIndividuals(this->maincanvas);
         classes[idx]->setFocused(true,this->maincanvas);
         this->maincanvas->fully_restart_graph_layout();
         this->currentfocusedclassidx = idx;
     }
+
+    cout << this->getClassInfo(selectedClass).toStdString();
 }
 
 void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
@@ -1276,12 +1339,179 @@ void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
     }
 }
 
+//get individual information to add on infowidget
+QString OwlOntology::getIndividualInfo(OwlIndividual *selectedIndividual){
+
+    this->individualInfo.clear();
+
+    this->individualInfo.append("Individual Name: "+selectedIndividual->shortname+"\n");
+    this->individualInfo.append("URI: "+selectedIndividual->URI);
+    this->individualInfo.append("Class Type: "+selectedIndividual->ownerclasses[0]);
+    int n = selectedIndividual->ownerclasses.size();
+    for(int i=1;i<n;i++){
+        this->individualInfo.append(", "+selectedIndividual->ownerclasses[i]);
+    }
+    this->individualInfo.append("\n");
+
+    return this->individualInfo;
+}
+
 void OwlOntology::ontoindividual_clicked(OntologyIndividualShape *individualshape)
 {
+    int index = this->getIndexOfIndividuals(individualshape->idString());
+    OwlIndividual *selectedIndividual = this->individuals[index];
 
+    //emit signal to send info to widget
+    cout<<"//get individual information to add on infowidget"<<endl;
+    cout<<this->getIndividualInfo(selectedIndividual).toStdString()<<endl;
+}
+
+//get property information to add on infowidget
+QString OwlOntology::getPropertyInfo(OwlProperty *selectedProperty){
+    this->propertyInfo.clear();
+
+    QString num_subProperty="0";
+    QString num_superProperty="0";
+    QString num_disjointProperty="0";
+    num_subProperty = num_subProperty.setNum(selectedProperty->subproperties.size());
+    num_superProperty = num_superProperty.setNum(selectedProperty->superproperties.size());
+    num_disjointProperty = num_disjointProperty.setNum(selectedProperty->disjointproperties.size());
+
+    this->propertyInfo.append("Property Name: "+selectedProperty->shortname+"\n");
+    this->propertyInfo.append("URI: "+selectedProperty->URI+"\n");
+    this->propertyInfo.append("Property Type: "+selectedProperty->propertytype+"\n");
+    this->propertyInfo.append("Property Domain: "+selectedProperty->domains[0]->shortname);
+    int m = selectedProperty->domains.size();
+    for(int i=1;i<m;i++){
+        this->propertyInfo.append(", "+selectedProperty->domains[i]->shortname);
+    }
+    this->propertyInfo.append("\n");
+    this->propertyInfo.append("Property Range: "+selectedProperty->ranges[0]);
+    int n = selectedProperty->ranges.size();
+    for(int j=1;j<n;j++){
+        this->propertyInfo.append(", "+selectedProperty->ranges[j]);
+    }
+    this->propertyInfo.append("\n");
+    this->propertyInfo.append("Number of Sub Properties: "+num_subProperty+"\n");
+    this->propertyInfo.append("Number of Super Properties: "+num_superProperty+"\n");
+    this->propertyInfo.append("Number of Disjoint Properties: "+num_disjointProperty+"\n");
+
+    return this->propertyInfo;
 }
 
 void OwlOntology::ontoproperty_clicked(OntologyPropertyShape *propertyshape)
 {
+    int index = this->getIndexOfProperties(propertyshape->idString());
+    OwlProperty *selectedProperty = this->properties[index];
+
+    //emit signal to send info to widget
+    cout << "//get property information to add on infowidget"<<endl;
+    cout << this->getPropertyInfo(selectedProperty).toStdString()<<endl;
+}
+
+//get owl classes by name
+QList<OwlClass *> OwlOntology::getOwlClassByName(QString name){
+
+    QList<OwlClass *> classList;
+    //qSort(classes);
+    for(int i=0;i<classes.length();i++)
+    {
+        if(classes[i]->shortname.contains(name,Qt::CaseInsensitive)){
+            classList.append(classes[i]);
+        }
+    }
+    return classList;
+}
+
+//get owl individuals by name
+QList<OwlIndividual *> OwlOntology::getOwlIndividualByName(QString name){
+
+    QList<OwlIndividual *> individualList;
+
+    for(int i=0;i<individuals.size();i++){
+        if(individuals[i]->shortname.contains(name,Qt::CaseInsensitive)){
+            individualList.append(individuals[i]);
+        }
+    }
+
+    return individualList;
+}
+
+//get owl properties by name
+QList<OwlProperty *> OwlOntology::getOwlPropertyByName(QString name){
+
+    QList<OwlProperty *> propertyList;
+
+    for(int i=0;i<properties.size();i++){
+        if(properties[i]->shortname.contains(name,Qt::CaseInsensitive)){
+            propertyList.append(properties[i]);
+        }
+    }
+
+    return propertyList;
+}
+
+
+//get entities by expression pattern(c$aaa+ddd[ AND x OR y NOT z) i$bbb+fff(+x-y)-ggg p$ccc+hhh(+x-y)-jjj)
+void OwlOntology::getEntityByText(QString text){
+//You can use qobject_cast<MyClass*>(instance) on QObject derived classes and check the return value.
+//If instance cannot be cast to MyClass*, the return value will be NULL.;
+//    OwlClass *a = qobject_cast<OwlClass *>(entityList[0]);
+
+    int index_class = text.indexOf("c$",Qt::CaseInsensitive);
+    int index_individual = text.indexOf("i$",Qt::CaseInsensitive);
+    int index_property = text.indexOf("p$",Qt::CaseInsensitive);
+    QString classText;
+    QString individualText;
+    QString propertyText;
+
+    if(index_class != -1){
+        if(index_class < index_individual || index_class < index_property){
+            if(index_individual < index_property){
+                classText = text.mid(index_class, index_property);
+            }else{
+                classText = text.mid(index_class, index_individual);
+            }
+        }else{
+            classText = text.mid(index_class);
+        }
+    }
+
+    if(index_individual != -1){
+        if(index_individual < index_class || index_individual < index_property){
+            if(index_class < index_property){
+                individualText = text.mid(index_individual,index_property);
+            }else{
+                individualText = text.mid(index_individual,index_class);
+            }
+        }else{
+            individualText = text.mid(index_individual);
+        }
+    }
+
+    if(index_property != -1){
+        if(index_property < index_class || index_property < index_individual){
+            if(index_class < index_individual){
+                propertyText = text.mid(index_property, index_individual);
+            }else{
+                propertyText = text.mid(index_property, index_class);
+            }
+        }else{
+            propertyText = text.mid(index_property);
+        }
+    }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+

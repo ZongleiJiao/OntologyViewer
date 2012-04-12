@@ -423,28 +423,70 @@ double Overview::deltaMy(double ex,double ey,double ex2, double exy, double ey2)
     return (exy*ex - ey*ex2)/(ex2*ey2-exy*exy);
 }
 
-void Overview::projection(QList<OwlClass *> graph)
-{
-    /** test projection **/
-//    //projection -- dim Y
+
+//void Overview::projection(QList<OwlClass *> graph)
+//{
+//    /** test projection **/
+////    //projection -- dim Y
+////    cout<<"Doing projection..."<<endl;
+////    Variables vs;
+////    Constraints cs;
+////    int n = classes.size();
+////    vs.resize(n);
+////    for(int i=0;i<n;i++)
+////    {
+////        double yp = classes[i]->overviewshape->pos().y();
+////        vs[i]=new Variable(i,yp);
+////    }
+////    for(int i=0;i<n;i++)
+////    {
+////        QList<int> subidx;
+////        for(int j=0;j<classes[i]->subclasses.size();j++){
+////            int idx=getIndexByShortname(classes,classes[i]->subclasses[j]->shortname);
+////            subidx.append(idx);
+////            Constraint * c = new Constraint(vs[i],vs[idx],80);
+////            cs.push_back(c);
+////        }
+////        for(int j=0;j<subidx.size()-1;j++)
+////        {
+////            Constraint * c = new Constraint(vs[subidx[j]],vs[subidx[j+1]],0,false);
+////            cs.push_back(c);
+////        }
+////    }
+
+
+////    vpsc::Solver * vpsc_solver = new Solver(vs,cs);
+////    bool rs = vpsc_solver->solve();
+////    if(rs){
+////        cout<<"Y projection OK!"<<endl;
+////        for(int i=0;i<n;i++){
+////            QPointF op = classes[i]->overviewshape->pos();
+////            Variable * v=vs[i];
+////            op.setY(v->finalPosition);
+////            classes[i]->overviewshape->setCentrePos(op);
+////        }
+////    }
 //    cout<<"Doing projection..."<<endl;
 //    Variables vs;
 //    Constraints cs;
-//    int n = classes.size();
+//    int n = graph.size();
 //    vs.resize(n);
 //    for(int i=0;i<n;i++)
 //    {
-//        double yp = classes[i]->overviewshape->pos().y();
+//        double yp = graph[i]->overviewshape->pos().y();
 //        vs[i]=new Variable(i,yp);
 //    }
 //    for(int i=0;i<n;i++)
 //    {
 //        QList<int> subidx;
-//        for(int j=0;j<classes[i]->subclasses.size();j++){
-//            int idx=getIndexByShortname(classes,classes[i]->subclasses[j]->shortname);
-//            subidx.append(idx);
-//            Constraint * c = new Constraint(vs[i],vs[idx],80);
-//            cs.push_back(c);
+//        for(int j=0;j<graph[i]->subclasses.size();j++){
+//            int idx=getIndexByShortname(graph,graph[i]->subclasses[j]->shortname);
+//            if(idx!=-1)
+//            {
+//                subidx.append(idx);
+//                Constraint * c = new Constraint(vs[i],vs[idx],this->SINGLE_EDGE_LENGTH);
+//                cs.push_back(c);
+//            }
 //        }
 //        for(int j=0;j<subidx.size()-1;j++)
 //        {
@@ -459,116 +501,75 @@ void Overview::projection(QList<OwlClass *> graph)
 //    if(rs){
 //        cout<<"Y projection OK!"<<endl;
 //        for(int i=0;i<n;i++){
-//            QPointF op = classes[i]->overviewshape->pos();
+//            QPointF op = graph[i]->overviewshape->pos();
 //            Variable * v=vs[i];
 //            op.setY(v->finalPosition);
-//            classes[i]->overviewshape->setCentrePos(op);
+//            graph[i]->overviewshape->setCentrePos(op);
 //        }
 //    }
-    cout<<"Doing projection..."<<endl;
-    Variables vs;
-    Constraints cs;
-    int n = graph.size();
-    vs.resize(n);
-    for(int i=0;i<n;i++)
-    {
-        double yp = graph[i]->overviewshape->pos().y();
-        vs[i]=new Variable(i,yp);
-    }
-    for(int i=0;i<n;i++)
-    {
-        QList<int> subidx;
-        for(int j=0;j<graph[i]->subclasses.size();j++){
-            int idx=getIndexByShortname(graph,graph[i]->subclasses[j]->shortname);
-            if(idx!=-1)
-            {
-                subidx.append(idx);
-                Constraint * c = new Constraint(vs[i],vs[idx],this->SINGLE_EDGE_LENGTH);
-                cs.push_back(c);
-            }
-        }
-        for(int j=0;j<subidx.size()-1;j++)
-        {
-            Constraint * c = new Constraint(vs[subidx[j]],vs[subidx[j+1]],0,false);
-            cs.push_back(c);
-        }
-    }
+//}
 
+//void Overview::overviewFMSLayout(Canvas *canvas)
+//{
+//    /*
+//        LayoutG(V, E)
+//        Goal: Find L, a nice layout of G
+//        Constants:
+//            Rad[= 7] — determines radius of local neighborhoods
+//            Iterations[= 4] — determines number of iterations in local beautification
+//            Ratio[= 3] — ratio between number of vertices in two consecutive levels
+//            MinSize[= 10] — size of the coarsest graph
+//        Compute the all-pairs shortest path length: dV ×V
+//        Set up a random layout L
+//        k ← MinSize
+//        while k<=|V| do
+//        centers ← K-Centers(G(V, E) ,k)
+//        radius = maxv∈centers minu∈centers {dvu } · Rad
+//        LocalLayout (dcenters×centers , L(centers),radius,Iterations)
+//        for every v ∈ V do
+//        L(v) ← L(center(v)) + rand
+//        k ← k · Ratio
+//        return L
+//      */
+//    //init layout
+//    this->setInitialLayout();
 
-    vpsc::Solver * vpsc_solver = new Solver(vs,cs);
-    bool rs = vpsc_solver->solve();
-    if(rs){
-        cout<<"Y projection OK!"<<endl;
-        for(int i=0;i<n;i++){
-            QPointF op = graph[i]->overviewshape->pos();
-            Variable * v=vs[i];
-            op.setY(v->finalPosition);
-            graph[i]->overviewshape->setCentrePos(op);
-        }
-    }
-}
+//    //draw
+//    this->drawOverview(canvas);
 
-void Overview::overviewFMSLayout(Canvas *canvas)
-{
-    /*
-        LayoutG(V, E)
-        Goal: Find L, a nice layout of G
-        Constants:
-            Rad[= 7] — determines radius of local neighborhoods
-            Iterations[= 4] — determines number of iterations in local beautification
-            Ratio[= 3] — ratio between number of vertices in two consecutive levels
-            MinSize[= 10] — size of the coarsest graph
-        Compute the all-pairs shortest path length: dV ×V
-        Set up a random layout L
-        k ← MinSize
-        while k<=|V| do
-        centers ← K-Centers(G(V, E) ,k)
-        radius = maxv∈centers minu∈centers {dvu } · Rad
-        LocalLayout (dcenters×centers , L(centers),radius,Iterations)
-        for every v ∈ V do
-        L(v) ← L(center(v)) + rand
-        k ← k · Ratio
-        return L
-      */
-    //init layout
-    this->setInitialLayout();
+//    //compute all distances
+//    computeShortestPath();
+//    //k = minsize
+////    int k=this->MIN_K;
 
-    //draw
-    this->drawOverview(canvas);
+////    while(k<=classes.size())
+////    {
+////        //center=k-centers
+////        QList<OwlClass *> centers = k_centers(classes,k);
+////        //radius
+////        int radius =this->RATIO;
+////        //locallayout
+////        this->localLayout(centers,radius,this->ITERATIONS);
 
-    //compute all distances
-    computeShortestPath();
-    //k = minsize
-//    int k=this->MIN_K;
-
-//    while(k<=classes.size())
-//    {
-//        //center=k-centers
-//        QList<OwlClass *> centers = k_centers(classes,k);
-//        //radius
-//        int radius =this->RATIO;
-//        //locallayout
-//        this->localLayout(centers,radius,this->ITERATIONS);
-
-//        //for every v in V, do L(v)=L(center(v))+rand
-//        for(int i=0;i<classes.size();i++)
-//        {
-//            OwlClass * ncenter = getNearestCenter(centers,classes[i]);
-////            cout<<"Node["<<classes[i]->shortname.toStdString()
-////               <<"] --> center["<<ncenter->shortname.toStdString()<<"]"<<endl;
-//            if(ncenter!=classes[i]){
-//                qreal cx = ncenter->overviewshape->pos().rx();
-//                qreal cy = ncenter->overviewshape->pos().ry();
-//                qreal nx = cx + ((i*2)/classes.size())*this->SINGLE_EDGE_LENGTH;
-//                qreal ny = cy + this->SINGLE_EDGE_LENGTH;
-//                classes[i]->overviewshape->setCentrePos(QPointF(nx,ny));
-//            }
-//        }
-//        //projection
-//        this->projection(classes);
-//        //k=k*radio
-//        k=k*this->RATIO;
-//    }
-    this->localLayout(classes,10,4);
-    this->projection(classes);
-}
+////        //for every v in V, do L(v)=L(center(v))+rand
+////        for(int i=0;i<classes.size();i++)
+////        {
+////            OwlClass * ncenter = getNearestCenter(centers,classes[i]);
+//////            cout<<"Node["<<classes[i]->shortname.toStdString()
+//////               <<"] --> center["<<ncenter->shortname.toStdString()<<"]"<<endl;
+////            if(ncenter!=classes[i]){
+////                qreal cx = ncenter->overviewshape->pos().rx();
+////                qreal cy = ncenter->overviewshape->pos().ry();
+////                qreal nx = cx + ((i*2)/classes.size())*this->SINGLE_EDGE_LENGTH;
+////                qreal ny = cy + this->SINGLE_EDGE_LENGTH;
+////                classes[i]->overviewshape->setCentrePos(QPointF(nx,ny));
+////            }
+////        }
+////        //projection
+////        this->projection(classes);
+////        //k=k*radio
+////        k=k*this->RATIO;
+////    }
+//    this->localLayout(classes,10,4);
+//    this->projection(classes);
+//}

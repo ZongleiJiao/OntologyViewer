@@ -4,9 +4,10 @@
 #include <QList>
 #include "libdunnartcanvas/shape.h"
 #include <ontoindividual.h>
+#include <owlentity.h>
 
 using namespace dunnart;
-class OwlIndividual
+class OwlIndividual : public OwlEntity
 {
 public:
     QString URI;
