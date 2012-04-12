@@ -217,12 +217,12 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    onto->appmainwindow->addDockWidget(Qt::RightDockWidgetArea,wid);
 //    wid->show();
 
-    Overview * ov = new Overview();
-    ov->numOfClasses=200;
-    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
-    ov->getOverviewClasses(onto->classes);
-    cout<<"drawing overview..."<<endl;
-    ov->overviewFMSLayout(canvas);
+//    Overview * ov = new Overview();
+//    ov->numOfClasses=200;
+//    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
+//    ov->getOverviewClasses(onto->classes);
+//    cout<<"drawing overview..."<<endl;
+//    ov->overviewFMSLayout(wid->my_canvas);
 
 //    wid->my_canvas->setOptAutomaticGraphLayout(true);
 //    wid->my_canvas->setOptLayoutMode(Canvas::FlowLayout);
@@ -240,19 +240,20 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    onto->drawIndividualView(canvas);
     //propertyview
 //    onto->drawPropertyView(canvas);
-
-    //set automatic layout
-    canvas->setOptAutomaticGraphLayout(true);
-    canvas->setOptLayoutMode(canvas->FlowLayout);
-    canvas->setOptPreventOverlaps(true);
-    canvas->setOptFlowDirection(Canvas::FlowUp);
-    canvas->fully_restart_graph_layout();
-
     /** the getFormula() and logicalview() display
       * the anonymous class strings into formula
       *  and graphs.
     **/
-//    onto->drawLogicalView(canvas);
+    onto->drawLogicalView(canvas);
+
+    //set automatic layout
+//    canvas->setOptAutomaticGraphLayout(true);
+//    canvas->setOptLayoutMode(canvas->FlowLayout);
+//    canvas->setOptPreventOverlaps(true);
+//    canvas->setOptFlowDirection(Canvas::FlowUp);
+    canvas->fully_restart_graph_layout();
+
+
 
 
     return true;
