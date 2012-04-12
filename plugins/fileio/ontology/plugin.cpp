@@ -210,27 +210,26 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     //test overview
     /**
       1. get N keyclasses from allclasses & reset sub/sup relations
-      3. draw overview
+      2. draw overview
       **/
 
-//    OverviewDockWidget *wid = new OverviewDockWidget();
-//    onto->appmainwindow->addDockWidget(Qt::RightDockWidgetArea,wid);
-//    wid->show();
+    OverviewDockWidget *wid = new OverviewDockWidget();
+    onto->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,wid);
+    wid->show();
 
-//    Overview * ov = new Overview();
-//    ov->numOfClasses=200;
-//    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
-//    ov->getOverviewClasses(onto->classes);
-//    cout<<"drawing overview..."<<endl;
-//    ov->overviewFMSLayout(wid->my_canvas);
+    Overview * ov = new Overview();
+    ov->numOfClasses=80;
+    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
+    ov->getOverviewClasses(onto->classes,onto->ontologyname);
+    cout<<"drawing overview..."<<endl;
+    ov->overviewFMSLayout(canvas);
+
 
 //    wid->my_canvas->setOptAutomaticGraphLayout(true);
-//    wid->my_canvas->setOptLayoutMode(Canvas::FlowLayout);
+//    wid->my_canvas->setOptLayoutMode(Canvas::LayeredLayout);
 //    wid->my_canvas->setOptPreventOverlaps(true);
 //    wid->my_canvas->setOptFlowDirection(Canvas::FlowUp);
 //    wid->my_canvas->fully_restart_graph_layout();
-
-
     /** classview, individualview, propertyview can
       * be displayed together or individually.
     **/
@@ -240,6 +239,14 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    onto->drawIndividualView(canvas);
     //propertyview
 //    onto->drawPropertyView(canvas);
+
+    //set automatic layout
+//    canvas->setOptAutomaticGraphLayout(true);
+//    canvas->setOptLayoutMode(canvas->LayeredLayout);
+//    canvas->setOptPreventOverlaps(true);
+//    canvas->setOptFlowDirection(Canvas::FlowUp);
+//    canvas->fully_restart_graph_layout();
+
     /** the getFormula() and logicalview() display
       * the anonymous class strings into formula
       *  and graphs.
@@ -255,7 +262,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 
 
 
-
+    cout<<onto->ontologyname.toStdString()<<endl;
     return true;
 }
 

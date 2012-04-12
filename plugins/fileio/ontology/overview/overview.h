@@ -19,7 +19,7 @@ public:
 
     Overview();
     //get N keyclasses to classes -- call this first to init classes
-    void getOverviewClasses(QList<OwlClass *> allclasses);
+    void getOverviewClasses(QList<OwlClass *> allclasses,QString ontoname);
     //convert owlclasses to overview classes(shape,sub/sup relations changed)
     QList<OwlClass *> convertOverviewShapes(QList<OwlClass *> classes);
     int getIndexByShortname(QList<OwlClass *> lst,QString shortname);
@@ -32,9 +32,9 @@ private:
     /** FMS Drawing Algorithm implementation **/
     const static int MIN_K=10;
     const static int RATIO=3;
-    const static int ITERATIONS=4;
+    const static int ITERATIONS=7;
     const static int RAD=7;
-    const static double SINGLE_EDGE_LENGTH = 20.0; //l
+    const static double SINGLE_EDGE_LENGTH = 50.0; //l
     //set initial layout
     void setInitialLayout();
     //compute distance of all vertices
@@ -45,13 +45,20 @@ private:
     OwlClass * getFarthestNode(QList<OwlClass *> nodes);
     OwlClass * getNearestCenter(QList<OwlClass *> centers,OwlClass * node);
     //local layout
-    void localLayout(QList<OwlClass *>nodes,int k,int iteratioon);
+    void localLayout(QList<OwlClass *> graph,int k,int iteration);
     QList<OwlClass *> k_neighborhood(OwlClass * node,int k);
-    double energy(int k);
     double EuclideanDistance(OwlClass *u,OwlClass *v);
-    double deltakv(int k,OwlClass *node);
+    double deltaM(double ex, double ey);
+    int getIndexOfMaxDeltaM(QList<OwlClass *> graph);
+    double deltaMx(double ex,double ey,double ex2, double exy, double ey2);
+    double deltaMy(double ex,double ey,double ex2, double exy, double ey2);
+    double Ex(QList<OwlClass *> graph, OwlClass * node); //∂Ek/∂xv
+    double Ey(QList<OwlClass *> graph, OwlClass * node); //∂Ek/∂yv
+    double Ex2(QList<OwlClass *> graph, OwlClass * node); //∂E2k/∂x2v
+    double Exy(QList<OwlClass *> graph, OwlClass * node); //∂E2k/∂xv∂yv
+    double Ey2(QList<OwlClass *> graph, OwlClass * node); //∂E2k/∂y2v
     //projection
-    void projection();    
+    void projection(QList<OwlClass *> graph);
 };
 
 #endif // OVERVIEW_H

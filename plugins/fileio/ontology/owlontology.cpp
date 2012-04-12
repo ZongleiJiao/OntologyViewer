@@ -116,7 +116,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
     edu::monash::infotech::OWLAPIWrapper * wp = new edu::monash::infotech::OWLAPIWrapper();
     //load owl file
     QString filename = fileInfo.absoluteFilePath();
-    this->ontologyname = fileInfo.baseName();
+    this->ontologyname = fileInfo.absoluteFilePath();
     wp->loadOntologyFile(filename.toUtf8().constData());
 
     /** get owl namespace (Warn: only one namespace was handled!) **/
