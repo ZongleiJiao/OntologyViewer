@@ -50,6 +50,7 @@ public:
     DetailInfoDockWidget * deatildwgt;
 
     QString ontologyname;
+    const QFileInfo * ontologyfile;
     QList<OwlClass *> classes;
     QList<OwlIndividual *> individuals;
     QList<OwlProperty *> properties;

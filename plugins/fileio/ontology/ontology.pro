@@ -355,7 +355,6 @@ HEADERS       = \
     ontologyshapes/ontoclass.h \
     ontologyshapes/overviewclassshape.h \
     overview/keyconceptclass.h \
-    overview/overview.h \
     overview/overviewdockwidget.h\
     widgets/detaildockwidget.h \
     widgets/searchdockwidget.h \
@@ -364,7 +363,9 @@ HEADERS       = \
     widgets/historydockwidget.h \
     widgets/informationboxdockwidget.h \
     widgets/shownodesdockwidget.h \
-    widgets/detailinfodockwidget.h
+    widgets/detailinfodockwidget.h \
+    overview/overviewscene.h \
+    overview/overview.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -698,7 +699,6 @@ SOURCES       = plugin.cpp \
     ontologyshapes/ontoclass.cpp \
     ontologyshapes/overviewclassshape.cpp \
     overview/keyconceptclass.cpp \
-    overview/overview.cpp \
     overview/overviewdockwidget.cpp\
     widgets/detaildockwidget.cpp \
     widgets/searchdockwidget.cpp \
@@ -707,7 +707,9 @@ SOURCES       = plugin.cpp \
     widgets/historydockwidget.cpp \
     widgets/informationboxdockwidget.cpp \
     widgets/shownodesdockwidget.cpp \
-    widgets/detailinfodockwidget.cpp
+    widgets/detailinfodockwidget.cpp \
+    overview/overviewscene.cpp \
+    overview/overview.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm
@@ -731,3 +733,13 @@ FORMS += \
     widgets/informationboxdockwidget.ui \
     widgets/shownodesdockwidget.ui \
     widgets/detailinfodockwidget.ui
+
+
+
+
+
+
+
+
+
+

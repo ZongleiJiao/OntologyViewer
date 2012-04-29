@@ -1,40 +1,47 @@
 #ifndef OVERVIEW_H
 #define OVERVIEW_H
+
+#include <QObject>
 #include <owlclass.h>
+#include <owlontology.h>
 #include <QList>
 #include <canvas.h>
-/**
-  This class implements the FMS algorithm with constraints.
-  1. get N key concept classes from all classes for the overview
-  2. compute distance(V,V)
-  **/
-using namespace dunnart;
-class Overview
+#include <QtGui>
+#include "overview/overviewdockwidget.h"
+
+class Overview : public QObject
 {
+    Q_OBJECT
 public:
+    explicit Overview(QObject *parent = 0);
+
     QList<OwlClass *> classes;
     //how many classes display on the overview, init with N(load N keyconcepts)
     //after load classes, set to the number of classses.
     int numOfClasses;
 
-    Overview();
     //get N keyclasses to classes -- call this first to init classes
-    void getOverviewClasses(QList<OwlClass *> allclasses,QString ontoname);
+    void getOverviewClasses(OwlOntology * ontology);
     //convert owlclasses to overview classes(shape,sub/sup relations changed)
     QList<OwlClass *> convertOverviewShapes(QList<OwlClass *> classes);
     int getIndexByShortname(QList<OwlClass *> lst,QString shortname);
     void drawOverview(Canvas *canvas);
+    void drawOverview(OverviewDockWidget *wid);
 
     //whole implementation
     void overviewFMSLayout(Canvas *canvas);
+    void overviewFMSLayout(OverviewDockWidget *wid);
 
+    //show layout
+    void showlayout(Canvas *canvas);
+    void showlayout(OverviewDockWidget *wid);
 private:
     /** FMS Drawing Algorithm implementation **/
     const static int MIN_K=10;
     const static int RATIO=3;
     const static int ITERATIONS=7;
     const static int RAD=7;
-    const static double SINGLE_EDGE_LENGTH = 50.0; //l
+    const static double SINGLE_EDGE_LENGTH = 30.0; //l
     //set initial layout
     void setInitialLayout();
     //compute distance of all vertices
@@ -52,13 +59,22 @@ private:
     int getIndexOfMaxDeltaM(QList<OwlClass *> graph);
     double deltaMx(double ex,double ey,double ex2, double exy, double ey2);
     double deltaMy(double ex,double ey,double ex2, double exy, double ey2);
-    double Ex(QList<OwlClass *> graph, OwlClass * node); //∂Ek/∂xv
-    double Ey(QList<OwlClass *> graph, OwlClass * node); //∂Ek/∂yv
-    double Ex2(QList<OwlClass *> graph, OwlClass * node); //∂E2k/∂x2v
-    double Exy(QList<OwlClass *> graph, OwlClass * node); //∂E2k/∂xv∂yv
-    double Ey2(QList<OwlClass *> graph, OwlClass * node); //∂E2k/∂y2v
+//    double Ex(QList<OwlClass *> graph, OwlClass * node); //∂Ek/∂xv
+//    double Ey(QList<OwlClass *> graph, OwlClass * node); //∂Ek/∂yv
+//    double Ex2(QList<OwlClass *> graph, OwlClass * node); //∂E2k/∂x2v
+//    double Exy(QList<OwlClass *> graph, OwlClass * node); //∂E2k/∂xv∂yv
+//    double Ey2(QList<OwlClass *> graph, OwlClass * node); //∂E2k/∂y2v
+    QList<double> getEs(QList<OwlClass *> graph, OwlClass * node); //rs=ex,ey,ex2,exy,ey2
     //projection
     void projection(QList<OwlClass *> graph);
+
+    //tree layout
+    void quadrantRadialTree(QList<OwlClass *> graph, double rangeAngle);
+
+signals:
+
+public slots:
+    void widSceneClicked(QPointF pos);
 };
 
 #endif // OVERVIEW_H

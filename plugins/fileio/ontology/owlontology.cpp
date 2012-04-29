@@ -117,6 +117,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
     //load owl file
     QString filename = fileInfo.absoluteFilePath();
     this->ontologyname = fileInfo.absoluteFilePath();
+    this->ontologyfile = &fileInfo;
     wp->loadOntologyFile(filename.toUtf8().constData());
 
     /** get owl namespace (Warn: only one namespace was handled!) **/
@@ -486,7 +487,6 @@ void OwlOntology::drawClassView(Canvas *canvas)
 //draw the ontology individuals
 void OwlOntology::drawIndividualView(Canvas *canvas)
 {
-    Connector *conn;
     //draw individuals
     for(int i=0;i<individuals.length();i++)
     {

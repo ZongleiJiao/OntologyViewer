@@ -18,17 +18,23 @@ QPainterPath OverviewClassShape::buildPainterPath(void)
 
     return painter_path;
 }
+int OverviewClassShape::getStatus()
+{
+   return m_status;
+}
+
 void OverviewClassShape::setStatus(status stats)
 {
+    this->m_status=stats;
     switch(stats)
     {
     case STATUS_Hide:
         this->setFillColour(QColor("gray"));
-        this->setSize(QSizeF(1,1));
+        this->setSize(QSizeF(1,1));        
         break;
     case STATUS_OutDetailview:
         this->setFillColour(QColor("gray"));
-        this->setSize(QSizeF(5,5));
+        this->setSize(QSizeF(4,4));
         break;
     case STATUS_InDetailview_Default:
         this->setFillColour(OwlClass::CLASS_SHAPE_COLOR);

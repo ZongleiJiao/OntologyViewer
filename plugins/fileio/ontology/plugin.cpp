@@ -183,10 +183,11 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    canvas->addItem(onto->classes[onto->getIndexOfClasses("Thing")]->shape);
     //test key concept
 
-/*    cout<<"Getting overview keyconcept classes..."<<endl;
-    KeyConceptClass *kc=new KeyConceptClass(onto->classes);
-    QList<OwlClass *> keyclasses=kc->getKeyClasses(300);
-
+//    cout<<"Getting overview keyconcept classes..."<<endl;
+//    KeyConceptClass *kc=new KeyConceptClass(onto);
+//    QList<OwlClass *> keyclasses=kc->getKeyClasses(200);
+//    kc->checkfile();
+/*
 //    for(int i=0;i<kc->classnum;i++){
 //        cout<<"<<"<< kc->originclasses[i]->shortname.toStdString()
 //           <<">>:[NS]"<<kc->namesimplicities[i]
@@ -217,12 +218,16 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     onto->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,wid);
     wid->show();
 
+
     Overview * ov = new Overview();
-    ov->numOfClasses=80;
+    ov->numOfClasses=300;
     cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
-    ov->getOverviewClasses(onto->classes,onto->ontologyname);
+    ov->getOverviewClasses(onto);
     cout<<"drawing overview..."<<endl;
-    ov->overviewFMSLayout(canvas);
+//    ov->overviewFMSLayout(canvas);
+//    ov->overviewFMSLayout(wid);
+    ov->showlayout(wid);
+//    ov->showlayout(canvas);
 
 //    wid->my_canvas->setOptAutomaticGraphLayout(true);
 //    wid->my_canvas->setOptLayoutMode(Canvas::LayeredLayout);
@@ -252,7 +257,6 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     **/
 //    onto->drawLogicalView(canvas);
 
-    cout<<onto->ontologyname.toStdString()<<endl;
     return true;
 }
 

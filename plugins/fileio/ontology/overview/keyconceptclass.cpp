@@ -3,19 +3,30 @@
 
 using namespace std;
 
-KeyConceptClass::KeyConceptClass(QList<OwlClass *> classes,QString ontoname)
+KeyConceptClass::KeyConceptClass(OwlOntology *ontology)
 {
-    this->originclasses = classes;
-    this->classnum = originclasses.size();
-    this->ontologyname=ontoname;
+    this->m_ontology = ontology;
+    this->ontologyfile = m_ontology->ontologyfile;
+    this->classes = m_ontology->classes;
+    this->classnum = classes.size();
+    for(int i=0;i<classes.size();i++)
+    {
+        measure mi;
+        mi.idx = i;
+        mi.classname = classes[i]->shortname;
+//        mi.visitTimes = 1;
+//        mi.lastvisitedTime = QDateTime::currentDateTime();
+//        mi.score = 0;
+        measures.append(mi);
+    }
 }
 
 //get index of classes by its shortname
 int KeyConceptClass::getIndexOfClasses(QString shortname)
 {
-    for(int i=0;i<originclasses.length();i++)
+    for(int i=0;i<classes.length();i++)
     {
-        if(originclasses[i]->shortname.toLower() == shortname.toLower()) return i;
+        if(classes[i]->shortname.toLower() == shortname.toLower()) return i;
     }
     return -1;
 }
@@ -39,15 +50,15 @@ void KeyConceptClass::computeNameSimplicities()
         double ns=1.00;
         for(int j=0;j<classnum;j++)
         {
-            if(originclasses[i]->shortname!=originclasses[j]->shortname
-               &&originclasses[i]->shortname.contains(originclasses[j]->shortname))
+            if(classes[i]->shortname!=classes[j]->shortname
+               &&classes[i]->shortname.contains(classes[j]->shortname))
             {
                 ns = ns-nameSimplicity_c;
             }
         }
         //ensure ns>=0
         if(ns<0)ns=0;
-        this->namesimplicities.append(ns);
+        measures[i].namesimplicity = ns;
     }
 }
 
@@ -56,15 +67,15 @@ void KeyConceptClass::computeBasicLevels()
     int maxpath=0;
     for(int i=0;i<classnum;i++)
     {
-        int p = computeNumberOfPath(originclasses[i]);
-        this->paths.append(p);
+        int p = computeNumberOfPath(classes[i]);
+        measures[i].path=p;
         if(p>maxpath)maxpath=p;
     }
     for(int i=0;i<classnum;i++)
     {
         double bl=0.0;
-        if(maxpath!=0)bl=double(paths[i])/double(maxpath);
-        basiclevels.append(bl);
+        if(maxpath!=0)bl=double(measures[i].path)/double(maxpath);
+        measures[i].basiclevel=bl;
     }
 }
 
@@ -136,8 +147,9 @@ void KeyConceptClass::computeNCValues()
     // NCValue(c) = wBL*BL(C) + wNS*NS(C)
     for(int i=0;i<classnum;i++)
     {
-        double ncvalue=ncvalue_wBL*basiclevels[i] + ncvalue_wNS*namesimplicities[i];
-        ncvalues.append(ncvalue);
+        measures[i].ncvalue =
+                ncvalue_wBL*measures[i].basiclevel
+              + ncvalue_wNS*measures[i].namesimplicity;
     }
 }
 
@@ -152,19 +164,18 @@ void KeyConceptClass::computeGlobalDensities()
     for(int i=0;i<classnum;i++)
     {
         double num=0;
-        num+=globaldensity_wS * originclasses[i]->subclasses.size();
-        num+=globaldensity_wI * originclasses[i]->individuals.size();
-        num+=globaldensity_wP * originclasses[i]->propertydomains.size();
-        num+=globaldensity_wP * originclasses[i]->propertyranges.size();
-
-        aGlobalDensities.append(num);
+        num+=globaldensity_wS * classes[i]->subclasses.size();
+        num+=globaldensity_wI * classes[i]->individuals.size();
+        num+=globaldensity_wP * classes[i]->propertydomains.size();
+        num+=globaldensity_wP * classes[i]->propertyranges.size();
+        measures[i].aGlobalDensity = num;
         if(maxdensity<num)maxdensity=num;
     }
     for(int i=0;i<classnum;i++)
     {
         double gd=0.0;
-        if(maxdensity!=0)gd = aGlobalDensities[i]/maxdensity;
-        this->globaldensities.append(gd);
+        if(maxdensity!=0)gd = measures[i].aGlobalDensity/maxdensity;
+        measures[i].globaldensity=gd;
     }
 }
 
@@ -180,29 +191,22 @@ void KeyConceptClass::computeLocalDensities()
         //search k level/distance classes
         for(int j=1;j<=localdensity_k;j++){
             QList<OwlClass *> cls;
-//            cout<<"KD:"<<originclasses[i]->shortname.toStdString()
-//               <<" k = "<<j<<" ...";
-//            cls = getKDistanceClasses(originclasses[i],j,0);
-//            cout<<" OK!"<<endl;
-
-//            cout<<"KD:"<<originclasses[i]->shortname.toStdString()<<endl;
             /** modify for speed up!!! only calculate k=1 without call KDistance**/
-            cls.append(originclasses[i]->subclasses);
-            cls.append(originclasses[i]->subclasses);
+            cls.append(classes[i]->subclasses);
+            cls.append(classes[i]->subclasses);
             //calculate weightedGD
             for(int k=0;k<cls.size();k++){
                 int idx = getIndexOfClasses(cls[k]->shortname);
                 double wgd=0.0;
-                if(idx!=-1) wgd = (1-localdensity_ratioD*j)*globaldensities[idx];
+                if(idx!=-1) wgd = (1-localdensity_ratioD*j)*measures[idx].globaldensity;
                 if(wgd>maxWeightedGD){
                     maxWeightedGD=wgd;
-//                    cout<<"maxWeightedGD change to : "<<maxWeightedGD<<endl;
                 }
             }
         }
-        double ld = localdensity_wGDL * globaldensities[i];
-        if(maxWeightedGD!=0)ld+= globaldensities[i]/maxWeightedGD;
-        localdensities.append(ld);
+        double ld = localdensity_wGDL * measures[i].globaldensity;
+        if(maxWeightedGD!=0)ld+= measures[i].globaldensity/maxWeightedGD;
+        measures[i].localdensity=ld;
     }
 }
 
@@ -237,15 +241,12 @@ void KeyConceptClass::computeDensities()
     /**
         D=wLD*localdensity + wGD*globaldensity
     **/
-    cout<<"Computing densities--GlobalDensities..."<<endl;
     computeGlobalDensities();
-    cout<<"Computing densities--LocalDensities..."<<endl;
     computeLocalDensities();
     for(int i=0;i<classnum;i++)
     {
-        double density = density_wLD * localdensities[i]
-                + density_wGD * globaldensities[i];
-        densities.append(density);
+        measures[i].density = density_wLD * measures[i].localdensity
+                + density_wGD * measures[i].globaldensity;
     }
 }
 
@@ -260,22 +261,22 @@ void KeyConceptClass::computeGlobalPopularities()
     for(int i=0;i<classnum;i++)
     {
         int hit=0;
-        QString cname = originclasses[i]->shortname.toLower();
+        QString cname = classes[i]->shortname.toLower();
         for(int j=0;j<classnum;j++)
         {
-            QString tname = originclasses[j]->shortname.toLower();
+            QString tname = classes[j]->shortname.toLower();
             if(tname.contains(cname))hit++;
         }
         if(hit>maxhit)maxhit=hit;
-        hits.append(hit);
+        measures[i].hit = hit;
     }
 
     //compute GP = hit(c)/maxhit
     for(int i=0;i<classnum;i++)
     {
         double gp = 0.0;
-        if(maxhit!=0)gp=double(hits[i])/double(maxhit);
-        globalpopularities.append(gp);
+        if(maxhit!=0)gp=double(measures[i].hit)/double(maxhit);
+        measures[i].globalpopularity = gp;
     }
 }
 
@@ -293,19 +294,19 @@ void KeyConceptClass::computeLocalPopularities()
             QList<OwlClass *> cls;
 //            cls = getKDistanceClasses(originclasses[i],j,0);
             /** direct use level 1 classes(sub & sup) to speed up **/
-            cls.append(originclasses[i]->subclasses);
-            cls.append(originclasses[i]->superclasses);
+            cls.append(classes[i]->subclasses);
+            cls.append(classes[i]->superclasses);
             //calculate weightedGP
             for(int k=0;k<cls.size();k++){
                 int idx = getIndexOfClasses(cls[k]->shortname);
                 double wgp=0.0;
-                if(idx!=-1) wgp = (1-localpopularity_ratioP*j)*globalpopularities[idx];
+                if(idx!=-1) wgp = (1-localpopularity_ratioP*j)*measures[idx].globalpopularity;
                 if(wgp>maxWeightedGP)maxWeightedGP=wgp;
             }
         }
-        double lp = localpopularity_wGPL * globalpopularities[i];
-        if(maxWeightedGP!=0)lp+= globalpopularities[i]/maxWeightedGP;
-        localpopularities.append(lp);
+        double lp = localpopularity_wGPL * measures[i].globalpopularity;
+        if(maxWeightedGP!=0)lp+= measures[i].globalpopularity/maxWeightedGP;
+        measures[i].localpopularity=lp;
     }
 }
 
@@ -318,9 +319,8 @@ void KeyConceptClass::computePopularities()
     computeLocalPopularities();
     for(int i=0;i<classnum;i++)
     {
-        double pop = popularity_wLP * localpopularities[i]
-                + popularity_wGP * globalpopularities[i];
-        popularities.append(pop);
+        measures[i].popularity = popularity_wLP * measures[i].localpopularity
+                + popularity_wGP * measures[i].globalpopularity;
     }
 }
 
@@ -335,71 +335,19 @@ void KeyConceptClass::computeScore()
     computePopularities();
     for(int i=0;i<classnum;i++)
     {
-        double sc = ncvalues[i] + densities[i] + popularities[i];
-        scores.append(sc);
+        //compute score
+        measures[i].score = measures[i].ncvalue + measures[i].density + measures[i].popularity;
 
+        //init visited times & last visited time
+        measures[i].visitTimes=1;
+        measures[i].lastvisitedTime = QDateTime::currentDateTime();
     }
 }
 
-int KeyConceptClass::contribution(OwlClass *node, QList<OwlClass *> ontoset)
-{
-    int result=0;
-    //get the list which coverd by node
-    QList<OwlClass *> nodecovered;
-    nodecovered.append(node);
-    for(int i=0;i<node->subclasses.size();i++)
-        nodecovered.append(node->subclasses[i]);
-    for(int i=0;i<node->superclasses.size();i++)
-        nodecovered.append(node->superclasses[i]);
-    //remove the classes covered by others
-    for(int i=0;i<ontoset.size();i++){
-        if(node!=ontoset[i]){
-            nodecovered.removeOne(ontoset[i]);
-            for(int j=0;j<ontoset[i]->subclasses.size();j++)
-                nodecovered.removeOne(ontoset[i]->subclasses[j]);
-            for(int j=0;j<ontoset[i]->superclasses.size();j++)
-                nodecovered.removeOne(ontoset[i]->superclasses[j]);
-        }
-    }
-    return nodecovered.size();
-}
 
 QList<OwlClass *> KeyConceptClass::getKeyClasses(int n)
 {
-    /**
-      0. if n>=classnum return ontology(O)
-      1. compute scores
-      --2. select k(k<=n,default k=15) top score classes in ontology(O) -> S
-      --3. select n-k top score classes in O-S -> T
-      --4. if(T=NULL) return S; (k=n???)
-
-      replace 2.3.4.: select top n classes in O ->S
-
-      5. c = avg(contribution(Ci,(S and T)),
-            contribution means the number of classes only coverd by Ci in (S and T).
-            Coverd means itself & sub & super
-         a = avg(overallscore(ci, (S and T)),
-            overallscore(ci,(S and T)) =
-             wCO * contribution(Ci,(S and T)/maxcontribution(Ci,(S and T)
-            +wCR * score(ci)
-      6. classW = worseOverallscore of (S and T)
-        foreach classB in (O-S-T){
-            if(avg a' of S+T-classW+classB > a
-            and avg c' of S+T-classW+classB >=c)
-            {
-                swap(classW,classB in S&T) goback to step 5.
-            }
-        }
-       7. return (S&T)
-
-    **/
-
-
     QList<OwlClass *> result;
-
-//    //total class num less than the require number,return all classes
-//    cout<<"Class NUM:::"<<classnum<<endl;
-//    if(n>=classnum)return originclasses;
 
     //compute scores
     computeScore();
@@ -407,151 +355,84 @@ QList<OwlClass *> KeyConceptClass::getKeyClasses(int n)
     //n must>=1
     if(n<1) return result;
 
-    //get n Top score classes, and other classes    
-    for(int i=0;i<classnum;i++){
-        int position = 0;
-        for(position=0;position<orderedIndexOfScore.size();position++){
-            if(scores[i]>scores[orderedIndexOfScore[position]]){
-                break;
-            }
-        }
-        orderedIndexOfScore.insert(position,i);
-    }
+    //get n Top score classes, and other classes
+    this->sortMeasuresByScore(); //sort by score
 
-    QList<OwlClass *> ontosetS; //top n
-    QList<OwlClass *> ontosetR; //others
-    for(int i=0;i<classnum;i++){
-        if(i<n){
-            ontosetS<<originclasses[orderedIndexOfScore[i]];
-//            cout<<"[S]"<<i;
-        }
-        else{
-            ontosetR<<originclasses[orderedIndexOfScore[i]];
-//            cout<<"[R]"<<i;
-        }
+    if(n>classnum)n=classnum;
+    for(int i=0;i<n;i++)result.append(classes[measures[i].idx]);
 
-        cout<<">>>>>>>>-----"
-            <<originclasses[orderedIndexOfScore[i]]->shortname.toStdString()
-            <<" index:" << orderedIndexOfScore[i]
-            <<" score:" << scores[orderedIndexOfScore[i]]
-            <<endl;
-    }
-
-//    for(int i=0;i<ontosetS.size();i++){
-//        cout<<"Contribution of "<<ontosetS[i]->shortname.toStdString()
-//           <<" in S:"<<contribution(ontosetS[i],ontosetS)<<endl;
-//    }
-
-    /** this part almost make no sense, but highly affect performance.
-      So, delete it!!! ***/
-    /**
-    //step 5:
-    bool foundbetter = false;
-    do{
-        foundbetter = false;
-        //compute c= avg contribution of ontosetS
-        int totalcontribution=0;
-        int maxcontribution=0;
-        QList<int> contributions;
-        for(int i=0;i<ontosetS.size();i++){
-            int ci = contribution(ontosetS[i],ontosetS);
-            if(ci>maxcontribution)maxcontribution=ci;
-            totalcontribution +=ci;
-            contributions.append(ci);
-        }
-        double avgContribution = 0.0;
-        if(ontosetS.size()!=0)
-            avgContribution = double(totalcontribution)/double(ontosetS.size());
-        cout << "AVG C: "<<avgContribution<<endl;
-
-        //compute a= avg overallscore
-        QList<double> overallscores;
-        double totaloverallscore=0.0;
-        double worseoverallscore=9999;
-        int idxworseoverallscore=-1;
-        for(int i=0;i<ontosetS.size();i++){
-            int globalidx = getIndexOfClasses(ontosetS[i]->shortname);
-            double os = overallscore_wCO * (contributions[i]/maxcontribution)
-                    + overallscore_wCR * scores[globalidx];
-            totaloverallscore+=os;
-            overallscores<<os;
-            if(worseoverallscore>os){
-                worseoverallscore=os;
-                idxworseoverallscore=i;
-            }
-        }
-        double avgOverallscore = 0.0;
-        if(ontosetS.size()!=0)
-            avgOverallscore = double(totaloverallscore)/double(ontosetS.size());
-        cout << "AVG A: "<<avgOverallscore<<endl;
-
-
-        //step 6
-        for(int i=0;i<ontosetR.size();i++){
-            QList<OwlClass *> stmp;
-            stmp.append(ontosetS);
-            stmp.removeAt(idxworseoverallscore);
-            stmp.append(ontosetR[i]);
-            //compute c'= avg contribution of ontosetS'
-            int totalc=0;
-            int maxc=0;
-            QList<int> cons;
-            for(int j=0;j<stmp.size();j++){
-                int cj = contribution(stmp[j],stmp);
-                if(cj>maxc)maxc=cj;
-                totalc +=cj;
-                cons.append(cj);
-            }
-            double avgc = 0.0;
-            if(stmp.size()!=0)
-                avgc = double(totalc)/double(stmp.size());
-
-            cout<<"avg c["<<i<<"] = "<<avgc<<endl;
-
-            //compute a'= avg overallscore of ontosetS'
-            QList<double> ovscores;
-            double totalovscore=0.0;
-            for(int j=0;j<stmp.size();j++){
-                int globalidx = getIndexOfClasses(stmp[j]->shortname);
-                double os = overallscore_wCO * (cons[j]/maxc)
-                        + overallscore_wCR * scores[globalidx];
-                totalovscore+=os;
-                ovscores<<os;
-            }
-            double avgovscore = 0.0;
-            if(stmp.size()!=0)
-                avgovscore = double(totalovscore)/double(stmp.size());
-            cout<<"avg a["<<i<<"] = "<<avgovscore<<endl;
-            //compare a a',c c'
-            if(avgc>=avgContribution&&avgovscore>avgOverallscore){
-                foundbetter=true;
-
-                OwlClass * w = ontosetS[idxworseoverallscore];
-                OwlClass * r = ontosetR[i];
-                ontosetS.removeOne(w);
-                ontosetS.append(r);
-                ontosetR.removeOne(r);
-                ontosetR.append(w);
-
-                cout<<"Found better class : "<<r->shortname.toStdString()
-                   <<" c="<<avgContribution << " c1="<<avgc
-                  <<" a="<<avgOverallscore<<" a1="<<avgovscore<<endl;
-                break;
-            }
-        }
-    }while(foundbetter);
-**/
-    result.append(ontosetS);
-
-    //test xml writer
-    for(int i=0;i<classnum;i++){
-        int visit = 0;
-        visits.append(visit);
-    }
     this->writeScoreFile();
+
+    this->readScoreFile();
+    this->computeOverallScore();
+
     return result;
 }
 
+QList<OwlClass *> KeyConceptClass::getNKeyClasses(int n)
+{
+    QList<OwlClass *> result;
+
+    int f= checkfile();
+    if(f==1)
+    {
+        cout<<"Reading score file..."<<endl;
+        this->readScoreFile();
+    }
+    else
+    {
+        cout<<"Calculate scores..."<<endl;
+        computeScore();
+        this->writeScoreFile();
+    }
+
+    this->computeOverallScore();
+    //top n overall score classes
+    if(n>classnum)n=classnum;
+    for(int i=0;i<n;i++)result<<classes[measures[i].idx];
+    return result;
+}
+
+
+int KeyConceptClass::checkfile()
+{
+    //score file not exist: -1
+    //score file read error: -2
+    //score file does not match: -3
+    //owl file changed: 0
+    //else 1;
+
+    QString ontofilename = ontologyfile->absoluteFilePath();
+    QString scorefilename = ontofilename.left(ontofilename.length()-4)+"_score.xml";
+
+    QFile scorefile(scorefilename);
+    if (!scorefile.open(QIODevice::ReadOnly)){
+        cout<<"SCORE FILE DOES NOT EXIST!"<<endl;
+        return -1;
+    }
+    QDomDocument doc("ontologyscore");
+    if(!doc.setContent(&scorefile)){
+        cout<<"SCORE FILE ERROR!"<<endl;
+        scorefile.close();
+        return -2;
+    }
+    QDomElement root = doc.documentElement();
+    if(root.tagName()!="OntologyScore"){
+        cout<<"SCORE FILE DOES NOT MATCH!"<<endl;
+        scorefile.close();
+        return -3;
+    }
+
+    QString mdate = root.elementsByTagName("OWLFile").at(0).toElement().attribute("LastModified");
+    if(mdate != ontologyfile->lastModified().toString())
+    {
+        cout<<"OWL FILE HAS BEEN CHANGED!"<<endl;
+        scorefile.close();
+        return 0;
+    }
+    scorefile.close();
+    return 1;
+}
 
 
 void KeyConceptClass::writeScoreFile()
@@ -563,43 +444,25 @@ void KeyConceptClass::writeScoreFile()
     QDomElement root = doc.createElement("OntologyScore");
     doc.appendChild(root);
 
+    QString owlfilename = this->ontologyfile->absoluteFilePath();
     QDomElement owlfile = doc.createElement("OWLFile");
     root.appendChild(owlfile);
-    QDomText owlfilename = doc.createTextNode(this->ontologyname);
-    owlfile.appendChild(owlfilename);
-
-    QDomElement nclasses = doc.createElement("NumberOfClasses");
-    root.appendChild(nclasses);
-    QDomText n = doc.createTextNode(QString::number(this->classnum));
-    nclasses.appendChild(n);
+    owlfile.setAttribute("Name",owlfilename);
+    owlfile.setAttribute("LastModified",this->ontologyfile->lastModified().toString());
+    owlfile.setAttribute("NumberOfClasses",this->classnum);
 
     QDomElement nodes = doc.createElement("Classes");
     root.appendChild(nodes);
-    for(int i=0;i<orderedIndexOfScore.size();i++){
+    for(int i=0;i<this->classnum;i++){
         QDomElement node = doc.createElement("Class");
-
-        QDomElement clname = doc.createElement("Classname");
-        QDomText clnametxt = doc.createTextNode(originclasses[orderedIndexOfScore[i]]->shortname);
-        clname.appendChild(clnametxt);
-
-        QDomElement score = doc.createElement("Score");
-        QDomText scoretxt = doc.createTextNode(QString::number(scores[orderedIndexOfScore[i]],'g',10));
-        score.appendChild(scoretxt);
-
-        QDomElement visit = doc.createElement("visit");
-        QDomText visittxt = doc.createTextNode(QString::number(visits[orderedIndexOfScore[i]]));
-        visit.appendChild(visittxt);
-
-        node.appendChild(clname);
-        node.appendChild(score);
-        node.appendChild(visit);
+        node.setAttribute("Classname",classes[i]->shortname);
+        node.setAttribute("Score",measures[i].score);
+        node.setAttribute("VisitedTimes",measures[i].visitTimes);
+        node.setAttribute("LastVisitedTime",measures[i].lastvisitedTime.toString());
         nodes.appendChild(node);
     }
 
-//    QDomElement owlfiletime = doc.createElement("OWL File last modify time");
-//    root.appendChild(owlfiletime);
-
-    QString scorefilename = ontologyname.left(ontologyname.length()-4)+"_score.xml";
+    QString scorefilename = owlfilename.left(owlfilename.length()-4)+"_score.xml";
     cout<<"write score file : "<<scorefilename.toStdString()<<endl;
     QFile file(scorefilename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate |QIODevice::Text))
@@ -608,4 +471,132 @@ void KeyConceptClass::writeScoreFile()
     out.setCodec("UTF-8");
     doc.save(out,4,QDomNode::EncodingFromTextStream);
     file.close();
+}
+
+
+
+void KeyConceptClass::readScoreFile()
+{
+    QString ontofilename = ontologyfile->absoluteFilePath();
+    QString scorefilename = ontofilename.left(ontofilename.length()-4)+"_score.xml";
+
+    QFile scorefile(scorefilename);
+    if (!scorefile.open(QIODevice::ReadOnly)){
+        cout<<"SCORE FILE DOES NOT EXIST!"<<endl;
+        return;
+    }
+    QDomDocument doc("ontologyscore");
+    if(!doc.setContent(&scorefile)){
+        cout<<"SCORE FILE ERROR!"<<endl;
+        scorefile.close();
+        return;
+    }
+    QDomElement root = doc.documentElement();
+    if(root.tagName()!="OntologyScore"){
+        cout<<"SCORE FILE DOES NOT MATCH!"<<endl;
+        scorefile.close();
+        return;
+    }
+
+    QDomNodeList clst = root.elementsByTagName("Classes").at(0)
+                        .toElement().elementsByTagName("Class");
+    for(int i =0; i<clst.count(); i++)
+    {
+        QDomElement n = clst.at(i).toElement();
+        QString classname = n.attribute("Classname");
+        QString sc = n.attribute("Score");
+        QString vt = n.attribute("VisitedTimes");
+        QString lv = n.attribute("LastVisitedTime");
+        int idx = getIndexOfClasses(classname);
+        if(idx!=-1){
+            measures[idx].score = sc.toDouble();
+            measures[idx].visitTimes = vt.toInt();
+            measures[idx].lastvisitedTime = QDateTime::fromString(lv);
+        }
+//        cout<<"--R--: "<<measures[idx].classname.toStdString()
+//           <<" -score "<<measures[idx].score
+//           <<" -vt "   <<measures[idx].visitTimes
+//           <<" -lv "   <<measures[idx].lastvisitedTime.toString().toStdString()<<endl;
+    }
+    scorefile.close();
+}
+
+
+void KeyConceptClass::computeOverallScore()
+{
+    /** version 1: overallscore = wSC*score + wVT* VT/MaxVT + wLV * (1-LVidx/num) **/
+    //Get maxVT
+    double maxvt=1.0;
+    int num = measures.size();
+    for(int i=0;i<num;i++){
+        if(measures[i].visitTimes>maxvt) maxvt = measures[i].visitTimes;
+    }
+    //sort by lastVisitedTime
+    this->sortMeasuresByLastVisitedTime();
+
+    //compute overallscore
+    for(int i=0;i<num;i++)
+    {
+        measures[i].overallscore =
+                overallscore_wSC * measures[i].score
+                + overallscore_wVT * double(measures[i].visitTimes)/maxvt
+                + overallscore_wLV * (1 - i/num);
+    }
+
+    this->sortMeasuresByOverallScore();
+}
+
+void KeyConceptClass::sortMeasuresByScore()
+{
+    for(int i=0;i<classnum-1;i++){
+        int max=i;
+        for(int j=i+1;j<classnum;j++){
+            if(measures[j].score>measures[max].score)max=j;
+        }
+        if(max!=i)measures.swap(i,max);
+    }
+}
+
+void KeyConceptClass::sortMeasuresByOverallScore()
+{
+    for(int i=0;i<classnum-1;i++){
+        int max=i;
+        for(int j=i+1;j<classnum;j++){
+            if(measures[j].overallscore>measures[max].overallscore)max=j;
+        }
+        if(max!=i)measures.swap(i,max);
+    }
+}
+
+void KeyConceptClass::sortMeasuresByLastVisitedTime()
+{
+    for(int i=0;i<classnum-1;i++){
+        int max=i;
+        for(int j=i+1;j<classnum;j++){
+            if(measures[j].lastvisitedTime>measures[max].lastvisitedTime)max=j;
+        }
+        if(max!=i)measures.swap(i,max);
+    }
+}
+
+void KeyConceptClass::updateClassVisitedTime(QString shortname, int inc)
+{
+    for(int i = 0;i<measures.size();i++){
+        if(measures[i].classname.toLower()==shortname.toLower())
+        {
+            measures[i].visitTimes += inc;
+            break;
+        }
+    }
+}
+
+void KeyConceptClass::updateClassLastVisitedTime(QString shortname, const QDateTime time)
+{
+    for(int i = 0;i<measures.size();i++){
+        if(measures[i].classname.toLower()==shortname.toLower())
+        {
+            measures[i].lastvisitedTime = time;
+            break;
+        }
+    }
 }

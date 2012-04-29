@@ -1,37 +1,47 @@
 #ifndef KEYCONCEPTCLASS_H
 #define KEYCONCEPTCLASS_H
 #include <owlclass.h>
-
+#include <owlontology.h>
 class KeyConceptClass
 {
 public:
+    typedef struct {
+        int idx;
+        QString classname;
+        double overallscore;
+        double score;
+        //for ncvalues
+        double ncvalue;
+        double namesimplicity;
+        double basiclevel;
+        int path;
+        //for densities
+        double density;
+        double aGlobalDensity;
+        double globaldensity;
+        double localdensity;
+        //for popularities
+        double popularity;
+        int hit;
+        double globalpopularity;
+        double localpopularity;
+        //for visiting histories
+        int visitTimes;
+        QDateTime lastvisitedTime;
+    }measure;
+
+    QList<measure> measures;
+
     //init with all classes
-    KeyConceptClass(QList<OwlClass *> classes,QString ontoname);
+    KeyConceptClass(OwlOntology * ontology);
 
     int getIndexOfClasses(QString shortname);
 
-    QString ontologyname;
+    OwlOntology * m_ontology;
+    const QFileInfo *ontologyfile;
+
     int classnum;
-    QList<OwlClass *> originclasses;
-    QList<double> scores;
-    QList<int> orderedIndexOfScore;
-    QList<double> densities;
-    QList<double> popularities;
-    QList<double> ncvalues;
-    //for ncvalues
-    QList<double> namesimplicities;
-    QList<double> basiclevels;
-    QList<int> paths;
-    //for densities
-    QList<double> aGlobalDensities;
-    QList<double> globaldensities;
-    QList<double> localdensities;
-    //for popularities
-    QList<int> hits;
-    QList<double> globalpopularities;
-    QList<double> localpopularities;
-    //for user preference
-    QList<int> visits;
+    QList<OwlClass *> classes;
 
     /** constants **/
     const static double nameSimplicity_c = 0.3;
@@ -53,12 +63,17 @@ public:
     const static double popularity_wLP = 0.1;
     const static double popularity_wGP = 0.2;
 
-    const static double overallscore_wCO = 0.6;
-    const static double overallscore_wCR = 0.4;
+//    const static double overallscore_wCO = 0.6;
+//    const static double overallscore_wCR = 0.4;
+    const static double overallscore_wSC = 0.5;
+    const static double overallscore_wVT = 0.1;
+    const static double overallscore_wLV = 0.4;
 
 
     /** functions **/
     QList<OwlClass *> getKeyClasses(int n);
+    QList<OwlClass *> getNKeyClasses(int n);
+
     //NCValue
     void computeNameSimplicities();
     void computeBasicLevels();
@@ -79,14 +94,19 @@ public:
     //score
     void computeScore();
 
-    //contribution
-    int contribution(OwlClass *node, QList<OwlClass *> ontoset);
-
+    //overallscore ---score with histories
+    void computeOverallScore();
     //write to file();
     void writeScoreFile();
-    void readScoreFile();
-    bool isOwlfileChanged();
+    void readScoreFile();    
+    int checkfile();
+    void updateClassLastVisitedTime(QString shortname,const QDateTime time);
+    void updateClassVisitedTime(QString shortname,int inc);
 
+    //sort measures
+    void sortMeasuresByScore();
+    void sortMeasuresByLastVisitedTime();
+    void sortMeasuresByOverallScore();
 };
 
 #endif // KEYCONCEPTCLASS_H

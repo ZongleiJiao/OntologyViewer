@@ -21,6 +21,9 @@ public:
     };
 
     void setStatus(status stats);
+    int getStatus();
+private:
+    int m_status;
 };
 
 #endif // OVERVIEWCLASSSHAPE_H
