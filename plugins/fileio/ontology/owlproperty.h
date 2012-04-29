@@ -5,10 +5,11 @@
 #include "libdunnartcanvas/shape.h"
 #include <owlclass.h>
 #include <ontoproperty.h>
+#include <owlentity.h>
 
 using namespace dunnart;
 
-class OwlProperty
+class OwlProperty: public OwlEntity
 {
 public:
     /** Definition of property type strings

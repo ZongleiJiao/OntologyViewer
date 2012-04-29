@@ -7,10 +7,11 @@
 #include <owlindividual.h>
 #include <ontoclass.h>
 #include <overviewclassshape.h>
+#include <owlentity.h>
 
 using namespace dunnart;
 
-class OwlClass
+class OwlClass: public OwlEntity
 {    
 public:
     static const QColor CLASS_SHAPE_COLOR;

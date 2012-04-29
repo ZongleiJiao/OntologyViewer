@@ -512,37 +512,7 @@ void Overview::overviewFMSLayout(Canvas *canvas)
 
 //    //compute all distances
     computeShortestPath();
-    //k = minsize
-//    int k=this->MIN_K;
 
-//    while(k<=classes.size())
-//    {
-//        //center=k-centers
-//        QList<OwlClass *> centers = k_centers(classes,k);
-//        //radius
-//        int radius =this->RATIO;
-//        //locallayout
-//        this->localLayout(centers,radius,this->ITERATIONS);
-
-//        //for every v in V, do L(v)=L(center(v))+rand
-//        for(int i=0;i<classes.size();i++)
-//        {
-//            OwlClass * ncenter = getNearestCenter(centers,classes[i]);
-////            cout<<"Node["<<classes[i]->shortname.toStdString()
-////               <<"] --> center["<<ncenter->shortname.toStdString()<<"]"<<endl;
-//            if(ncenter!=classes[i]){
-//                qreal cx = ncenter->overviewshape->pos().rx();
-//                qreal cy = ncenter->overviewshape->pos().ry();
-//                qreal nx = cx + ((i*2)/classes.size())*this->SINGLE_EDGE_LENGTH;
-//                qreal ny = cy + this->SINGLE_EDGE_LENGTH;
-//                classes[i]->overviewshape->setCentrePos(QPointF(nx,ny));
-//            }
-//        }
-//        //projection
-//        this->projection(classes);
-//        //k=k*radio
-//        k=k*this->RATIO;
-//    }
     this->localLayout(classes,10,4);
     this->projection(classes);
 }
@@ -698,7 +668,3 @@ void Overview::widSceneClicked(QPointF pos)
 {
     cout<<"OOO-->"<<pos.rx()<<","<<pos.ry()<<endl;
 }
-
-
-
-

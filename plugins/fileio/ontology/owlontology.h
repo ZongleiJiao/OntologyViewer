@@ -15,6 +15,7 @@
 #include <widgets/shownodesdockwidget.h>
 #include <widgets/detailinfodockwidget.h>
 #include <QtGui>
+#include <owlentity.h>
 
 class OwlOntology:public QObject
 {
@@ -51,9 +52,17 @@ public:
 
     QString ontologyname;
     const QFileInfo * ontologyfile;
+    QString owlnamespace;
+    QString ontoInfo;
+    QString classInfo;
+    QString individualInfo;
+    QString propertyInfo;
     QList<OwlClass *> classes;
     QList<OwlIndividual *> individuals;
     QList<OwlProperty *> properties;
+    QList<OwlClass *> searchedClasses;
+    QList<OwlIndividual *> searchedIndividuals;
+    QList<OwlProperty *> searchedProperties;
 
     int currentfocusedclassidx;
 
@@ -76,6 +85,16 @@ public:
     QList<QString> splitFormula(QString str);
     ShapeObj * drawEquivalentClass(QString str,Canvas *canvas);
     void drawLogicalView(Canvas *canvas);
+
+    QString getOntoInfo();
+    QString getClassInfo(OwlClass *selectedClass);
+    QString getIndividualInfo(OwlIndividual *selectedIndividual);
+    QString getPropertyInfo(OwlProperty *selectedProperty);
+
+    QList<OwlClass *> getOwlClassByName(QString name);
+    QList<OwlIndividual *> getOwlIndividualByName(QString name);
+    QList<OwlProperty *> getOwlPropertyByName(QString name);
+    void getEntityByText(QString text);
 };
 
 #endif // OWLONTOLOGY_H

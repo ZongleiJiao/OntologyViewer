@@ -365,7 +365,8 @@ HEADERS       = \
     widgets/shownodesdockwidget.h \
     widgets/detailinfodockwidget.h \
     overview/overviewscene.h \
-    overview/overview.h
+    overview/overview.h \
+    owlentity.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -709,7 +710,8 @@ SOURCES       = plugin.cpp \
     widgets/shownodesdockwidget.cpp \
     widgets/detailinfodockwidget.cpp \
     overview/overviewscene.cpp \
-    overview/overview.cpp
+    overview/overview.cpp \
+    owlentity.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm

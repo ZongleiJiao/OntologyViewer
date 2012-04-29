@@ -14,7 +14,7 @@ class ZoomDockWidget : public QDockWidget
 public:
     explicit ZoomDockWidget(QWidget *parent = 0);
     ~ZoomDockWidget();
-    
+
 private:
     Ui::ZoomDockWidget *ui;
 };

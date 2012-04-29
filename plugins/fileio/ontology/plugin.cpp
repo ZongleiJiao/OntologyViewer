@@ -154,6 +154,7 @@ class OntologyFileIOPlugin :
         void applicationMainWindowInitialised(CanvasApplication *canvasApplication)
         {
             this->appmainwin = canvasApplication->mainWindow();
+
         }
 
         void applicationWillClose(CanvasApplication *canvasApplication){}
@@ -171,6 +172,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 {
     cout<<"Start loading ontology :"<<fileInfo.completeBaseName().toStdString()<<endl;
     OwlOntology * onto = new OwlOntology(canvas,this->appmainwin);
+
     onto->loadontology(fileInfo);
 
     cout<<"Finish loading. Total " <<onto->classes.size()<<" class notes."<<endl;
@@ -229,16 +231,11 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     ov->showlayout(wid);
 //    ov->showlayout(canvas);
 
-//    wid->my_canvas->setOptAutomaticGraphLayout(true);
-//    wid->my_canvas->setOptLayoutMode(Canvas::LayeredLayout);
-//    wid->my_canvas->setOptPreventOverlaps(true);
-//    wid->my_canvas->setOptFlowDirection(Canvas::FlowUp);
-//    wid->my_canvas->fully_restart_graph_layout();
     /** classview, individualview, propertyview can
       * be displayed together or individually.
     **/
     //classview
-//    onto->drawClassView(canvas);
+    onto->drawClassView(canvas);
     //individualview
 //    onto->drawIndividualView(canvas);
     //propertyview
@@ -257,6 +254,17 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     **/
 //    onto->drawLogicalView(canvas);
 
+
+    //set automatic layout
+//    canvas->setOptAutomaticGraphLayout(true);
+//    canvas->setOptLayoutMode(canvas->FlowLayout);
+//    canvas->setOptPreventOverlaps(true);
+//    canvas->setOptFlowDirection(Canvas::FlowUp);
+//    canvas->fully_restart_graph_layout();
+
+
+
+    cout<<onto->ontologyname.toStdString()<<endl;
     return true;
 }
 
