@@ -1,16 +1,19 @@
 #include "overviewdockwidget.h"
 #include "ui_overviewdockwidget.h"
+#include "owlclass.h"
 
 OverviewDockWidget::OverviewDockWidget(QWidget *parent) :
     QDockWidget(parent),
     ui(new Ui::OverviewDockWidget)
 {
-    ui->setupUi(this);
+    ui->setupUi(this);    
     m_scene = new OverviewScene();
     m_view = new QGraphicsView(m_scene,this);
     this->setWidget(m_view);
 //    connect(m_scene,SIGNAL(myclick(QPointF)),this,SLOT(sceneClicked(QPointF)));
     setWindowTitle("Ontology Overview");
+
+    this->sceneClicked(QPointF(0,0));
 }
 
 OverviewDockWidget::~OverviewDockWidget()
@@ -21,13 +24,14 @@ OverviewDockWidget::~OverviewDockWidget()
 void OverviewDockWidget::clearall()
 {
 
-//    disconnect(m_scene,SIGNAL(myclick(QPointF)),this,SLOT(sceneClicked(QPointF)));
-    m_scene->~QGraphicsScene();
-    m_scene = new OverviewScene();
-//    connect(m_scene,SIGNAL(myclick(QPointF)),this,SLOT(sceneClicked(QPointF)));
-    m_view->~QGraphicsView();
-    m_view = new QGraphicsView(m_scene,this);
-    this->setWidget(m_view);
+    m_scene->clear();
+////    disconnect(m_scene,SIGNAL(myclick(QPointF)),this,SLOT(sceneClicked(QPointF)));
+//    m_scene->~QGraphicsScene();
+//    m_scene = new OverviewScene();
+////    connect(m_scene,SIGNAL(myclick(QPointF)),this,SLOT(sceneClicked(QPointF)));
+//    m_view->~QGraphicsView();
+//    m_view = new QGraphicsView(m_scene,this);
+//    this->setWidget(m_view);
 }
 void OverviewDockWidget::addOverviewLine(OverviewClassShape *start, OverviewClassShape *end)
 {
@@ -58,10 +62,12 @@ void OverviewDockWidget::addOverviewShape(OverviewClassShape *shape)
     case OverviewClassShape::STATUS_InDetailview_Default:
 //        this->setFillColour(OwlClass::CLASS_SHAPE_COLOR);
 //        this->setSize(QSizeF(8,8));
+        m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::CLASS_SHAPE_COLOR));
         break;
     case OverviewClassShape::STATUS_InDetailview_Focused:
 //        this->setFillColour(OwlClass::CLASS_SHAPE_FOCUSED_COLOR);
 //        this->setSize(QSizeF(8,8));
+        m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::CLASS_SHAPE_FOCUSED_COLOR));
         break;
     case OverviewClassShape::STATUS_InDetailview_SubFocused:
 //        this->setFillColour(OwlClass::SUBCLASS_SHAPE_FOCUSED_COLOR);
@@ -79,4 +85,10 @@ void OverviewDockWidget::addOverviewShape(OverviewClassShape *shape)
 void OverviewDockWidget::sceneClicked(QPointF pos)
 {
 //    std::cout<<"Scene Clicked:"<<pos.rx()<<","<<pos.ry()<<std::endl;
+    m_centerpos = pos;
+    QColor grey(0, 0, 0, 60);
+    QRectF viewRect = QRectF(m_centerpos.rx()-40,m_centerpos.ry()-30,80,60);
+    QPolygon polygon = QPolygon(m_scene->sceneRect().toRect()).subtracted(
+            QPolygon(viewRect.toRect()));
+    m_scene->addPolygon(polygon,QPen(Qt::transparent),QBrush(grey));
 }

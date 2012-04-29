@@ -8,12 +8,18 @@
 #include <canvas.h>
 #include <QtGui>
 #include "overview/overviewdockwidget.h"
+#include "overview/detailedview.h"
 
 class Overview : public QObject
 {
     Q_OBJECT
 public:
-    explicit Overview(QObject *parent = 0);
+
+    explicit Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *parent = 0);
+
+    OverviewDockWidget *m_wid;
+    DetailedView *m_detailview;
+    OwlOntology *m_ontology;
 
     QList<OwlClass *> classes;
     //how many classes display on the overview, init with N(load N keyconcepts)
@@ -55,6 +61,7 @@ private:
     void localLayout(QList<OwlClass *> graph,int k,int iteration);
     QList<OwlClass *> k_neighborhood(OwlClass * node,int k);
     double EuclideanDistance(OwlClass *u,OwlClass *v);
+    double EuclideanDistance(QPointF u,QPointF v);
     double deltaM(double ex, double ey);
     int getIndexOfMaxDeltaM(QList<OwlClass *> graph);
     double deltaMx(double ex,double ey,double ex2, double exy, double ey2);

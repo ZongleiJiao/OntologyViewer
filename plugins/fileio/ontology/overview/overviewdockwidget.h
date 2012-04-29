@@ -23,6 +23,7 @@ public:
 
     OverviewScene *m_scene;
     QGraphicsView *m_view;
+    QPointF m_centerpos;
 
 //    Canvas *my_canvas;
 //    CanvasView * my_view;

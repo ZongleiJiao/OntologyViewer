@@ -190,10 +190,8 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     onto->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,wid);
     wid->show();
 
-    Overview * ov = new Overview();
-    ov->numOfClasses=300;
+    Overview * ov = new Overview(80,onto,canvas);
     cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
-    ov->getOverviewClasses(onto);
     cout<<"drawing overview..."<<endl;
 //    ov->overviewFMSLayout(canvas);
 //    ov->overviewFMSLayout(wid);

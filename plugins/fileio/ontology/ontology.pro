@@ -366,7 +366,8 @@ HEADERS       = \
     widgets/detailinfodockwidget.h \
     overview/overviewscene.h \
     overview/overview.h \
-    owlentity.h
+    owlentity.h \
+    overview/detailedview.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -711,7 +712,8 @@ SOURCES       = plugin.cpp \
     widgets/detailinfodockwidget.cpp \
     overview/overviewscene.cpp \
     overview/overview.cpp \
-    owlentity.cpp
+    owlentity.cpp \
+    overview/detailedview.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm
@@ -735,6 +737,8 @@ FORMS += \
     widgets/informationboxdockwidget.ui \
     widgets/shownodesdockwidget.ui \
     widgets/detailinfodockwidget.ui
+
+
 
 
 

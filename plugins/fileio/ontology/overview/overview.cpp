@@ -3,6 +3,7 @@
 #include <stack>
 #include "plugins/fileio/ontology/overview/keyconceptclass.h"
 #include <cmath>
+#include <limits>
 #include "libvpsc/solve_VPSC.h"
 #include "libvpsc/variable.h"
 #include "libvpsc/constraint.h"
@@ -14,17 +15,15 @@
 using namespace dunnart;
 using namespace vpsc;
 using namespace std;
-Overview::Overview(QObject *parent) :
+Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *parent) :
     QObject(parent)
 {
-    this->numOfClasses = 300;
-}
-
-void Overview::getOverviewClasses(OwlOntology *ontology)
-{
+    this->numOfClasses = numOfNode;
     KeyConceptClass *kc=new KeyConceptClass(ontology);
     classes = convertOverviewShapes(kc->getNKeyClasses(this->numOfClasses));
     numOfClasses=classes.size();
+    m_ontology = ontology;
+    this->m_detailview = new DetailedView(canvas,ontology);
 }
 
 QList<OwlClass *> Overview::convertOverviewShapes(QList<OwlClass *> classes)
@@ -107,6 +106,7 @@ int Overview::getIndexByShortname(QList<OwlClass *> lst, QString shortname)
 }
 void Overview::drawOverview(OverviewDockWidget *wid)
 {
+    wid->clearall();
     //draw shape
     for(int i=0;i<classes.size();i++){
         wid->addOverviewShape(classes[i]->overviewshape);
@@ -334,6 +334,14 @@ double Overview::EuclideanDistance(OwlClass *u, OwlClass *v)
     double yu=u->overviewshape->pos().ry();
     double xv=v->overviewshape->pos().rx();
     double yv=v->overviewshape->pos().ry();
+    return sqrt((xu-xv)*(xu-xv)+(yu-yv)*(yu-yv));
+}
+double Overview::EuclideanDistance(QPointF u, QPointF v)
+{
+    double xu=u.rx();
+    double yu=u.ry();
+    double xv=v.rx();
+    double yv=v.ry();
     return sqrt((xu-xv)*(xu-xv)+(yu-yv)*(yu-yv));
 }
 QList<double> Overview::getEs(QList<OwlClass *> graph, OwlClass *node)
@@ -661,10 +669,39 @@ void Overview::showlayout(OverviewDockWidget *wid)
 {
     this->quadrantRadialTree(classes,180);
     this->drawOverview(wid);
+    this->m_wid = wid;
+    wid->sceneClicked(classes[0]->overviewshape->pos());
     wid->m_scene->connect(wid->m_scene,SIGNAL(myclick(QPointF)),this,SLOT(widSceneClicked(QPointF)));
 }
 
 void Overview::widSceneClicked(QPointF pos)
 {
-    cout<<"OOO-->"<<pos.rx()<<","<<pos.ry()<<endl;
+    //compute Euclidean distance with current mouse pos
+    double mind = numeric_limits<double>::max();
+    int minidx = -1;
+    for(int i = 0;i<this->classes.size();i++)
+    {
+        classes[i]->overviewshape->setStatus(OverviewClassShape::STATUS_OutDetailview);
+        double d = EuclideanDistance(pos,classes[i]->overviewshape->pos());
+        if(d<mind){
+            mind = d;
+            minidx = i;
+        }
+    }
+    //sent to detailview
+//    m_detailview->setViewLimit(10,10);
+    int idx = m_ontology->getIndexOfClasses(classes[minidx]->shortname);
+    QList<OwlClass *> indetailedCls;
+    if(idx!=-1)indetailedCls = this->m_detailview->drawClassView(m_ontology->classes[idx]);
+    //get back from detailed view ->ov
+    for(int i=0;i<indetailedCls.size();i++){
+        int cid = this->getIndexByShortname(classes,indetailedCls[i]->shortname);
+        if(cid!=-1)classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Default);
+    }
+
+    m_ontology->ontoclass_clicked(m_ontology->classes[idx]->shape);
+    classes[minidx]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Focused);
+    this->drawOverview(m_wid);
+    m_wid->sceneClicked(pos);
+
 }
