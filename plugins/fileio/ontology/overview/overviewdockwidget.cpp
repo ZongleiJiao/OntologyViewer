@@ -13,6 +13,7 @@ OverviewDockWidget::OverviewDockWidget(QWidget *parent) :
 //    connect(m_scene,SIGNAL(myclick(QPointF)),this,SLOT(sceneClicked(QPointF)));
     setWindowTitle("Ontology Overview");
 
+    this->ontology = NULL;
     this->sceneClicked(QPointF(0,0));
 }
 
@@ -21,18 +22,16 @@ OverviewDockWidget::~OverviewDockWidget()
     delete ui;
 }
 
+void OverviewDockWidget::setOntology(OwlOntology *onto){
+    this->ontology = onto;
+}
+
 void OverviewDockWidget::clearall()
 {
 
     m_scene->clear();
-////    disconnect(m_scene,SIGNAL(myclick(QPointF)),this,SLOT(sceneClicked(QPointF)));
-//    m_scene->~QGraphicsScene();
-//    m_scene = new OverviewScene();
-////    connect(m_scene,SIGNAL(myclick(QPointF)),this,SLOT(sceneClicked(QPointF)));
-//    m_view->~QGraphicsView();
-//    m_view = new QGraphicsView(m_scene,this);
-//    this->setWidget(m_view);
 }
+
 void OverviewDockWidget::addOverviewLine(OverviewClassShape *start, OverviewClassShape *end)
 {
     qreal sx = start->pos().rx();

@@ -41,7 +41,7 @@ public:
     //variable
     QMainWindow * appmainwindow;
     Canvas * maincanvas;
-    DetailDockWidget * wid;
+    DetailDockWidget * equclasswid;
     ZoomDockWidget * zoomdwgt;
     FilterDockWidget * filterdwgt;
     HistoryDockWidget * historydwgt;
@@ -67,7 +67,7 @@ public:
     int currentfocusedclassidx;
 
     //methods
-    OwlOntology(Canvas * canvas,QMainWindow *mainwin);
+    OwlOntology(Canvas * canvas,QMainWindow *mainwin,DetailDockWidget * equwid);
     int getIndexOfIndividuals(QString shortname);
     int getIndexOfClasses(QString shortname);
     int getIndexOfProperties(QString shortname);

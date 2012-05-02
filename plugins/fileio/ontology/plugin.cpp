@@ -87,8 +87,12 @@ class OntologyFileIOPlugin :
 
     public:
         QMainWindow * appmainwin;
+        OverviewDockWidget *overviewwid;
+        DetailDockWidget *equclasswid;
+
         OntologyFileIOPlugin()
         {
+
         }
         //methods for FileIOPluginInterface
         QStringList saveableFileExtensions(void) const
@@ -155,6 +159,16 @@ class OntologyFileIOPlugin :
         {
             this->appmainwin = canvasApplication->mainWindow();
 
+
+            this->overviewwid = new OverviewDockWidget();
+            this->appmainwin->addDockWidget(Qt::LeftDockWidgetArea,overviewwid);
+
+
+            this->equclasswid= new DetailDockWidget();
+            this->appmainwin->addDockWidget(Qt::LeftDockWidgetArea,equclasswid);
+            this->equclasswid->setWindowTitle("Equivalent Class");
+
+
         }
 
         void applicationWillClose(CanvasApplication *canvasApplication){}
@@ -170,8 +184,11 @@ bool OntologyFileIOPlugin::saveDiagramToFile(Canvas *canvas,
 bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
         const QFileInfo& fileInfo, QString& errorMessage)
 {
+    this->overviewwid->show();
+    this->equclasswid->show();
+
     cout<<"Start loading ontology :"<<fileInfo.completeBaseName().toStdString()<<endl;
-    OwlOntology * onto = new OwlOntology(canvas,this->appmainwin);
+    OwlOntology * onto = new OwlOntology(canvas,this->appmainwin,this->equclasswid);
 
     onto->loadontology(fileInfo);
 
@@ -186,17 +203,11 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
       2. draw overview
       **/
 
-    OverviewDockWidget *wid = new OverviewDockWidget();
-    onto->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,wid);
-    wid->show();
-
+    this->overviewwid->setOntology(onto);
     Overview * ov = new Overview(80,onto,canvas);
     cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
     cout<<"drawing overview..."<<endl;
-//    ov->overviewFMSLayout(canvas);
-//    ov->overviewFMSLayout(wid);
-    ov->showlayout(wid);
-//    ov->showlayout(canvas);
+    ov->showlayout(this->overviewwid);
 
     /** classview, individualview, propertyview can
       * be displayed together or individually.
@@ -231,7 +242,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 
 
 
-    cout<<onto->ontologyname.toStdString()<<endl;
+//    cout<<onto->ontologyname.toStdString()<<endl;
     return true;
 }
 

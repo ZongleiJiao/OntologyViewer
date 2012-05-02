@@ -524,7 +524,8 @@ void KeyConceptClass::readScoreFile()
 
 void KeyConceptClass::computeOverallScore()
 {
-    /** version 1: overallscore = wSC*score + wVT* VT/MaxVT + wLV * (1-LVidx/num) **/
+    /** version 1: overallscore = wSC*score + wVT* VT/MaxVT + wLV * (1-LVidx/num)
+        Add Landmark!!**/
     //Get maxVT
     double maxvt=1.0;
     int num = measures.size();

@@ -6,6 +6,7 @@
 #include "libdunnartcanvas/canvasview.h"
 #include <overviewclassshape.h>
 #include <overview/overviewscene.h>
+#include <owlontology.h>
 using namespace dunnart;
 
 namespace Ui {
@@ -21,12 +22,14 @@ public:
     explicit OverviewDockWidget(QWidget *parent = 0);
     ~OverviewDockWidget();
 
+    OwlOntology *ontology;
     OverviewScene *m_scene;
     QGraphicsView *m_view;
     QPointF m_centerpos;
 
 //    Canvas *my_canvas;
 //    CanvasView * my_view;
+    void setOntology(OwlOntology * onto);
     void clearall();
 
     void addOverviewShape(OverviewClassShape *shape);

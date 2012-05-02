@@ -18,46 +18,47 @@
 using namespace dunnart;
 using namespace std;
 
-OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
+OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin, DetailDockWidget *equwid)
 {
     this->maincanvas = canvas;
     this->currentfocusedclassidx = -1;
     this->appmainwindow = mainwin;
+    this->equclasswid = equwid;
 
-    wid = new DetailDockWidget();
-    this->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,wid);
-    wid->setWindowTitle("Equivalent Class");
-    wid->show();
+//    wid = new DetailDockWidget();
+//    this->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,wid);
+//    wid->setWindowTitle("Equivalent Class");
+//    wid->show();
 
-    //////////////need canvasview to initialize widgets///////////////////
-    zoomdwgt = new ZoomDockWidget();
-    this->appmainwindow->addDockWidget(Qt::BottomDockWidgetArea,zoomdwgt);
-    zoomdwgt->show();
+//    //////////////need canvasview to initialize widgets///////////////////
+//    zoomdwgt = new ZoomDockWidget();
+//    this->appmainwindow->addDockWidget(Qt::BottomDockWidgetArea,zoomdwgt);
+//    zoomdwgt->show();
 
-    filterdwgt = new FilterDockWidget();
-    appmainwindow->addDockWidget(Qt::BottomDockWidgetArea,filterdwgt);
-    filterdwgt->show();
+//    filterdwgt = new FilterDockWidget();
+//    appmainwindow->addDockWidget(Qt::BottomDockWidgetArea,filterdwgt);
+//    filterdwgt->show();
 
-    historydwgt = new HistoryDockWidget();
-    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,historydwgt);
-    historydwgt->show();
+//    historydwgt = new HistoryDockWidget();
+//    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,historydwgt);
+//    historydwgt->show();
 
-    searchdwgt = new SearchDockWidget();
-    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,searchdwgt);
-    searchdwgt->show();
+//    searchdwgt = new SearchDockWidget();
+//    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,searchdwgt);
+//    searchdwgt->show();
 
-    infoboxdwgt = new InformationBoxDockWidget();
-    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,infoboxdwgt);
-    infoboxdwgt->show();
+//    infoboxdwgt = new InformationBoxDockWidget();
+//    appmainwindow->addDockWidget(Qt::RightDockWidgetArea,infoboxdwgt);
+//    infoboxdwgt->show();
 
-    typedwgt = new ShowNodesDockWidget;
-    appmainwindow->addDockWidget(Qt::BottomDockWidgetArea,typedwgt);
-    typedwgt->show();
+//    typedwgt = new ShowNodesDockWidget;
+//    appmainwindow->addDockWidget(Qt::BottomDockWidgetArea,typedwgt);
+//    typedwgt->show();
 
-    //temp TODO create new widget (QListWidget)
-    DetailInfoDockWidget * deatildwgt = new DetailInfoDockWidget();
-    appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,deatildwgt);
-    deatildwgt->show();
+//    //temp TODO create new widget (QListWidget)
+//    DetailInfoDockWidget * deatildwgt = new DetailInfoDockWidget();
+//    appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,deatildwgt);
+//    deatildwgt->show();
 
     //TODO restore position of widgets--doesn't work right now, may need to restore them when lunach dunnart???
 //    appmainwindow->restoreDockWidget(zoomdwgt);
@@ -1272,7 +1273,7 @@ void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
     int idx = this->getIndexOfClasses(classshape->idString());
     if(idx!=-1&&classes[idx]->equivalentclass.trimmed()!="")
     {
-        wid->clearall();
+        equclasswid->clearall();
         //root class
         OntologyClassShape * classshape = new OntologyClassShape();
         classshape->setIdString(">"+classes[idx]->shortname);
@@ -1282,10 +1283,10 @@ void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
         classshape->setFillColour(this->CLASS_SHAPE_COLOR);
         for(int i=0;i<6;i++)
             classshape->setLabelByLevels(i+1,classes[idx]->shape->levelLabels[i]);
-        wid->my_canvas->addItem(classshape);
-        wid->setWindowTitle("[EQU]"+classes[idx]->shortname);
+        equclasswid->my_canvas->addItem(classshape);
+        equclasswid->setWindowTitle("[EQU]"+classes[idx]->shortname);
         //formula view
-        ShapeObj * fshape = drawEquivalentClass(classes[idx]->equivalentclass,wid->my_canvas);
+        ShapeObj * fshape = drawEquivalentClass(classes[idx]->equivalentclass,equclasswid->my_canvas);
         //connection
         Connector * conn = new Connector();
         conn->initWithConnection(classshape,fshape);
@@ -1297,13 +1298,14 @@ void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
         conn1->setColour(QColor("brown"));
         conn1->setDirected(true);
 
-        wid->my_canvas->addItem(conn);
-        wid->my_canvas->addItem(conn1);
-        wid->my_canvas->setOptAutomaticGraphLayout(true);
-        wid->my_canvas->setOptLayoutMode(maincanvas->FlowLayout);
-        wid->my_canvas->setOptPreventOverlaps(true);
-        wid->my_canvas->fully_restart_graph_layout();
-        //wid->setGeometry(100,0,600,600);
+        equclasswid->my_canvas->addItem(conn);
+        equclasswid->my_canvas->addItem(conn1);
+        equclasswid->my_canvas->setOptAutomaticGraphLayout(true);
+        equclasswid->my_canvas->setOptLayoutMode(maincanvas->FlowLayout);
+        equclasswid->my_canvas->setOptPreventOverlaps(true);
+        equclasswid->my_canvas->fully_restart_graph_layout();
+
+        //equclasswid->setGeometry(100,0,600,600);
 
     }
 }

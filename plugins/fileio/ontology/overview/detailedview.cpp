@@ -50,7 +50,7 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode)
     }
 
     m_canvas->setOptAutomaticGraphLayout(true);
-    m_canvas->setOptLayoutMode(Canvas::FlowLayout);
+    m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
     m_canvas->setOptPreventOverlaps(true);
     m_canvas->setOptFlowDirection(Canvas::FlowLeft);
     m_canvas->fully_restart_graph_layout();
