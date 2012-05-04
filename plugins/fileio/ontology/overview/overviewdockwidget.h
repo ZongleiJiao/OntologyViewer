@@ -4,7 +4,6 @@
 #include <QDockWidget>
 #include "libdunnartcanvas/canvas.h"
 #include "libdunnartcanvas/canvasview.h"
-#include <overviewclassshape.h>
 #include <overview/overviewscene.h>
 #include <owlontology.h>
 #include <ogdf/basic/geometry.h>
@@ -18,8 +17,13 @@ namespace Ui {
 class OverviewDockWidget : public QDockWidget
 {
     Q_OBJECT
+signals:
+    void layoutChanged(QString);
+    void directionChanged(QString);
 public slots:
     void sceneClicked(QPointF pos);
+    void layoutMethodChanged(QString method);
+    void layoutDirectionChanged(QString dir);
 public:
     explicit OverviewDockWidget(QWidget *parent = 0);
     ~OverviewDockWidget();
@@ -34,12 +38,16 @@ public:
     void setOntology(OwlOntology * onto);
     void clearall();
 
-    void addOverviewShape(OverviewClassShape *shape);
-    void addOverviewLine(OverviewClassShape *start,OverviewClassShape *end,QPen pen);
+    void addOverviewShape(OwlClass *shape);
+    void addOverviewLine(OwlClass *start,OwlClass *end,QPen pen);
     void addTreeConnector(DPolyline pl,QPen pen);
+
+    //event
+    void resizeEvent(QResizeEvent *event);
 
 private:
     Ui::OverviewDockWidget *ui;
+    QRectF originalSeceneSize;
 };
 
 #endif // OVERVIEWDOCKWIDGET_H

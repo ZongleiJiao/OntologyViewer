@@ -12,11 +12,9 @@
 
 #include <ogdf/basic/Graph.h>
 #include <ogdf/basic/GraphAttributes.h>
-#include <ogdf/layered/SugiyamaLayout.h>
-#include <ogdf/layered/OptimalRanking.h>
-#include <ogdf/layered/MedianHeuristic.h>
-#include <ogdf/layered/OptimalHierarchyLayout.h>
 #include <ogdf/tree/TreeLayout.h>
+#include <ogdf/tree/RadialTreeLayout.h>
+#include <ogdf/energybased/StressMajorizationSimple.h>
 
 
 #define PI 3.14159265
@@ -35,7 +33,9 @@ Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *
     m_ontology = ontology;
     this->m_detailview = new DetailedView(canvas,ontology);
     this->isOrthogonalTreeLayout = false;
-    connect(m_ontology,SIGNAL(clickedClass(QString)),this,SLOT(detailView_ClickedClass(QString)));
+    this->orientation = ogdf::leftToRight;
+    this->currentLayoutMethod = "Tree";
+
 }
 
 QList<OwlClass *> Overview::convertOverviewShapes(QList<OwlClass *> classes)
@@ -118,10 +118,10 @@ int Overview::getIndexByShortname(QList<OwlClass *> lst, QString shortname)
 }
 void Overview::drawOverview(OverviewDockWidget *wid)
 {
-    wid->clearall();
+    wid->clearall();    
     //draw shape
     for(int i=0;i<classes.size();i++){
-        wid->addOverviewShape(classes[i]->overviewshape);
+        wid->addOverviewShape(classes[i]);
     }
     //draw line
     if(isOrthogonalTreeLayout){
@@ -142,17 +142,17 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                 double ex = sx + TREE_levelDistance/2;
                 double ey = sy;
 
-                if(this->TREE_Orientation == ogdf::leftToRight)
+                if(this->orientation == ogdf::leftToRight)
                 {
                     ex = sx + TREE_levelDistance/2 + 3;
                     ey = sy;
                 }
-                else if(this->TREE_Orientation == ogdf::rightToLeft)
+                else if(this->orientation == ogdf::rightToLeft)
                 {
                     ex = sx - TREE_levelDistance/2;
                     ey = sy;
                 }
-                else if(this->TREE_Orientation == ogdf::bottomToTop)
+                else if(this->orientation == ogdf::bottomToTop)
                 {
                     ex = sx;
                     ey = sy + TREE_levelDistance/2 + 3;
@@ -170,17 +170,17 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                 double ex = sx;
                 double ey = sy;
 
-                if(this->TREE_Orientation == ogdf::leftToRight)
+                if(this->orientation == ogdf::leftToRight)
                 {
                     ex = sx - TREE_levelDistance/2;
                     ey = sy;
                 }
-                else if(this->TREE_Orientation == ogdf::rightToLeft)
+                else if(this->orientation == ogdf::rightToLeft)
                 {
                     ex = sx + TREE_levelDistance/2 + 3;
                     ey = sy;
                 }
-                else if(this->TREE_Orientation == ogdf::bottomToTop)
+                else if(this->orientation == ogdf::bottomToTop)
                 {
                     ex = sx;
                     ey = sy - TREE_levelDistance/2;
@@ -196,7 +196,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                 for(int j=1;j<classes[i]->superclasses.size();j++){
                     if(inlst&&this->indetailedCls.contains(classes[i]->superclasses[j]))pen = QPen(QColor("red"));
                     else pen = QPen(QColor("black"));
-                    wid->addOverviewLine(classes[i]->overviewshape,classes[i]->superclasses[j]->overviewshape,pen);
+                    wid->addOverviewLine(classes[i],classes[i]->superclasses[j],pen);
                 }
             }
         }
@@ -211,7 +211,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                 {
                     pen = QPen(QColor("red"));
                 }
-                wid->addOverviewLine(classes[i]->subclasses[j]->overviewshape,classes[i]->overviewshape,pen);
+                wid->addOverviewLine(classes[i]->subclasses[j],classes[i],pen);
             }
         }
     }
@@ -570,7 +570,7 @@ void Overview::projection(QList<OwlClass *> graph)
         }
     }
 }
-void Overview::overviewFMSLayout(OverviewDockWidget *wid)
+void Overview::FMSLayout(bool isProjection)
 {
     cout<<"Set init layout -- "<<QTime::currentTime().toString().toStdString()<<endl;
     this->setInitialLayout();
@@ -578,13 +578,10 @@ void Overview::overviewFMSLayout(OverviewDockWidget *wid)
     computeShortestPath();
     cout<<"FD -- "<<QTime::currentTime().toString().toStdString()<<endl;
     this->localLayout(classes,10,7);
-    cout<<"projection -- "<<QTime::currentTime().toString().toStdString()<<endl;
-    this->projection(classes);
-    cout<<"draw -- "<<QTime::currentTime().toString().toStdString()<<endl;
-    this->drawOverview(wid);
-    cout<<"end -- "<<QTime::currentTime().toString().toStdString()<<endl;
-
-
+    if(isProjection){
+        cout<<"projection -- "<<QTime::currentTime().toString().toStdString()<<endl;
+        this->projection(classes);
+    }
 }
 
 void Overview::overviewFMSLayout(Canvas *canvas)
@@ -785,7 +782,7 @@ void Overview::treeLayout(QList<OwlClass *> graph)
     }
 
     TreeLayout tl;
-    tl.orientation(this->TREE_Orientation);
+    tl.orientation(this->orientation);
     tl.rootSelection(TreeLayout::rootIsSource);
     tl.orthogonalLayout(true);
     tl.siblingDistance(this->TREE_siblingDistance);
@@ -795,6 +792,54 @@ void Overview::treeLayout(QList<OwlClass *> graph)
     tl.call(ga);
     tl.callSortByPositions(ga,g);
 
+
+    for(int i=0;i<nodes.size();i++){
+        graph[i]->overviewshape->setCentrePos(QPointF(ga.x(nodes[i]),ga.y(nodes[i])));
+    }
+    treeconnectors.clear();
+    for(int i=0;i<edges.size();i++){
+        DPolyline pl = ga.bends(edges[i]);
+        treeconnectors.append(pl);
+    }
+}
+
+void Overview::ogdfLayout(QList<OwlClass *> graph)
+{
+    //init graph
+    Graph g;
+    GraphAttributes ga(g,GraphAttributes::nodeGraphics|GraphAttributes::edgeGraphics );
+
+    QList<node> nodes;
+    QList<edge> edges;
+    for(int i=0;i<graph.size();i++)
+    {
+        node nd = g.newNode();
+        ga.x(nd) = graph[i]->overviewshape->pos().rx();
+        ga.y(nd) = graph[i]->overviewshape->pos().ry();
+        ga.width(nd) = graph[i]->overviewshape->width();
+        ga.height(nd) = graph[i]->overviewshape->height();
+        nodes.append(nd);
+    }
+    for(int i=0;i<graph.size();i++)
+    {
+        if(!graph[i]->superclasses.empty()){
+            OwlClass * sup = graph[i]->superclasses[0];
+            int idx = getIndexByShortname(graph,sup->shortname);
+            if(idx!=-1){
+                edge e =g.newEdge(nodes[idx],nodes[i]);
+                edges.append(e);
+            }
+        }
+    }
+
+//    RadialTreeLayout tl;
+//    tl.levelDistance(this->TREE_levelDistance);
+//    tl.rootSelection(RadialTreeLayout::rootIsSource);
+//    tl.call(ga);
+
+    StressMajorization tl;
+    tl.setIterations(7);
+    tl.call(ga);
 
     for(int i=0;i<nodes.size();i++){
         graph[i]->overviewshape->setCentrePos(QPointF(ga.x(nodes[i]),ga.y(nodes[i])));
@@ -880,6 +925,90 @@ void Overview::detailView_ClickedClass(QString shortname)
     this->drawOverview(m_wid);
 }
 
+void Overview::layoutmethodChanged(QString method)
+{
+    this->currentLayoutMethod = method;
+    this->isOrthogonalTreeLayout = false;
+
+    if(method == "Tree"){
+        this->treeLayout(classes);
+        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+    }
+    if(method == "Orthogonal Tree"){
+        this->isOrthogonalTreeLayout = true;
+        this->treeLayout(classes);
+        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+    }
+    if(method == "Radial Tree(90)"){
+        this->quadrantRadialTree(classes,90);
+        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+    }
+    if(method == "Radial Tree(180)"){
+        this->quadrantRadialTree(classes,180);
+        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+    }
+    if(method == "FMS"){
+        this->FMSLayout(false);
+        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::OrganicLayout);
+        this->m_detailview->m_canvas->setIdealConnectorLength(80);
+    }
+    if(method == "FMS(Projection)"){
+        this->FMSLayout(true);
+        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::FlowLayout);
+        this->m_detailview->m_canvas->setIdealConnectorLength(80);
+    }
+
+    this->drawOverview(this->m_wid);
+
+    this->m_detailview->m_canvas->setOptAutomaticGraphLayout(true);
+    this->m_detailview->m_canvas->setOptPreventOverlaps(true);
+    this->m_detailview->m_canvas->fully_restart_graph_layout();
+}
+
+void Overview::directionChanged(QString dr)
+{
+    if(dr == "L->R"){
+        this->orientation = ogdf::leftToRight;
+        this->m_detailview->m_canvas->setOptFlowDirection(Canvas::FlowLeft);
+        this->m_detailview->m_canvas->setIdealConnectorLength(50);
+        this->m_detailview->m_canvas->setOptFlowSeparationModifier(4);
+
+    }
+    if(dr == "R->L"){
+        this->orientation = ogdf::rightToLeft;
+        this->m_detailview->m_canvas->setOptFlowDirection(Canvas::FlowRight);
+        this->m_detailview->m_canvas->setIdealConnectorLength(50);
+        this->m_detailview->m_canvas->setOptFlowSeparationModifier(4);
+    }
+    if(dr == "T->B"){
+        this->orientation = ogdf::bottomToTop;
+        this->m_detailview->m_canvas->setOptFlowDirection(Canvas::FlowUp);
+        this->m_detailview->m_canvas->setIdealConnectorLength(30);
+        this->m_detailview->m_canvas->setOptFlowSeparationModifier(2);
+    }
+    if(dr == "B->T"){
+        this->m_detailview->m_canvas->setOptFlowDirection(Canvas::FlowDown);
+        this->orientation = ogdf::topToBottom;
+        this->m_detailview->m_canvas->setIdealConnectorLength(30);
+        this->m_detailview->m_canvas->setOptFlowSeparationModifier(2);
+    }
+
+    if(this->currentLayoutMethod == "Tree"
+            ||this->currentLayoutMethod == "Orthogonal Tree"
+            ||this->currentLayoutMethod == "FMS(Projection)")
+    {
+        this->layoutmethodChanged(this->currentLayoutMethod);
+    }
+}
+
+void Overview::connectWgt(OverviewDockWidget *wgt){
+    this->m_wid = wgt;
+    connect(m_ontology,SIGNAL(clickedClass(QString)),this,SLOT(detailView_ClickedClass(QString)));
+    connect(wgt->m_scene,SIGNAL(myclick(QPointF)),this,SLOT(widSceneClicked(QPointF)));
+    connect(wgt,SIGNAL(layoutChanged(QString)),this,SLOT(layoutmethodChanged(QString)));
+    connect(wgt,SIGNAL(directionChanged(QString)),this,SLOT(directionChanged(QString)));
+}
+
 void Overview::showlayout(Canvas *canvas)
 {
     this->quadrantRadialTree(classes,180);
@@ -888,11 +1017,6 @@ void Overview::showlayout(Canvas *canvas)
 
 void Overview::showlayout(OverviewDockWidget *wid)
 {
-//    this->quadrantRadialTree(classes,180);
-    this->treeLayout(classes);
-    this->isOrthogonalTreeLayout = false;
-    this->drawOverview(wid);
-    this->m_wid = wid;
-    wid->sceneClicked(classes[0]->overviewshape->pos());
-    wid->m_scene->connect(wid->m_scene,SIGNAL(myclick(QPointF)),this,SLOT(widSceneClicked(QPointF)));
+    this->connectWgt(wid);
+    this->directionChanged("L->R");
 }

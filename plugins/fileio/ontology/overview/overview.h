@@ -23,6 +23,8 @@ public:
     OwlOntology *m_ontology;
 
     bool isOrthogonalTreeLayout;
+    ogdf::Orientation orientation;
+    QString currentLayoutMethod;
     QList<OwlClass *> classes;
     QList<OwlClass *> indetailedCls;
     //how many classes display on the overview, init with N(load N keyconcepts)
@@ -39,7 +41,7 @@ public:
 
     //whole implementation
     void overviewFMSLayout(Canvas *canvas);
-    void overviewFMSLayout(OverviewDockWidget *wid);
+    void FMSLayout(bool isProjection);
 
     //show layout
     void showlayout(Canvas *canvas);
@@ -85,15 +87,22 @@ private:
     const static double TREE_levelDistance = 15;
     const static double TREE_subtreeDistance = 8;
     const static double TREE_treeDistance = 10;
-    const static ogdf::Orientation TREE_Orientation = ogdf::leftToRight;
+
+
     QList<DPolyline> treeconnectors;
     void treeLayout(QList<OwlClass *> graph);
+    void ogdfLayout(QList<OwlClass *> graph);
+
+    void connectWgt(OverviewDockWidget *wgt);
 
 signals:
 
 public slots:
     void widSceneClicked(QPointF pos);
     void detailView_ClickedClass(QString shortname);
+
+    void layoutmethodChanged(QString method);
+    void directionChanged(QString dr);
 };
 
 #endif // OVERVIEW_H

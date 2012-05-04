@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>200</width>
-    <height>200</height>
+    <height>252</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -23,22 +23,49 @@
    <string>DockWidget</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <widget class="QFrame" name="frame">
+   <widget class="QComboBox" name="comboBox_LayoutMethod">
     <property name="geometry">
      <rect>
       <x>0</x>
       <y>0</y>
+      <width>120</width>
+      <height>28</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox_Direction">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>0</y>
+      <width>80</width>
+      <height>28</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QDockWidget" name="dockWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>28</y>
       <width>200</width>
       <height>200</height>
      </rect>
     </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
+    <property name="minimumSize">
+     <size>
+      <width>200</width>
+      <height>200</height>
+     </size>
     </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
+    <property name="features">
+     <set>QDockWidget::NoDockWidgetFeatures</set>
     </property>
+    <widget class="QWidget" name="dockWidgetContents_2"/>
    </widget>
+   <zorder>dockWidget</zorder>
+   <zorder>comboBox_LayoutMethod</zorder>
+   <zorder>comboBox_Direction</zorder>
   </widget>
  </widget>
  <resources/>
