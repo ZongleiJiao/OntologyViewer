@@ -9,7 +9,8 @@
 #include <QtGui>
 #include "overview/overviewdockwidget.h"
 #include "overview/detailedview.h"
-
+#include <ogdf/basic/geometry.h>
+using namespace ogdf;
 class Overview : public QObject
 {
     Q_OBJECT
@@ -21,7 +22,9 @@ public:
     DetailedView *m_detailview;
     OwlOntology *m_ontology;
 
+    bool isOrthogonalTreeLayout;
     QList<OwlClass *> classes;
+    QList<OwlClass *> indetailedCls;
     //how many classes display on the overview, init with N(load N keyconcepts)
     //after load classes, set to the number of classses.
     int numOfClasses;
@@ -78,10 +81,19 @@ private:
     //tree layout
     void quadrantRadialTree(QList<OwlClass *> graph, double rangeAngle);
 
+    const static double TREE_siblingDistance = 4;
+    const static double TREE_levelDistance = 15;
+    const static double TREE_subtreeDistance = 8;
+    const static double TREE_treeDistance = 10;
+    const static ogdf::Orientation TREE_Orientation = ogdf::leftToRight;
+    QList<DPolyline> treeconnectors;
+    void treeLayout(QList<OwlClass *> graph);
+
 signals:
 
 public slots:
     void widSceneClicked(QPointF pos);
+    void detailView_ClickedClass(QString shortname);
 };
 
 #endif // OVERVIEW_H

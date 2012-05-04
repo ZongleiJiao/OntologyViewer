@@ -1253,7 +1253,7 @@ void OwlOntology::ontoclass_clicked(OntologyClassShape *classshape)
         this->maincanvas->fully_restart_graph_layout();
         this->currentfocusedclassidx = idx;
     }
-
+    emit clickedClass(classes[idx]->shortname);
     cout << this->getClassInfo(selectedClass).toStdString();
 }
 

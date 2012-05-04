@@ -20,6 +20,8 @@
 class OwlOntology:public QObject
 {
     Q_OBJECT
+signals:
+    void clickedClass(QString);
 public slots:
     void ontoclass_clicked(OntologyClassShape * classshape);
     void ontoclass_doubleclicked(OntologyClassShape * classshape);

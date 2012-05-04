@@ -204,7 +204,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
       **/
 
     this->overviewwid->setOntology(onto);
-    Overview * ov = new Overview(80,onto,canvas);
+    Overview * ov = new Overview(300,onto,canvas);
     cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
     cout<<"drawing overview..."<<endl;
     ov->showlayout(this->overviewwid);

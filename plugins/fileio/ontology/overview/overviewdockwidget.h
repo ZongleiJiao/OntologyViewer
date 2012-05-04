@@ -7,7 +7,9 @@
 #include <overviewclassshape.h>
 #include <overview/overviewscene.h>
 #include <owlontology.h>
+#include <ogdf/basic/geometry.h>
 using namespace dunnart;
+using namespace ogdf;
 
 namespace Ui {
     class OverviewDockWidget;
@@ -33,7 +35,8 @@ public:
     void clearall();
 
     void addOverviewShape(OverviewClassShape *shape);
-    void addOverviewLine(OverviewClassShape *start,OverviewClassShape *end);
+    void addOverviewLine(OverviewClassShape *start,OverviewClassShape *end,QPen pen);
+    void addTreeConnector(DPolyline pl,QPen pen);
 
 private:
     Ui::OverviewDockWidget *ui;

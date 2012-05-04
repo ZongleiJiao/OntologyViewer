@@ -12,13 +12,15 @@ INCLUDEPATH += . \
                ./ontologyshapes \
                /usr/lib/jvm/java-6-sun-1.6.0.26/include \
                /usr/lib/jvm/java-6-sun-1.6.0.26/include/linux \
-               /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
+               /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client \
+               ../../../libogdf
 DEPENDPATH += . \
                ./libontology \
                ./ontologyshapes \
                /usr/lib/jvm/java-6-sun-1.6.0.26/include \
                /usr/lib/jvm/java-6-sun-1.6.0.26/include/linux \
-               /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
+               /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client \
+               ../../../libogdf
 
 HEADERS       = \
         owlclass.h \

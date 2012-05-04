@@ -1,6 +1,9 @@
 #include "overviewdockwidget.h"
 #include "ui_overviewdockwidget.h"
 #include "owlclass.h"
+#include <ogdf/basic/Graph.h>
+#include <ogdf/basic/GraphAttributes.h>
+
 
 OverviewDockWidget::OverviewDockWidget(QWidget *parent) :
     QDockWidget(parent),
@@ -32,13 +35,28 @@ void OverviewDockWidget::clearall()
     m_scene->clear();
 }
 
-void OverviewDockWidget::addOverviewLine(OverviewClassShape *start, OverviewClassShape *end)
+void OverviewDockWidget::addOverviewLine(OverviewClassShape *start, OverviewClassShape *end, QPen pen)
 {
     qreal sx = start->pos().rx();
     qreal sy = start->pos().ry();
     qreal ex = end->pos().rx();
     qreal ey = end->pos().ry();
-    m_scene->addLine(sx,sy,ex,ey,QPen(QColor("blue")));
+    m_scene->addLine(sx,sy,ex,ey,pen);
+}
+
+void OverviewDockWidget::addTreeConnector(DPolyline pl,QPen pen)
+{
+    ListConstIterator<DPoint> iter;
+    qreal x0 = -167;
+    qreal y0 = -167;
+    for (iter = pl.begin(); iter.valid(); ++iter) {
+        qreal x = (*iter).m_x;
+        qreal y = (*iter).m_y;
+//        std::cout<<"P: x="<<x<<", y="<<y<<endl;
+        if(x0!=-167&&y0!=-167)m_scene->addLine(x0,y0,x,y,pen);
+        x0=x;
+        y0=y;
+    }
 }
 
 void OverviewDockWidget::addOverviewShape(OverviewClassShape *shape)
@@ -71,10 +89,12 @@ void OverviewDockWidget::addOverviewShape(OverviewClassShape *shape)
     case OverviewClassShape::STATUS_InDetailview_SubFocused:
 //        this->setFillColour(OwlClass::SUBCLASS_SHAPE_FOCUSED_COLOR);
 //        this->setSize(QSizeF(8,8));
+        m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::SUBCLASS_SHAPE_FOCUSED_COLOR));
         break;
     case OverviewClassShape::STATUS_InDetailview_SuperFocused:
 //        this->setFillColour(OwlClass::SUPERCLASS_SHAPE_FOCUSED_COLOR);
 //        this->setSize(QSizeF(8,8));
+        m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::SUPERCLASS_SHAPE_FOCUSED_COLOR));
         break;
     default:
         break;

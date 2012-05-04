@@ -10,11 +10,21 @@
 #include "libdunnartcanvas/graphlayout.h"
 #include "libdunnartcanvas/graphdata.h"
 
+#include <ogdf/basic/Graph.h>
+#include <ogdf/basic/GraphAttributes.h>
+#include <ogdf/layered/SugiyamaLayout.h>
+#include <ogdf/layered/OptimalRanking.h>
+#include <ogdf/layered/MedianHeuristic.h>
+#include <ogdf/layered/OptimalHierarchyLayout.h>
+#include <ogdf/tree/TreeLayout.h>
+
+
 #define PI 3.14159265
 
 using namespace dunnart;
 using namespace vpsc;
 using namespace std;
+using namespace ogdf;
 Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *parent) :
     QObject(parent)
 {
@@ -24,6 +34,8 @@ Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *
     numOfClasses=classes.size();
     m_ontology = ontology;
     this->m_detailview = new DetailedView(canvas,ontology);
+    this->isOrthogonalTreeLayout = false;
+    connect(m_ontology,SIGNAL(clickedClass(QString)),this,SLOT(detailView_ClickedClass(QString)));
 }
 
 QList<OwlClass *> Overview::convertOverviewShapes(QList<OwlClass *> classes)
@@ -112,10 +124,95 @@ void Overview::drawOverview(OverviewDockWidget *wid)
         wid->addOverviewShape(classes[i]->overviewshape);
     }
     //draw line
-    for(int i=0;i<classes.size();i++){
-        for(int j=0;j<classes[i]->subclasses.size();j++)
+    if(isOrthogonalTreeLayout){
+        QPen pen = QPen(QColor("black"));
+        for(int i=0;i<treeconnectors.size();i++)
+        {            
+            wid->addTreeConnector(treeconnectors[i],pen);
+        }
+        for(int i=0;i<classes.size();i++)
         {
-            wid->addOverviewLine(classes[i]->subclasses[j]->overviewshape,classes[i]->overviewshape);
+            pen = QPen(QColor("black"));
+            bool inlst = this->indetailedCls.contains(classes[i]);
+            if(inlst)pen = QPen(QColor("red"));
+            if(!classes[i]->subclasses.empty())
+            {
+                double sx = classes[i]->overviewshape->pos().rx();
+                double sy = classes[i]->overviewshape->pos().ry();
+                double ex = sx + TREE_levelDistance/2;
+                double ey = sy;
+
+                if(this->TREE_Orientation == ogdf::leftToRight)
+                {
+                    ex = sx + TREE_levelDistance/2 + 3;
+                    ey = sy;
+                }
+                else if(this->TREE_Orientation == ogdf::rightToLeft)
+                {
+                    ex = sx - TREE_levelDistance/2;
+                    ey = sy;
+                }
+                else if(this->TREE_Orientation == ogdf::bottomToTop)
+                {
+                    ex = sx;
+                    ey = sy + TREE_levelDistance/2 + 3;
+                }
+                else{
+                    ex = sx;
+                    ey = sy - TREE_levelDistance/2;
+                }
+
+                wid->m_scene->addLine(sx,sy,ex,ey,pen);
+            }
+            if(!classes[i]->superclasses.empty()){
+                double sx = classes[i]->overviewshape->pos().rx();
+                double sy = classes[i]->overviewshape->pos().ry();
+                double ex = sx;
+                double ey = sy;
+
+                if(this->TREE_Orientation == ogdf::leftToRight)
+                {
+                    ex = sx - TREE_levelDistance/2;
+                    ey = sy;
+                }
+                else if(this->TREE_Orientation == ogdf::rightToLeft)
+                {
+                    ex = sx + TREE_levelDistance/2 + 3;
+                    ey = sy;
+                }
+                else if(this->TREE_Orientation == ogdf::bottomToTop)
+                {
+                    ex = sx;
+                    ey = sy - TREE_levelDistance/2;
+                }
+                else{
+                    ex = sx;
+                    ey = sy + TREE_levelDistance/2 + 3;
+                }
+                wid->m_scene->addLine(sx,sy,ex,ey,pen);
+            }
+            if(classes[i]->superclasses.size()>1)
+            {                
+                for(int j=1;j<classes[i]->superclasses.size();j++){
+                    if(inlst&&this->indetailedCls.contains(classes[i]->superclasses[j]))pen = QPen(QColor("red"));
+                    else pen = QPen(QColor("black"));
+                    wid->addOverviewLine(classes[i]->overviewshape,classes[i]->superclasses[j]->overviewshape,pen);
+                }
+            }
+        }
+    }
+    else
+    {
+        for(int i=0;i<classes.size();i++){
+            for(int j=0;j<classes[i]->subclasses.size();j++)
+            {
+                QPen pen = QPen(QColor("black"));
+                if(indetailedCls.contains(classes[i])&&indetailedCls.contains(classes[i]->subclasses[j]))
+                {
+                    pen = QPen(QColor("red"));
+                }
+                wid->addOverviewLine(classes[i]->subclasses[j]->overviewshape,classes[i]->overviewshape,pen);
+            }
         }
     }
 }
@@ -618,8 +715,8 @@ void Overview::quadrantRadialTree(QList<OwlClass *> graph,double rangeAngle)
                 tanleft = angles[i]-arcangle;
                 tanright = angles[i]+arcangle;
 
-                double left = min(bisleft,tanleft);
-                double right = max(bisright,tanright);
+                double left = std::min(bisleft,tanleft);
+                double right = std::max(bisright,tanright);
 
                 double metaAngle = (right-left)/(currentlevel[i]->subclasses.size()+1);
 
@@ -658,20 +755,54 @@ void Overview::quadrantRadialTree(QList<OwlClass *> graph,double rangeAngle)
 
 }
 
-
-void Overview::showlayout(Canvas *canvas)
+void Overview::treeLayout(QList<OwlClass *> graph)
 {
-    this->quadrantRadialTree(classes,180);
-    this->drawOverview(canvas);
-}
+    //init graph
+    Graph g;
+    GraphAttributes ga(g,GraphAttributes::nodeGraphics|GraphAttributes::edgeGraphics );
 
-void Overview::showlayout(OverviewDockWidget *wid)
-{
-    this->quadrantRadialTree(classes,180);
-    this->drawOverview(wid);
-    this->m_wid = wid;
-    wid->sceneClicked(classes[0]->overviewshape->pos());
-    wid->m_scene->connect(wid->m_scene,SIGNAL(myclick(QPointF)),this,SLOT(widSceneClicked(QPointF)));
+    QList<node> nodes;
+    QList<edge> edges;
+    for(int i=0;i<graph.size();i++)
+    {
+        node nd = g.newNode();
+        ga.x(nd) = graph[i]->overviewshape->pos().rx();
+        ga.y(nd) = graph[i]->overviewshape->pos().ry();
+        ga.width(nd) = graph[i]->overviewshape->width();
+        ga.height(nd) = graph[i]->overviewshape->height();
+        nodes.append(nd);
+    }
+    for(int i=0;i<graph.size();i++)
+    {
+        if(!graph[i]->superclasses.empty()){
+            OwlClass * sup = graph[i]->superclasses[0];
+            int idx = getIndexByShortname(graph,sup->shortname);
+            if(idx!=-1){
+                edge e =g.newEdge(nodes[idx],nodes[i]);
+                edges.append(e);
+            }
+        }
+    }
+
+    TreeLayout tl;
+    tl.orientation(this->TREE_Orientation);
+    tl.rootSelection(TreeLayout::rootIsSource);
+    tl.orthogonalLayout(true);
+    tl.siblingDistance(this->TREE_siblingDistance);
+    tl.levelDistance(this->TREE_levelDistance);
+    tl.subtreeDistance(this->TREE_subtreeDistance);
+    tl.treeDistance(this->TREE_treeDistance);
+    tl.call(ga);
+    tl.callSortByPositions(ga,g);
+
+
+    for(int i=0;i<nodes.size();i++){
+        graph[i]->overviewshape->setCentrePos(QPointF(ga.x(nodes[i]),ga.y(nodes[i])));
+    }
+    for(int i=0;i<edges.size();i++){
+        DPolyline pl = ga.bends(edges[i]);
+        treeconnectors.append(pl);
+    }
 }
 
 void Overview::widSceneClicked(QPointF pos)
@@ -691,17 +822,77 @@ void Overview::widSceneClicked(QPointF pos)
     //sent to detailview
 //    m_detailview->setViewLimit(10,10);
     int idx = m_ontology->getIndexOfClasses(classes[minidx]->shortname);
-    QList<OwlClass *> indetailedCls;
-    if(idx!=-1)indetailedCls = this->m_detailview->drawClassView(m_ontology->classes[idx]);
+
+    QList<OwlClass *> rlst;
+
+    if(idx!=-1)rlst.append(this->m_detailview->drawClassView(m_ontology->classes[idx]));
+
     //get back from detailed view ->ov
-    for(int i=0;i<indetailedCls.size();i++){
-        int cid = this->getIndexByShortname(classes,indetailedCls[i]->shortname);
-        if(cid!=-1)classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Default);
+    indetailedCls.clear();
+    for(int i=0;i<rlst.size();i++){
+        int cid = this->getIndexByShortname(classes,rlst[i]->shortname);
+        if(cid!=-1){
+            indetailedCls.append(classes[cid]);
+            if(cid == minidx)classes[minidx]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Focused);
+            else if(classes[minidx]->subclasses.contains(classes[cid]))
+            {
+                classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SubFocused);
+            }
+            else if(classes[minidx]->superclasses.contains(classes[cid]))
+            {
+                classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SuperFocused);
+            }
+            else classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Default);
+        }
     }
 
     m_ontology->ontoclass_clicked(m_ontology->classes[idx]->shape);
-    classes[minidx]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Focused);
-    this->drawOverview(m_wid);
-    m_wid->sceneClicked(pos);
 
+    this->drawOverview(m_wid);
+//    m_wid->sceneClicked(pos);
+
+}
+
+void Overview::detailView_ClickedClass(QString shortname)
+{
+    for(int i = 0;i<classes.size();i++){
+        if(classes[i]->overviewshape->getStatus()!=OverviewClassShape::STATUS_OutDetailview)
+        {
+            classes[i]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Default);
+        }
+    }
+    int idx = getIndexByShortname(classes,shortname);
+    if(idx!=-1)classes[idx]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Focused);
+
+    int oidx = m_ontology->getIndexOfClasses(shortname);
+    OwlClass * c = m_ontology->classes[oidx];
+    for(int i = 0;i<c->subclasses.size();i++)
+    {
+        int ix = getIndexByShortname(classes,c->subclasses[i]->shortname);
+        if(ix!=-1)classes[ix]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SubFocused);
+    }
+    for(int i = 0;i<c->superclasses.size();i++)
+    {
+        int ix = getIndexByShortname(classes,c->superclasses[i]->shortname);
+        if(ix!=-1)classes[ix]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SuperFocused);
+    }
+
+    this->drawOverview(m_wid);
+}
+
+void Overview::showlayout(Canvas *canvas)
+{
+    this->quadrantRadialTree(classes,180);
+    this->drawOverview(canvas);
+}
+
+void Overview::showlayout(OverviewDockWidget *wid)
+{
+//    this->quadrantRadialTree(classes,180);
+    this->treeLayout(classes);
+    this->isOrthogonalTreeLayout = false;
+    this->drawOverview(wid);
+    this->m_wid = wid;
+    wid->sceneClicked(classes[0]->overviewshape->pos());
+    wid->m_scene->connect(wid->m_scene,SIGNAL(myclick(QPointF)),this,SLOT(widSceneClicked(QPointF)));
 }
