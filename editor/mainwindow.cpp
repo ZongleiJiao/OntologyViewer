@@ -98,6 +98,7 @@ MainWindow::MainWindow(Application *app)
             this, SLOT(canvasFileInfoChanged(QFileInfo)));
     m_tab_widget->newTab();
     setCentralWidget(m_tab_widget);
+    app->setCanvasTabWidget(m_tab_widget);
 
     // Inital window size.
     resize(1020, 743);
@@ -255,7 +256,7 @@ MainWindow::MainWindow(Application *app)
     dialogs_menu->addSeparator();
     dialogs_menu->addAction(m_action_show_layout_properties_dialog);
     dialogs_menu->addAction(m_action_show_connector_properties_dialog);
-    QMenu *overlays_menu = m_view_menu->addMenu(tr("Canvas Debug Overlays"));
+    QMenu *overlays_menu = m_view_menu->addMenu(tr("Canvas Debug Layers"));
     m_tab_widget->addDebugOverlayMenuActions(overlays_menu);
 
     m_layout_menu = menuBar()->addMenu("Layout");
