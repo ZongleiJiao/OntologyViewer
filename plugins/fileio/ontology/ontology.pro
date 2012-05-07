@@ -12,13 +12,15 @@ INCLUDEPATH += . \
                ./ontologyshapes \
                /usr/lib/jvm/java-6-sun-1.6.0.26/include \
                /usr/lib/jvm/java-6-sun-1.6.0.26/include/linux \
-               /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
+               /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client \
+               ../../../libogdf
 DEPENDPATH += . \
                ./libontology \
                ./ontologyshapes \
                /usr/lib/jvm/java-6-sun-1.6.0.26/include \
                /usr/lib/jvm/java-6-sun-1.6.0.26/include/linux \
-               /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
+               /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client \
+               ../../../libogdf
 
 HEADERS       = \
         owlclass.h \
@@ -355,7 +357,6 @@ HEADERS       = \
     ontologyshapes/ontoclass.h \
     ontologyshapes/overviewclassshape.h \
     overview/keyconceptclass.h \
-    overview/overview.h \
     overview/overviewdockwidget.h\
     widgets/detaildockwidget.h \
     widgets/searchdockwidget.h \
@@ -365,7 +366,10 @@ HEADERS       = \
     widgets/informationboxdockwidget.h \
     widgets/shownodesdockwidget.h \
     widgets/detailinfodockwidget.h \
-    owlentity.h
+    overview/overviewscene.h \
+    overview/overview.h \
+    owlentity.h \
+    overview/detailedview.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -699,7 +703,6 @@ SOURCES       = plugin.cpp \
     ontologyshapes/ontoclass.cpp \
     ontologyshapes/overviewclassshape.cpp \
     overview/keyconceptclass.cpp \
-    overview/overview.cpp \
     overview/overviewdockwidget.cpp\
     widgets/detaildockwidget.cpp \
     widgets/searchdockwidget.cpp \
@@ -709,7 +712,10 @@ SOURCES       = plugin.cpp \
     widgets/informationboxdockwidget.cpp \
     widgets/shownodesdockwidget.cpp \
     widgets/detailinfodockwidget.cpp \
-    owlentity.cpp
+    overview/overviewscene.cpp \
+    overview/overview.cpp \
+    owlentity.cpp \
+    overview/detailedview.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm
@@ -733,3 +739,15 @@ FORMS += \
     widgets/informationboxdockwidget.ui \
     widgets/shownodesdockwidget.ui \
     widgets/detailinfodockwidget.ui
+
+
+
+
+
+
+
+
+
+
+
+

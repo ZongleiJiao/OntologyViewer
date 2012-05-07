@@ -87,8 +87,12 @@ class OntologyFileIOPlugin :
 
     public:
         QMainWindow * appmainwin;
+        OverviewDockWidget *overviewwid;
+        DetailDockWidget *equclasswid;
+
         OntologyFileIOPlugin()
         {
+
         }
         //methods for FileIOPluginInterface
         QStringList saveableFileExtensions(void) const
@@ -155,6 +159,16 @@ class OntologyFileIOPlugin :
         {
             this->appmainwin = canvasApplication->mainWindow();
 
+
+            this->overviewwid = new OverviewDockWidget();
+            this->appmainwin->addDockWidget(Qt::LeftDockWidgetArea,overviewwid);
+
+
+            this->equclasswid= new DetailDockWidget();
+            this->appmainwin->addDockWidget(Qt::LeftDockWidgetArea,equclasswid);
+            this->equclasswid->setWindowTitle("Equivalent Class");
+
+
         }
 
         void applicationWillClose(CanvasApplication *canvasApplication){}
@@ -170,8 +184,11 @@ bool OntologyFileIOPlugin::saveDiagramToFile(Canvas *canvas,
 bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
         const QFileInfo& fileInfo, QString& errorMessage)
 {
+    this->overviewwid->show();
+    this->equclasswid->show();
+
     cout<<"Start loading ontology :"<<fileInfo.completeBaseName().toStdString()<<endl;
-    OwlOntology * onto = new OwlOntology(canvas,this->appmainwin);
+    OwlOntology * onto = new OwlOntology(canvas,this->appmainwin,this->equclasswid);
 
     onto->loadontology(fileInfo);
 
@@ -181,62 +198,22 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    cout<<onto->toQString().toStdString();
 
     /** Overview of classes (not finished) **/
-    //test Thing class
-//    canvas->addItem(onto->classes[onto->getIndexOfClasses("Thing")]->shape);
-    //test key concept
-
-/*    cout<<"Getting overview keyconcept classes..."<<endl;
-    KeyConceptClass *kc=new KeyConceptClass(onto->classes);
-    QList<OwlClass *> keyclasses=kc->getKeyClasses(300);
-
-//    for(int i=0;i<kc->classnum;i++){
-//        cout<<"<<"<< kc->originclasses[i]->shortname.toStdString()
-//           <<">>:[NS]"<<kc->namesimplicities[i]
-//           <<" [BL]"<<kc->basiclevels[i]
-//           <<" [NC]"<<kc->ncvalues[i]
-//           <<"\n[aGD]"<<kc->aGlobalDensities[i]
-//           <<" [GD]"<<kc->globaldensities[i]
-//           <<" [LD]"<<kc->localdensities[i]
-//           <<" [D]"<<kc->densities[i]
-//           <<"\n[Hit]"<<kc->hits[i]
-//           <<" [GP]"<<kc->globalpopularities[i]
-//           <<" [LP]"<<kc->localpopularities[i]
-//           <<" [P]"<<kc->popularities[i]
-//           <<"\n[SCORE]"<<kc->scores[i]
-//           <<endl;
-//    }
-//    for(int i=0;i<keyclasses.size();i++)
-//        keyclasses[i]->shape->setFillColour(QColor("red"));
-*/
-
-    //test overview
     /**
       1. get N keyclasses from allclasses & reset sub/sup relations
       2. draw overview
       **/
 
-    OverviewDockWidget *wid = new OverviewDockWidget();
-    onto->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,wid);
-    wid->show();
+    this->overviewwid->setOntology(onto);
+    Overview * ov = new Overview(300,onto,canvas);
+    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
+    cout<<"drawing overview..."<<endl;
+    ov->showlayout(this->overviewwid);
 
-//    Overview * ov = new Overview();
-//    ov->numOfClasses=80;
-//    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
-//    ov->getOverviewClasses(onto->classes,onto->ontologyname);
-//    cout<<"drawing overview..."<<endl;
-//    ov->overviewFMSLayout(canvas);
-
-
-//    wid->my_canvas->setOptAutomaticGraphLayout(true);
-//    wid->my_canvas->setOptLayoutMode(Canvas::LayeredLayout);
-//    wid->my_canvas->setOptPreventOverlaps(true);
-//    wid->my_canvas->setOptFlowDirection(Canvas::FlowUp);
-//    wid->my_canvas->fully_restart_graph_layout();
     /** classview, individualview, propertyview can
       * be displayed together or individually.
     **/
     //classview
-    onto->drawClassView(canvas);
+//    onto->drawClassView(canvas);
     //individualview
 //    onto->drawIndividualView(canvas);
     //propertyview
@@ -255,16 +232,17 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     **/
 //    onto->drawLogicalView(canvas);
 
+
     //set automatic layout
 //    canvas->setOptAutomaticGraphLayout(true);
 //    canvas->setOptLayoutMode(canvas->FlowLayout);
 //    canvas->setOptPreventOverlaps(true);
 //    canvas->setOptFlowDirection(Canvas::FlowUp);
-    canvas->fully_restart_graph_layout();
+//    canvas->fully_restart_graph_layout();
 
 
 
-    cout<<onto->ontologyname.toStdString()<<endl;
+//    cout<<onto->ontologyname.toStdString()<<endl;
     return true;
 }
 

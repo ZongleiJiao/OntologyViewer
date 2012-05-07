@@ -3,25 +3,39 @@
 #include <stack>
 #include "plugins/fileio/ontology/overview/keyconceptclass.h"
 #include <cmath>
+#include <limits>
 #include "libvpsc/solve_VPSC.h"
 #include "libvpsc/variable.h"
 #include "libvpsc/constraint.h"
 #include "libdunnartcanvas/graphlayout.h"
 #include "libdunnartcanvas/graphdata.h"
 
+#include <ogdf/basic/Graph.h>
+#include <ogdf/basic/GraphAttributes.h>
+#include <ogdf/tree/TreeLayout.h>
+#include <ogdf/tree/RadialTreeLayout.h>
+#include <ogdf/energybased/StressMajorizationSimple.h>
+
+
+#define PI 3.14159265
+
 using namespace dunnart;
 using namespace vpsc;
 using namespace std;
-Overview::Overview()
+using namespace ogdf;
+Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *parent) :
+    QObject(parent)
 {
-    this->numOfClasses = 300;
-}
-
-void Overview::getOverviewClasses(QList<OwlClass *> allclasses,QString ontoname)
-{
-    KeyConceptClass *kc=new KeyConceptClass(allclasses,ontoname);
-    classes = convertOverviewShapes(kc->getKeyClasses(this->numOfClasses));
+    this->numOfClasses = numOfNode;
+    KeyConceptClass *kc=new KeyConceptClass(ontology);
+    classes = convertOverviewShapes(kc->getNKeyClasses(this->numOfClasses));
     numOfClasses=classes.size();
+    m_ontology = ontology;
+    this->m_detailview = new DetailedView(canvas,ontology);
+    this->isOrthogonalTreeLayout = false;
+    this->orientation = ogdf::leftToRight;
+    this->currentLayoutMethod = "Tree";
+
 }
 
 QList<OwlClass *> Overview::convertOverviewShapes(QList<OwlClass *> classes)
@@ -102,6 +116,106 @@ int Overview::getIndexByShortname(QList<OwlClass *> lst, QString shortname)
     }
     return rs;
 }
+void Overview::drawOverview(OverviewDockWidget *wid)
+{
+    wid->clearall();    
+    //draw shape
+    for(int i=0;i<classes.size();i++){
+        wid->addOverviewShape(classes[i]);
+    }
+    //draw line
+    if(isOrthogonalTreeLayout){
+        QPen pen = QPen(QColor("black"));
+        for(int i=0;i<treeconnectors.size();i++)
+        {            
+            wid->addTreeConnector(treeconnectors[i],pen);
+        }
+        for(int i=0;i<classes.size();i++)
+        {
+            pen = QPen(QColor("black"));
+            bool inlst = this->indetailedCls.contains(classes[i]);
+            if(inlst)pen = QPen(QColor("red"));
+            if(!classes[i]->subclasses.empty())
+            {
+                double sx = classes[i]->overviewshape->pos().rx();
+                double sy = classes[i]->overviewshape->pos().ry();
+                double ex = sx + TREE_levelDistance/2;
+                double ey = sy;
+
+                if(this->orientation == ogdf::leftToRight)
+                {
+                    ex = sx + TREE_levelDistance/2 + 3;
+                    ey = sy;
+                }
+                else if(this->orientation == ogdf::rightToLeft)
+                {
+                    ex = sx - TREE_levelDistance/2;
+                    ey = sy;
+                }
+                else if(this->orientation == ogdf::bottomToTop)
+                {
+                    ex = sx;
+                    ey = sy + TREE_levelDistance/2 + 3;
+                }
+                else{
+                    ex = sx;
+                    ey = sy - TREE_levelDistance/2;
+                }
+
+                wid->m_scene->addLine(sx,sy,ex,ey,pen);
+            }
+            if(!classes[i]->superclasses.empty()){
+                double sx = classes[i]->overviewshape->pos().rx();
+                double sy = classes[i]->overviewshape->pos().ry();
+                double ex = sx;
+                double ey = sy;
+
+                if(this->orientation == ogdf::leftToRight)
+                {
+                    ex = sx - TREE_levelDistance/2;
+                    ey = sy;
+                }
+                else if(this->orientation == ogdf::rightToLeft)
+                {
+                    ex = sx + TREE_levelDistance/2 + 3;
+                    ey = sy;
+                }
+                else if(this->orientation == ogdf::bottomToTop)
+                {
+                    ex = sx;
+                    ey = sy - TREE_levelDistance/2;
+                }
+                else{
+                    ex = sx;
+                    ey = sy + TREE_levelDistance/2 + 3;
+                }
+                wid->m_scene->addLine(sx,sy,ex,ey,pen);
+            }
+            if(classes[i]->superclasses.size()>1)
+            {                
+                for(int j=1;j<classes[i]->superclasses.size();j++){
+                    if(inlst&&this->indetailedCls.contains(classes[i]->superclasses[j]))pen = QPen(QColor("red"));
+                    else pen = QPen(QColor("black"));
+                    wid->addOverviewLine(classes[i],classes[i]->superclasses[j],pen);
+                }
+            }
+        }
+    }
+    else
+    {
+        for(int i=0;i<classes.size();i++){
+            for(int j=0;j<classes[i]->subclasses.size();j++)
+            {
+                QPen pen = QPen(QColor("black"));
+                if(indetailedCls.contains(classes[i])&&indetailedCls.contains(classes[i]->subclasses[j]))
+                {
+                    pen = QPen(QColor("red"));
+                }
+                wid->addOverviewLine(classes[i]->subclasses[j],classes[i],pen);
+            }
+        }
+    }
+}
 
 void Overview::drawOverview(Canvas *canvas)
 {
@@ -125,16 +239,15 @@ void Overview::drawOverview(Canvas *canvas)
 void Overview::setInitialLayout()
 {
     if(classes.size()==0)cout<<"Call getOverviewClasses() to init classes first!"<<endl;
-    int x = 0;
-    int y = -50;
+
+    QTime now = QTime::currentTime();
+    qsrand(now.msec());
+
     for(int i=0;i<classes.size();i++){
-        if(i%5==0){
-            x=0;
-            y+=50;
-        }
-        classes[i]->overviewshape->setPosAndSize(QPointF(x,y),QSizeF(5,5));
+        int x=qrand()%200;
+        int y=qrand()%200;
+        classes[i]->overviewshape->setPosAndSize(QPointF(x,y),QSizeF(4,4));
         classes[i]->overviewshape->setStatus(OverviewClassShape::STATUS_OutDetailview);
-        x+=50;
     }
 }
 
@@ -177,16 +290,16 @@ void Overview::computeShortestPath()
                     distance[v][w]=distance[v][u]+distance[u][w];
                 }
     //print
-    cout<<"---------- Distances ----------"<<endl;
-    for(int i=0;i<n;i++)
-    {
-        cout<<"["<<i<<"] "<<classes[i]->shortname.toStdString()<<"\t";
-        for(int j=0;j<n;j++)
-        {
-            cout<<distance[i][j]<<"\t";
-        }
-        cout<<endl;
-    }
+//    cout<<"---------- Distances ----------"<<endl;
+//    for(int i=0;i<n;i++)
+//    {
+//        cout<<"["<<i<<"] "<<classes[i]->shortname.toStdString()<<"\t";
+//        for(int j=0;j<n;j++)
+//        {
+//            cout<<distance[i][j]<<"\t";
+//        }
+//        cout<<endl;
+//    }
 }
 
 QList<OwlClass *> Overview::k_centers(QList<OwlClass *> nodes, int k)
@@ -264,33 +377,37 @@ void Overview::localLayout(QList<OwlClass *> graph, int k, int iteration)
       */
     for(int i=0;i<iteration*graph.size();i++){
         int idx = getIndexOfMaxDeltaM(graph);
-        double ex = Ex(graph,graph[idx]);
-        double ey = Ey(graph,graph[idx]);
-        double ex2 = Ex2(graph,graph[idx]);
-        double exy = Exy(graph,graph[idx]);
-        double ey2 = Ey2(graph,graph[idx]);
-        double dmx = deltaMx(ex,ey,ex2,exy,ey2);
-        double dmy = deltaMy(ex,ey,ex2,exy,ey2);
+        QList<double> es=getEs(graph,graph[idx]);
+        double dmx = deltaMx(es[0],es[1],es[2],es[3],es[4]);
+        double dmy = deltaMy(es[0],es[1],es[2],es[3],es[4]);
+//        cout<<"LocalLayout-"<<i<<" Move:"<<graph[idx]->shortname.toStdString()
+//           <<" EX="<<es[0]<<" EY="<<es[1]<<" EX2="<<es[2]<<" EXY="<<es[3]<<" EY2="<<es[4]
+//          <<" DMX="<<dmx<<" DMY="<<dmy<<endl;
         qreal newposx = graph[idx]->overviewshape->pos().rx() + dmx;
         qreal newposy = graph[idx]->overviewshape->pos().ry() + dmy;
+
         graph[idx]->overviewshape->setCentrePos(QPointF(newposx,newposy));
     }
 }
 
 int Overview::getIndexOfMaxDeltaM(QList<OwlClass *> graph)
 {
+//    cout<<"--Get Max DeltaM--"<<endl;
     double max=0.0;
     int maxidx = -1;
     for(int i=0;i<graph.size();i++)
     {
-        double ex = Ex(graph,graph[i]);
-        double ey = Ey(graph,graph[i]);
-        double tmp = deltaM(ex,ey);
-        if(max<tmp){
+        QList<double> es = getEs(graph,graph[i]);
+        double tmp = deltaM(es[0],es[1]);
+//        cout<<"G["<<i<<"]"<<graph[i]->shortname.toStdString()
+//              <<" : ex="<<es[0]<<" ey="<<es[1]<<" deltaM:"<<tmp<<endl;
+        if(max<=tmp){
             max=tmp;
             maxidx=i;
         }
     }
+//    cout<<"MAX DeltaM=====>"<<max<<" ---Graph : "
+//       <<maxidx<<" : "<<graph[maxidx]->shortname.toStdString()<<endl;
     return maxidx;
 }
 
@@ -316,91 +433,56 @@ double Overview::EuclideanDistance(OwlClass *u, OwlClass *v)
     double yv=v->overviewshape->pos().ry();
     return sqrt((xu-xv)*(xu-xv)+(yu-yv)*(yu-yv));
 }
-
-double Overview::Ex(QList<OwlClass *> graph, OwlClass *node)
+double Overview::EuclideanDistance(QPointF u, QPointF v)
 {
-    double rs = 0.0;
+    double xu=u.rx();
+    double yu=u.ry();
+    double xv=v.rx();
+    double yv=v.ry();
+    return sqrt((xu-xv)*(xu-xv)+(yu-yv)*(yu-yv));
+}
+QList<double> Overview::getEs(QList<OwlClass *> graph, OwlClass *node)
+{
+//    cout<<"----GET ES(Partial derivatives)----"<<node->shortname.toStdString()<<endl;
+    QList<double> rs;
+    double ex=0.0;
+    double ey=0.0;
+    double ex2=0.0;
+    double exy=0.0;
+    double ey2=0.0;
     int idxnode = getIndexByShortname(classes,node->shortname);
     double xnode = node->overviewshape->pos().rx();
+    double ynode = node->overviewshape->pos().ry();
+//    cout<<"Node POSX:"<<xnode<<" POSY:"<<ynode<<endl;
     for(int i=0;i<graph.size();i++){
         if(graph[i]!=node){
-            double kij = 1/(distance[i][idxnode] * distance[i][idxnode]);
-            double lij = this->SINGLE_EDGE_LENGTH * distance[i][idxnode];
+//            cout<<"distance "<<node->shortname.toStdString()<<" - "
+//               <<graph[i]->shortname.toStdString()<<" : "<<distance[i][idxnode]<<endl;
+            double dij = double(distance[i][idxnode]);
+            double kij = 1/(dij*dij);
+            double lij = this->SINGLE_EDGE_LENGTH * dij;
             double xi = graph[i]->overviewshape->pos().rx();
-            rs += kij*(xnode-xi)*(1-lij/EuclideanDistance(graph[i],node));
-        }
-    }
-    return rs;
-}
-double Overview::Ey(QList<OwlClass *> graph, OwlClass *node)
-{
-    double rs = 0.0;
-    int idxnode = getIndexByShortname(classes,node->shortname);
-    double ynode = node->overviewshape->pos().ry();
-    for(int i=0;i<graph.size();i++){
-        if(graph[i]!=node){
-            double kij = 1/(distance[i][idxnode] * distance[i][idxnode]);
-            double lij = this->SINGLE_EDGE_LENGTH * distance[i][idxnode];
-            double yi = graph[i]->overviewshape->pos().ry();
-            rs += kij*(ynode-yi)*(1-lij/EuclideanDistance(graph[i],node));
-        }
-    }
-    return rs;
-}
-
-double Overview::Ex2(QList<OwlClass *> graph, OwlClass *node)
-{
-    double rs = 0.0;
-    int idxnode = getIndexByShortname(classes,node->shortname);
-    double ynode = node->overviewshape->pos().ry();
-    for(int i=0;i<graph.size();i++){
-        if(graph[i]!=node){
-            double kij = 1/(distance[i][idxnode] * distance[i][idxnode]);
-            double lij = this->SINGLE_EDGE_LENGTH * distance[i][idxnode];
             double yi = graph[i]->overviewshape->pos().ry();
             double ed = EuclideanDistance(graph[i],node);
             double ed3= ed*ed*ed;
-            rs += kij*(1-(lij*(ynode-yi)*(ynode-yi))/ed3);
+//            cout<<"kij="<<kij<<" lij="<<lij<<" xi="<<xi<<" yi="<<yi<<" ed="<<ed<<endl;
+            ex += kij*(xnode-xi)*(1-lij/ed);
+            ey += kij*(ynode-yi)*(1-lij/ed);
+            ex2 += kij*(1-(lij*(ynode-yi)*(ynode-yi))/ed3);
+            exy += kij*lij*(xnode - xi)*(ynode - yi)/ed3;
+            ey2 += kij*(1-(lij*(xnode-xi)*(xnode-xi))/ed3);
+//            cout<<" ex+="<<kij*(xnode-xi)*(1-lij/ed)
+//                <<" ey+="<<kij*(ynode-yi)*(1-lij/ed)
+//                <<" ex2+="<<kij*(1-(lij*(ynode-yi)*(ynode-yi))/ed3)
+//                <<" exy+="<<kij*lij*(xnode - xi)*(ynode - yi)/ed3
+//                <<" ey2+="<<kij*(1-(lij*(xnode-xi)*(xnode-xi))/ed3)<<endl;
         }
     }
-    return rs;
-}
-
-double Overview::Exy(QList<OwlClass *> graph, OwlClass *node)
-{
-    double rs = 0.0;
-    int idxnode = getIndexByShortname(classes,node->shortname);
-    double ynode = node->overviewshape->pos().ry();
-    double xnode = node->overviewshape->pos().rx();
-    for(int i=0;i<graph.size();i++){
-        if(graph[i]!=node){
-            double kij = 1/(distance[i][idxnode] * distance[i][idxnode]);
-            double lij = this->SINGLE_EDGE_LENGTH * distance[i][idxnode];
-            double yi = graph[i]->overviewshape->pos().ry();
-            double xi = graph[i]->overviewshape->pos().rx();
-            double ed = EuclideanDistance(graph[i],node);
-            double ed3= ed*ed*ed;
-            rs += kij * lij * (xnode - xi) * (ynode - yi) /ed3 ;
-        }
-    }
-    return rs;
-}
-
-double Overview::Ey2(QList<OwlClass *> graph, OwlClass *node)
-{
-    double rs = 0.0;
-    int idxnode = getIndexByShortname(classes,node->shortname);
-    double xnode = node->overviewshape->pos().rx();
-    for(int i=0;i<graph.size();i++){
-        if(graph[i]!=node){
-            double kij = 1/(distance[i][idxnode] * distance[i][idxnode]);
-            double lij = this->SINGLE_EDGE_LENGTH * distance[i][idxnode];
-            double xi = graph[i]->overviewshape->pos().rx();
-            double ed = EuclideanDistance(graph[i],node);
-            double ed3= ed*ed*ed;
-            rs += kij*(1-(lij*(xnode-xi)*(xnode-xi))/ed3);
-        }
-    }
+    rs.append(ex);
+    rs.append(ey);
+    rs.append(ex2);
+    rs.append(exy);
+    rs.append(ey2);
     return rs;
 }
 
@@ -423,153 +505,518 @@ double Overview::deltaMy(double ex,double ey,double ex2, double exy, double ey2)
     return (exy*ex - ey*ex2)/(ex2*ey2-exy*exy);
 }
 
+void Overview::projection(QList<OwlClass *> graph)
+{
+    Variables vs;
+    Constraints cs;
+    int n = graph.size();
+    vs.resize(n*2);
+    //variables -- y
+    for(int i=0;i<n;i++)
+    {
+        double yp = graph[i]->overviewshape->pos().y();
+        vs[i]=new Variable(i,yp);
+    }
+    //variables -- x
+    for(int i=0;i<n;i++)
+    {
+        double xp = graph[i]->overviewshape->pos().x();
+        vs[i+n]=new Variable(i,xp);
+    }
 
-//void Overview::projection(QList<OwlClass *> graph)
-//{
-//    /** test projection **/
-////    //projection -- dim Y
-////    cout<<"Doing projection..."<<endl;
-////    Variables vs;
-////    Constraints cs;
-////    int n = classes.size();
-////    vs.resize(n);
-////    for(int i=0;i<n;i++)
-////    {
-////        double yp = classes[i]->overviewshape->pos().y();
-////        vs[i]=new Variable(i,yp);
-////    }
-////    for(int i=0;i<n;i++)
-////    {
-////        QList<int> subidx;
-////        for(int j=0;j<classes[i]->subclasses.size();j++){
-////            int idx=getIndexByShortname(classes,classes[i]->subclasses[j]->shortname);
-////            subidx.append(idx);
-////            Constraint * c = new Constraint(vs[i],vs[idx],80);
-////            cs.push_back(c);
-////        }
-////        for(int j=0;j<subidx.size()-1;j++)
-////        {
-////            Constraint * c = new Constraint(vs[subidx[j]],vs[subidx[j+1]],0,false);
-////            cs.push_back(c);
-////        }
-////    }
+    for(int i=0;i<n;i++)
+    {
+        QList<int> subidx;
+        //constraints -- y
+        for(int j=0;j<graph[i]->subclasses.size();j++){
+            int idx=getIndexByShortname(graph,graph[i]->subclasses[j]->shortname);
+            if(idx!=-1)
+            {
+                subidx.append(idx);
+                Constraint * c = new Constraint(vs[i],vs[idx],this->SINGLE_EDGE_LENGTH,false);
+                cs.push_back(c);
+            }
+        }
+        //constraints -- x
+        //sort subclasses by x-dim
+        for(int i=0;i<subidx.size()-1;i++){
+            int minidx=i;
+            for(int j=i+1;j<subidx.size();j++){
+                if(vs[subidx[j]+n]<vs[subidx[minidx]+n])minidx=j;
+            }
+            if(minidx!=i)subidx.swap(i,minidx);
+        }
 
-
-////    vpsc::Solver * vpsc_solver = new Solver(vs,cs);
-////    bool rs = vpsc_solver->solve();
-////    if(rs){
-////        cout<<"Y projection OK!"<<endl;
-////        for(int i=0;i<n;i++){
-////            QPointF op = classes[i]->overviewshape->pos();
-////            Variable * v=vs[i];
-////            op.setY(v->finalPosition);
-////            classes[i]->overviewshape->setCentrePos(op);
-////        }
-////    }
-//    cout<<"Doing projection..."<<endl;
-//    Variables vs;
-//    Constraints cs;
-//    int n = graph.size();
-//    vs.resize(n);
-//    for(int i=0;i<n;i++)
-//    {
-//        double yp = graph[i]->overviewshape->pos().y();
-//        vs[i]=new Variable(i,yp);
-//    }
-//    for(int i=0;i<n;i++)
-//    {
-//        QList<int> subidx;
-//        for(int j=0;j<graph[i]->subclasses.size();j++){
-//            int idx=getIndexByShortname(graph,graph[i]->subclasses[j]->shortname);
-//            if(idx!=-1)
-//            {
-//                subidx.append(idx);
-//                Constraint * c = new Constraint(vs[i],vs[idx],this->SINGLE_EDGE_LENGTH);
-//                cs.push_back(c);
-//            }
-//        }
-//        for(int j=0;j<subidx.size()-1;j++)
-//        {
-//            Constraint * c = new Constraint(vs[subidx[j]],vs[subidx[j+1]],0,false);
-//            cs.push_back(c);
-//        }
-//    }
+        for(int j=0;j<subidx.size()-1;j++)
+        {
+            Constraint * cy = new Constraint(vs[subidx[j]],vs[subidx[j+1]],0,true);
+            Constraint * cx = new Constraint(vs[subidx[j]+n],vs[subidx[j+1]+n],10,false);
+            cs.push_back(cy);
+            cs.push_back(cx);
+        }
+    }
 
 
-//    vpsc::Solver * vpsc_solver = new Solver(vs,cs);
-//    bool rs = vpsc_solver->solve();
-//    if(rs){
-//        cout<<"Y projection OK!"<<endl;
-//        for(int i=0;i<n;i++){
-//            QPointF op = graph[i]->overviewshape->pos();
-//            Variable * v=vs[i];
-//            op.setY(v->finalPosition);
-//            graph[i]->overviewshape->setCentrePos(op);
-//        }
-//    }
-//}
+    vpsc::Solver * vpsc_solver = new Solver(vs,cs);
+    bool rs = vpsc_solver->solve();
+    if(rs){
+        for(int i=0;i<n;i++){
+            QPointF op = graph[i]->overviewshape->pos();
+            Variable * vy=vs[i];
+            Variable * vx=vs[i+n];
+            op.setY(vy->finalPosition);
+            op.setX(vx->finalPosition);
+            graph[i]->overviewshape->setCentrePos(op);
+        }
+    }
+}
+void Overview::FMSLayout(bool isProjection)
+{
+    cout<<"Set init layout -- "<<QTime::currentTime().toString().toStdString()<<endl;
+    this->setInitialLayout();
+    cout<<"Shortest path -- "<<QTime::currentTime().toString().toStdString()<<endl;
+    computeShortestPath();
+    cout<<"FD -- "<<QTime::currentTime().toString().toStdString()<<endl;
+    this->localLayout(classes,10,7);
+    if(isProjection){
+        cout<<"projection -- "<<QTime::currentTime().toString().toStdString()<<endl;
+        this->projection(classes);
+    }
+}
 
-//void Overview::overviewFMSLayout(Canvas *canvas)
-//{
-//    /*
-//        LayoutG(V, E)
-//        Goal: Find L, a nice layout of G
-//        Constants:
-//            Rad[= 7] — determines radius of local neighborhoods
-//            Iterations[= 4] — determines number of iterations in local beautification
-//            Ratio[= 3] — ratio between number of vertices in two consecutive levels
-//            MinSize[= 10] — size of the coarsest graph
-//        Compute the all-pairs shortest path length: dV ×V
-//        Set up a random layout L
-//        k ← MinSize
-//        while k<=|V| do
-//        centers ← K-Centers(G(V, E) ,k)
-//        radius = maxv∈centers minu∈centers {dvu } · Rad
-//        LocalLayout (dcenters×centers , L(centers),radius,Iterations)
-//        for every v ∈ V do
-//        L(v) ← L(center(v)) + rand
-//        k ← k · Ratio
-//        return L
-//      */
+void Overview::overviewFMSLayout(Canvas *canvas)
+{
+    /*
+        LayoutG(V, E)
+        Goal: Find L, a nice layout of G
+        Constants:
+            Rad[= 7] — determines radius of local neighborhoods
+            Iterations[= 4] — determines number of iterations in local beautification
+            Ratio[= 3] — ratio between number of vertices in two consecutive levels
+            MinSize[= 10] — size of the coarsest graph
+        Compute the all-pairs shortest path length: dV ×V
+        Set up a random layout L
+        k ← MinSize
+        while k<=|V| do
+        centers ← K-Centers(G(V, E) ,k)
+        radius = maxv∈centers minu∈centers {dvu } · Rad
+        LocalLayout (dcenters×centers , L(centers),radius,Iterations)
+        for every v ∈ V do
+        L(v) ← L(center(v)) + rand
+        k ← k · Ratio
+        return L
+      */
 //    //init layout
-//    this->setInitialLayout();
+    this->setInitialLayout();
 
 //    //draw
-//    this->drawOverview(canvas);
+    this->drawOverview(canvas);
 
 //    //compute all distances
-//    computeShortestPath();
-//    //k = minsize
-////    int k=this->MIN_K;
+    computeShortestPath();
 
-////    while(k<=classes.size())
-////    {
-////        //center=k-centers
-////        QList<OwlClass *> centers = k_centers(classes,k);
-////        //radius
-////        int radius =this->RATIO;
-////        //locallayout
-////        this->localLayout(centers,radius,this->ITERATIONS);
+    this->localLayout(classes,10,4);
+    this->projection(classes);
+}
 
-////        //for every v in V, do L(v)=L(center(v))+rand
-////        for(int i=0;i<classes.size();i++)
-////        {
-////            OwlClass * ncenter = getNearestCenter(centers,classes[i]);
-//////            cout<<"Node["<<classes[i]->shortname.toStdString()
-//////               <<"] --> center["<<ncenter->shortname.toStdString()<<"]"<<endl;
-////            if(ncenter!=classes[i]){
-////                qreal cx = ncenter->overviewshape->pos().rx();
-////                qreal cy = ncenter->overviewshape->pos().ry();
-////                qreal nx = cx + ((i*2)/classes.size())*this->SINGLE_EDGE_LENGTH;
-////                qreal ny = cy + this->SINGLE_EDGE_LENGTH;
-////                classes[i]->overviewshape->setCentrePos(QPointF(nx,ny));
-////            }
-////        }
-////        //projection
-////        this->projection(classes);
-////        //k=k*radio
-////        k=k*this->RATIO;
-////    }
-//    this->localLayout(classes,10,4);
-//    this->projection(classes);
-//}
+void Overview::quadrantRadialTree(QList<OwlClass *> graph,double rangeAngle)
+{
+    double rangeangle = rangeAngle;
+    //recommand angle range = 45~180
+    if(rangeAngle<45) rangeangle = 45;
+    if(rangeAngle>180) rangeangle = 180;
+
+    QList<OwlClass *> currentlevel;
+    QList<OwlClass *> nextlevel;
+    QList<double> angles;
+    //find root & init angles
+    OwlClass * root=NULL;
+    for(int i=0;i<graph.size();i++){
+        if(graph[i]->superclasses.empty())
+        {
+            root = graph[i];
+            break;
+        }
+    }
+    if(root==NULL)
+    {
+        cout<<"QRT: Cannot find root!"<<endl;
+        return;
+    }
+    else
+    {
+        cout<<"QRT: find root : "<<root->shortname.toStdString()<<endl;
+    }
+
+    //compute pos
+    root->overviewshape->setCentrePos(QPointF(0,0));
+    currentlevel.append(root);
+    int level = 0;
+    while(!currentlevel.empty()){
+        level++;
+        double r = this->SINGLE_EDGE_LENGTH*level;
+        //draw level 1
+        if(level == 1){
+            //put all sub to next level
+            for(int i=0;i<currentlevel.size();i++)
+            {
+                nextlevel.append(currentlevel[i]->subclasses);
+            }
+            double metaAngle = rangeangle/(nextlevel.size()+1);
+            angles.clear();
+            for(int i=0;i<nextlevel.size();i++)
+            {
+                double curAngle = metaAngle * (i+1);
+                double x = r * cos(curAngle * PI/180);
+                double y = r * sin(curAngle * PI/180);
+                angles.append(curAngle);
+                nextlevel[i]->overviewshape->setCentrePos(QPointF(x,y));
+                cout<<nextlevel[i]->shortname.toStdString()<<" :: x = "<<x<<" y = "<<y<<endl;
+            }
+        }
+        //draw level>2
+        if(level>1){
+            QList<double> nextangles;
+            for(int i=0;i<currentlevel.size();i++)
+            {
+                //Bisector Limit
+                double bisleft = 0.0;
+                double bisright = rangeangle;
+                if(i!=0){
+                    int k=i-1;
+                    while(currentlevel[k]->subclasses.empty())
+                    {
+                        k--;
+                        if(k==-1)break;
+                    }
+                    if(k!=-1)bisleft = (angles[k]+angles[i])/2;
+                    double la = (angles[i]-angles[i-1])/2;
+                    double leftlimit = angles[i-1] - (acos((level-1)*cos(la*PI/180)/level)-la);
+                    if(bisleft<leftlimit)bisleft = leftlimit;
+                }
+                if(i!=currentlevel.size()-1){
+                    int k=i+1;
+                    while(currentlevel[k]->subclasses.empty())
+                    {
+                        k++;
+                        if(k==currentlevel.size())break;
+                    }
+                    if(k!=currentlevel.size())bisright = (angles[i]+angles[k])/2;
+                    double ra = (angles[i+1]-angles[i])/2;
+                    double rightlimit = angles[i+1] + acos((level-1)*cos(ra*PI/180)/level)-ra;
+                    if(bisright<rightlimit)bisright = rightlimit;
+                }
+                //Tangent Limit
+                double tanleft,tanright;
+                double arcangle = acos((level-1)/level) * rangeangle/360;
+                tanleft = angles[i]-arcangle;
+                tanright = angles[i]+arcangle;
+
+                double left = std::min(bisleft,tanleft);
+                double right = std::max(bisright,tanright);
+
+                double metaAngle = (right-left)/(currentlevel[i]->subclasses.size()+1);
+
+//                double lx = r * cos(left * PI/180);
+//                double ly = r * sin(left * PI/180);
+//                double rx = r * cos(right * PI/180);
+//                double ry = r * sin(right * PI/180);
+
+//                double l = sqrt((lx-rx)*(lx-rx)+(ly-ry)*(ly-ry));
+//                double localAngle = 2 * asin(l/(2*this->SINGLE_EDGE_LENGTH));
+//                double metaAngle = localAngle/(currentlevel[i]->subclasses.size()+1);
+
+                for(int j=0;j<currentlevel[i]->subclasses.size();j++){
+                    OwlClass * c = currentlevel[i]->subclasses[j];
+                    nextlevel.append(c);
+                    double curangle = left+metaAngle*(j+1);
+                    if(currentlevel[i]->subclasses.size()==1) curangle = angles[i];
+                    double x = r * cos(curangle * PI/180);
+                    double y = r * sin(curangle * PI/180);
+//                    double ca = metaAngle*(j+1);
+//                    double x = currentlevel[i]->overviewshape->pos().rx() + cos(ca*PI/180)*this->SINGLE_EDGE_LENGTH;
+//                    double y = currentlevel[i]->overviewshape->pos().ry() + sin(ca*PI/180)*this->SINGLE_EDGE_LENGTH;
+//                    double curangle = acos(x/r)*180/PI;
+                    nextangles.append(curangle);
+                    c->overviewshape->setCentrePos(QPointF(x,y));
+                }
+            }
+            angles.clear();
+            angles=nextangles;
+        }
+        //reset cur next
+        currentlevel.clear();
+        currentlevel.append(nextlevel);
+        nextlevel.clear();
+    }
+
+}
+
+void Overview::treeLayout(QList<OwlClass *> graph)
+{
+    //init graph
+    Graph g;
+    GraphAttributes ga(g,GraphAttributes::nodeGraphics|GraphAttributes::edgeGraphics );
+
+    QList<node> nodes;
+    QList<edge> edges;
+    for(int i=0;i<graph.size();i++)
+    {
+        node nd = g.newNode();
+        ga.x(nd) = graph[i]->overviewshape->pos().rx();
+        ga.y(nd) = graph[i]->overviewshape->pos().ry();
+        ga.width(nd) = graph[i]->overviewshape->width();
+        ga.height(nd) = graph[i]->overviewshape->height();
+        nodes.append(nd);
+    }
+    for(int i=0;i<graph.size();i++)
+    {
+        if(!graph[i]->superclasses.empty()){
+            OwlClass * sup = graph[i]->superclasses[0];
+            int idx = getIndexByShortname(graph,sup->shortname);
+            if(idx!=-1){
+                edge e =g.newEdge(nodes[idx],nodes[i]);
+                edges.append(e);
+            }
+        }
+    }
+
+    TreeLayout tl;
+    tl.orientation(this->orientation);
+    tl.rootSelection(TreeLayout::rootIsSource);
+    tl.orthogonalLayout(true);
+    tl.siblingDistance(this->TREE_siblingDistance);
+    tl.levelDistance(this->TREE_levelDistance);
+    tl.subtreeDistance(this->TREE_subtreeDistance);
+    tl.treeDistance(this->TREE_treeDistance);
+    tl.call(ga);
+    tl.callSortByPositions(ga,g);
+
+
+    for(int i=0;i<nodes.size();i++){
+        graph[i]->overviewshape->setCentrePos(QPointF(ga.x(nodes[i]),ga.y(nodes[i])));
+    }
+    treeconnectors.clear();
+    for(int i=0;i<edges.size();i++){
+        DPolyline pl = ga.bends(edges[i]);
+        treeconnectors.append(pl);
+    }
+}
+
+void Overview::ogdfLayout(QList<OwlClass *> graph)
+{
+    //init graph
+    Graph g;
+    GraphAttributes ga(g,GraphAttributes::nodeGraphics|GraphAttributes::edgeGraphics );
+
+    QList<node> nodes;
+    QList<edge> edges;
+    for(int i=0;i<graph.size();i++)
+    {
+        node nd = g.newNode();
+        ga.x(nd) = graph[i]->overviewshape->pos().rx();
+        ga.y(nd) = graph[i]->overviewshape->pos().ry();
+        ga.width(nd) = graph[i]->overviewshape->width();
+        ga.height(nd) = graph[i]->overviewshape->height();
+        nodes.append(nd);
+    }
+    for(int i=0;i<graph.size();i++)
+    {
+        if(!graph[i]->superclasses.empty()){
+            OwlClass * sup = graph[i]->superclasses[0];
+            int idx = getIndexByShortname(graph,sup->shortname);
+            if(idx!=-1){
+                edge e =g.newEdge(nodes[idx],nodes[i]);
+                edges.append(e);
+            }
+        }
+    }
+
+//    RadialTreeLayout tl;
+//    tl.levelDistance(this->TREE_levelDistance);
+//    tl.rootSelection(RadialTreeLayout::rootIsSource);
+//    tl.call(ga);
+
+    StressMajorization tl;
+    tl.setIterations(7);
+    tl.call(ga);
+
+    for(int i=0;i<nodes.size();i++){
+        graph[i]->overviewshape->setCentrePos(QPointF(ga.x(nodes[i]),ga.y(nodes[i])));
+    }
+    for(int i=0;i<edges.size();i++){
+        DPolyline pl = ga.bends(edges[i]);
+        treeconnectors.append(pl);
+    }
+}
+
+void Overview::widSceneClicked(QPointF pos)
+{
+    //compute Euclidean distance with current mouse pos
+    double mind = numeric_limits<double>::max();
+    int minidx = -1;
+    for(int i = 0;i<this->classes.size();i++)
+    {
+        classes[i]->overviewshape->setStatus(OverviewClassShape::STATUS_OutDetailview);
+        double d = EuclideanDistance(pos,classes[i]->overviewshape->pos());
+        if(d<mind){
+            mind = d;
+            minidx = i;
+        }
+    }
+    //sent to detailview
+//    m_detailview->setViewLimit(10,10);
+    int idx = m_ontology->getIndexOfClasses(classes[minidx]->shortname);
+
+    QList<OwlClass *> rlst;
+
+    if(idx!=-1)rlst.append(this->m_detailview->drawClassView(m_ontology->classes[idx]));
+
+    //get back from detailed view ->ov
+    indetailedCls.clear();
+    for(int i=0;i<rlst.size();i++){
+        int cid = this->getIndexByShortname(classes,rlst[i]->shortname);
+        if(cid!=-1){
+            indetailedCls.append(classes[cid]);
+            if(cid == minidx)classes[minidx]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Focused);
+            else if(classes[minidx]->subclasses.contains(classes[cid]))
+            {
+                classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SubFocused);
+            }
+            else if(classes[minidx]->superclasses.contains(classes[cid]))
+            {
+                classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SuperFocused);
+            }
+            else classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Default);
+        }
+    }
+
+    m_ontology->ontoclass_clicked(m_ontology->classes[idx]->shape);
+
+    this->drawOverview(m_wid);
+//    m_wid->sceneClicked(pos);
+
+}
+
+void Overview::detailView_ClickedClass(QString shortname)
+{
+    for(int i = 0;i<classes.size();i++){
+        if(classes[i]->overviewshape->getStatus()!=OverviewClassShape::STATUS_OutDetailview)
+        {
+            classes[i]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Default);
+        }
+    }
+    int idx = getIndexByShortname(classes,shortname);
+    if(idx!=-1)classes[idx]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Focused);
+
+    int oidx = m_ontology->getIndexOfClasses(shortname);
+    OwlClass * c = m_ontology->classes[oidx];
+    for(int i = 0;i<c->subclasses.size();i++)
+    {
+        int ix = getIndexByShortname(classes,c->subclasses[i]->shortname);
+        if(ix!=-1)classes[ix]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SubFocused);
+    }
+    for(int i = 0;i<c->superclasses.size();i++)
+    {
+        int ix = getIndexByShortname(classes,c->superclasses[i]->shortname);
+        if(ix!=-1)classes[ix]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SuperFocused);
+    }
+
+    this->drawOverview(m_wid);
+}
+
+void Overview::layoutmethodChanged(QString method)
+{
+    this->currentLayoutMethod = method;
+    this->isOrthogonalTreeLayout = false;
+
+    if(method == "Tree"){
+        this->treeLayout(classes);
+        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+    }
+    if(method == "Orthogonal Tree"){
+        this->isOrthogonalTreeLayout = true;
+        this->treeLayout(classes);
+        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+    }
+    if(method == "Radial Tree(90)"){
+        this->quadrantRadialTree(classes,90);
+        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+    }
+    if(method == "Radial Tree(180)"){
+        this->quadrantRadialTree(classes,180);
+        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+    }
+    if(method == "FMS"){
+        this->FMSLayout(false);
+        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::OrganicLayout);
+        this->m_detailview->m_canvas->setIdealConnectorLength(80);
+    }
+    if(method == "FMS(Projection)"){
+        this->FMSLayout(true);
+        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::FlowLayout);
+        this->m_detailview->m_canvas->setIdealConnectorLength(80);
+    }
+
+    this->drawOverview(this->m_wid);
+
+    this->m_detailview->m_canvas->setOptAutomaticGraphLayout(true);
+    this->m_detailview->m_canvas->setOptPreventOverlaps(true);
+    this->m_detailview->m_canvas->fully_restart_graph_layout();
+}
+
+void Overview::directionChanged(QString dr)
+{
+    if(dr == "L->R"){
+        this->orientation = ogdf::leftToRight;
+        this->m_detailview->m_canvas->setOptFlowDirection(Canvas::FlowLeft);
+        this->m_detailview->m_canvas->setIdealConnectorLength(50);
+        this->m_detailview->m_canvas->setOptFlowSeparationModifier(4);
+
+    }
+    if(dr == "R->L"){
+        this->orientation = ogdf::rightToLeft;
+        this->m_detailview->m_canvas->setOptFlowDirection(Canvas::FlowRight);
+        this->m_detailview->m_canvas->setIdealConnectorLength(50);
+        this->m_detailview->m_canvas->setOptFlowSeparationModifier(4);
+    }
+    if(dr == "T->B"){
+        this->orientation = ogdf::bottomToTop;
+        this->m_detailview->m_canvas->setOptFlowDirection(Canvas::FlowUp);
+        this->m_detailview->m_canvas->setIdealConnectorLength(30);
+        this->m_detailview->m_canvas->setOptFlowSeparationModifier(2);
+    }
+    if(dr == "B->T"){
+        this->m_detailview->m_canvas->setOptFlowDirection(Canvas::FlowDown);
+        this->orientation = ogdf::topToBottom;
+        this->m_detailview->m_canvas->setIdealConnectorLength(30);
+        this->m_detailview->m_canvas->setOptFlowSeparationModifier(2);
+    }
+
+    if(this->currentLayoutMethod == "Tree"
+            ||this->currentLayoutMethod == "Orthogonal Tree"
+            ||this->currentLayoutMethod == "FMS(Projection)")
+    {
+        this->layoutmethodChanged(this->currentLayoutMethod);
+    }
+}
+
+void Overview::connectWgt(OverviewDockWidget *wgt){
+    this->m_wid = wgt;
+    connect(m_ontology,SIGNAL(clickedClass(QString)),this,SLOT(detailView_ClickedClass(QString)));
+    connect(wgt->m_scene,SIGNAL(myclick(QPointF)),this,SLOT(widSceneClicked(QPointF)));
+    connect(wgt,SIGNAL(layoutChanged(QString)),this,SLOT(layoutmethodChanged(QString)));
+    connect(wgt,SIGNAL(directionChanged(QString)),this,SLOT(directionChanged(QString)));
+}
+
+void Overview::showlayout(Canvas *canvas)
+{
+    this->quadrantRadialTree(classes,180);
+    this->drawOverview(canvas);
+}
+
+void Overview::showlayout(OverviewDockWidget *wid)
+{
+    this->connectWgt(wid);
+    this->directionChanged("L->R");
+}

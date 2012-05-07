@@ -20,6 +20,8 @@
 class OwlOntology:public QObject
 {
     Q_OBJECT
+signals:
+    void clickedClass(QString);
 public slots:
     void ontoclass_clicked(OntologyClassShape * classshape);
     void ontoclass_doubleclicked(OntologyClassShape * classshape);
@@ -41,7 +43,7 @@ public:
     //variable
     QMainWindow * appmainwindow;
     Canvas * maincanvas;
-    DetailDockWidget * wid;
+    DetailDockWidget * equclasswid;
     ZoomDockWidget * zoomdwgt;
     FilterDockWidget * filterdwgt;
     HistoryDockWidget * historydwgt;
@@ -51,6 +53,7 @@ public:
     DetailInfoDockWidget * deatildwgt;
 
     QString ontologyname;
+    const QFileInfo * ontologyfile;
     QString owlnamespace;
     QString ontoInfo;
     QString classInfo;
@@ -66,7 +69,7 @@ public:
     int currentfocusedclassidx;
 
     //methods
-    OwlOntology(Canvas * canvas,QMainWindow *mainwin);
+    OwlOntology(Canvas * canvas,QMainWindow *mainwin,DetailDockWidget * equwid);
     int getIndexOfIndividuals(QString shortname);
     int getIndexOfClasses(QString shortname);
     int getIndexOfProperties(QString shortname);
