@@ -20,6 +20,9 @@ KeyConceptClass::KeyConceptClass(OwlOntology *ontology)
         measures.append(mi);
     }
     this->isScoreFileChanged = false;
+
+    ontofilename = ontologyfile->absoluteFilePath();
+    scorefilename = ontofilename.left(ontofilename.length()-4)+"_score.xml";
 }
 
 KeyConceptClass::~KeyConceptClass()
@@ -394,10 +397,12 @@ QList<OwlClass *> KeyConceptClass::getNKeyClasses(int n)
         this->writeScoreFile();
     }
 
+    cout<<"KC computing overall scores"<<endl;
     this->computeOverallScore();
     //top n overall score classes
     if(n>classnum)n=classnum;
     for(int i=0;i<n;i++)result<<classes[measures[i].idx];
+    cout<<"KC return "<<n<<" classes."<<endl;
     return result;
 }
 
@@ -409,9 +414,6 @@ int KeyConceptClass::checkfile()
     //score file does not match: -3
     //owl file changed: 0
     //else 1;
-
-    QString ontofilename = ontologyfile->absoluteFilePath();
-    QString scorefilename = ontofilename.left(ontofilename.length()-4)+"_score.xml";
 
     QFile scorefile(scorefilename);
     if (!scorefile.open(QIODevice::ReadOnly)){
@@ -430,9 +432,9 @@ int KeyConceptClass::checkfile()
         scorefile.close();
         return -3;
     }
-
+    QFileInfo *ontof = new QFileInfo(ontofilename);
     QString mdate = root.elementsByTagName("OWLFile").at(0).toElement().attribute("LastModified");
-    if(mdate != ontologyfile->lastModified().toString())
+    if(mdate != ontof->lastModified().toString())
     {
         cout<<"OWL FILE HAS BEEN CHANGED!"<<endl;
         scorefile.close();
@@ -486,8 +488,8 @@ void KeyConceptClass::writeScoreFile()
 
 void KeyConceptClass::readScoreFile()
 {
-    QString ontofilename = ontologyfile->absoluteFilePath();
-    QString scorefilename = ontofilename.left(ontofilename.length()-4)+"_score.xml";
+//    QString ontofilename = ontologyfile->absoluteFilePath();
+//    QString scorefilename = ontofilename.left(ontofilename.length()-4)+"_score.xml";
 
     QFile scorefile(scorefilename);
     if (!scorefile.open(QIODevice::ReadOnly)){

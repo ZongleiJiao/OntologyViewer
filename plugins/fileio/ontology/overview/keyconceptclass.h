@@ -41,6 +41,7 @@ public:
 
     OwlOntology * m_ontology;
     const QFileInfo *ontologyfile;
+    QString ontofilename;
 
     int classnum;
     QList<OwlClass *> classes;
@@ -99,6 +100,7 @@ public:
     //overallscore ---score with histories
     void computeOverallScore();
     //write to file();
+    QString scorefilename;
     void writeScoreFile();
     void readScoreFile();    
     int checkfile();

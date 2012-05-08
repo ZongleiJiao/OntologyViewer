@@ -10,6 +10,8 @@
 #include "overview/overviewdockwidget.h"
 #include "overview/detailedview.h"
 #include <ogdf/basic/geometry.h>
+
+#include "plugins/fileio/ontology/overview/keyconceptclass.h"
 using namespace ogdf;
 class Overview : public QObject
 {
@@ -18,6 +20,8 @@ public:
 
     explicit Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *parent = 0);
 
+    KeyConceptClass *kcTool;
+
     OverviewDockWidget *m_wid;
     DetailedView *m_detailview;
     OwlOntology *m_ontology;
@@ -25,14 +29,16 @@ public:
     bool isOrthogonalTreeLayout;
     ogdf::Orientation orientation;
     QString currentLayoutMethod;
+    QList<OwlClass *> originalclasses;
     QList<OwlClass *> classes;
     QList<OwlClass *> indetailedCls;
+    QList<OwlClass *> tempaddedCls;
     //how many classes display on the overview, init with N(load N keyconcepts)
     //after load classes, set to the number of classses.
     int numOfClasses;
 
     //get N keyclasses to classes -- call this first to init classes
-    void getOverviewClasses(OwlOntology * ontology);
+//    void getOverviewClasses(OwlOntology * ontology);
     //convert owlclasses to overview classes(shape,sub/sup relations changed)
     QList<OwlClass *> convertOverviewShapes(QList<OwlClass *> classes);
     int getIndexByShortname(QList<OwlClass *> lst,QString shortname);
@@ -46,6 +52,7 @@ public:
     //show layout
     void showlayout(Canvas *canvas);
     void showlayout(OverviewDockWidget *wid);
+    void updatelayout();
 private:
     /** FMS Drawing Algorithm implementation **/
     const static int MIN_K=10;

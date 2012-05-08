@@ -1,7 +1,6 @@
 #include "overview.h"
 #include <overviewclassshape.h>
 #include <stack>
-#include "plugins/fileio/ontology/overview/keyconceptclass.h"
 #include <cmath>
 #include <limits>
 #include "libvpsc/solve_VPSC.h"
@@ -28,8 +27,11 @@ Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *
     QObject(parent)
 {
     this->numOfClasses = numOfNode;
-    KeyConceptClass *kc=new KeyConceptClass(ontology);
-    classes = convertOverviewShapes(kc->getNKeyClasses(this->numOfClasses));
+    kcTool=new KeyConceptClass(ontology);
+    originalclasses.clear();
+    originalclasses.append(kcTool->getNKeyClasses(this->numOfClasses));
+    classes.clear();
+    classes.append(convertOverviewShapes(originalclasses));
     numOfClasses=classes.size();
     m_ontology = ontology;
     this->m_detailview = new DetailedView(canvas,ontology);
@@ -817,6 +819,17 @@ void Overview::treeLayout(QList<OwlClass *> graph)
     Graph g;
     GraphAttributes ga(g,GraphAttributes::nodeGraphics|GraphAttributes::edgeGraphics );
 
+    int n=graph.size();
+    for(int i=0;i<n;i++)
+    {
+        OwlClass * c = graph[i];
+        graph.removeOne(c);
+        if(c->subclasses.empty()){
+            graph.append(c);
+        }
+        else graph.insert(0,c);
+    }
+
     QList<node> nodes;
     QList<edge> edges;
     for(int i=0;i<graph.size();i++)
@@ -824,8 +837,8 @@ void Overview::treeLayout(QList<OwlClass *> graph)
         node nd = g.newNode();
         ga.x(nd) = graph[i]->overviewshape->pos().rx();
         ga.y(nd) = graph[i]->overviewshape->pos().ry();
-        ga.width(nd) = 6;//graph[i]->overviewshape->width();
-        ga.height(nd) = 6;//graph[i]->overviewshape->height();
+        ga.width(nd) = graph[i]->overviewshape->width();
+        ga.height(nd) = graph[i]->overviewshape->height();
         nodes.append(nd);
     }
     for(int i=0;i<graph.size();i++)
@@ -860,6 +873,8 @@ void Overview::treeLayout(QList<OwlClass *> graph)
         DPolyline pl = ga.bends(edges[i]);
         treeconnectors.append(pl);
     }
+
+
 }
 
 void Overview::ogdfLayout(QList<OwlClass *> graph)
@@ -927,6 +942,22 @@ void Overview::widSceneClicked(QPointF pos)
     QList<OwlClass *> rlst;
 
     if(idx!=-1)rlst.append(this->m_detailview->drawClassView(m_ontology->classes[idx]));
+/** remove this part since the architecture of overview changes frequently.
+    Remove it to keep stable. **/
+//    //remove all temp added classes
+//    this->originalclasses.clear();
+//    this->originalclasses.append(kcTool->getNKeyClasses(this->numOfClasses));
+//    tempaddedCls.clear();
+//    //original classes list add new
+//    for(int i=0;i<rlst.size();i++){
+//        if(!originalclasses.contains(rlst[i])){
+//            tempaddedCls.append(rlst[i]);
+//            this->originalclasses.append(rlst[i]);
+//        }
+//    }
+//    //convert to classes
+//    classes.clear();
+//    classes.append(this->convertOverviewShapes(originalclasses));
 
     //get back from detailed view ->ov
     indetailedCls.clear();
@@ -949,9 +980,7 @@ void Overview::widSceneClicked(QPointF pos)
 
     m_ontology->ontoclass_clicked(m_ontology->classes[idx]->shape);
 
-    this->drawOverview(m_wid);
-//    m_wid->sceneClicked(pos);
-
+    this->updatelayout();
 }
 
 void Overview::detailView_ClickedClass(QString shortname)
@@ -1079,3 +1108,9 @@ void Overview::showlayout(OverviewDockWidget *wid)
     this->connectWgt(wid);
     this->directionChanged("L->R");
 }
+void Overview::updatelayout(){
+    this->layoutmethodChanged(this->currentLayoutMethod);
+}
+
+//add detailed view response nodes,QList<> indetailedCls, QList<> tempaddednodes
+//remove when clicked other place of overview, then add new
