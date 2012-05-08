@@ -17,8 +17,8 @@ OverviewDockWidget::OverviewDockWidget(QWidget *parent) :
 
     this->originalSeceneSize = m_scene->sceneRect();
 
-    ui->comboBox_LayoutMethod->addItem("Tree");
     ui->comboBox_LayoutMethod->addItem("Orthogonal Tree");
+    ui->comboBox_LayoutMethod->addItem("Tree");    
     ui->comboBox_LayoutMethod->addItem("Radial Tree(90)");
     ui->comboBox_LayoutMethod->addItem("Radial Tree(180)");
     ui->comboBox_LayoutMethod->addItem("FMS");

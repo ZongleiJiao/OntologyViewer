@@ -35,7 +35,7 @@ Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *
     this->m_detailview = new DetailedView(canvas,ontology);
     this->isOrthogonalTreeLayout = false;
     this->orientation = ogdf::leftToRight;
-    this->currentLayoutMethod = "Tree";
+    this->currentLayoutMethod = "Orthogonal Tree";
 
 }
 
