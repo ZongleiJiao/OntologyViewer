@@ -48,14 +48,7 @@ void OverviewDockWidget::setOntology(OwlOntology *onto){
 
 void OverviewDockWidget::clearall()
 {
-//    this->m_scene->~QGraphicsScene();
-//    this->m_scene = new OverviewScene();
-//    this->m_view->~QGraphicsView();
-//    this->m_view = new QGraphicsView(m_scene,this);
-//    ui->dockWidget->setWidget(m_view);
     this->m_scene->clear();
-    this->m_scene->setSceneRect(this->originalSeceneSize);
-
 }
 
 void OverviewDockWidget::addOverviewLine(OwlClass *start, OwlClass *end, QPen pen)
@@ -80,6 +73,17 @@ void OverviewDockWidget::addTreeConnector(DPolyline pl,QPen pen)
         x0=x;
         y0=y;
     }
+}
+
+void OverviewDockWidget::fixSceneRect(){
+    QRectF rect;
+    for(int i=0;i<m_scene->items().size();i++){
+        rect |= m_scene->items()[i]->boundingRect();
+    }
+
+    rect = rect.adjusted(-20,-20,20,20);
+
+    this->m_scene->setSceneRect(rect);
 }
 
 void OverviewDockWidget::addOverviewShape(OwlClass *cls)

@@ -42,6 +42,8 @@ public:
     void addOverviewLine(OwlClass *start,OwlClass *end,QPen pen);
     void addTreeConnector(DPolyline pl,QPen pen);
 
+    void fixSceneRect();
+
     //event
     void resizeEvent(QResizeEvent *event);
 

@@ -273,6 +273,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
             }
         }
     }
+    wid->fixSceneRect();
 }
 
 void Overview::drawOverview(Canvas *canvas)
