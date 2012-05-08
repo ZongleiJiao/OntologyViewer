@@ -33,8 +33,10 @@ OverviewDockWidget::OverviewDockWidget(QWidget *parent) :
     connect(ui->comboBox_Direction,SIGNAL(activated(QString)),this,SLOT(layoutDirectionChanged(QString)));
 //    connect(m_scene,SIGNAL(myclick(QPointF)),this,SLOT(sceneClicked(QPointF)));
 
+    m_scene->setBackgroundBrush(QBrush(QColor(189, 189, 223)));
 
     this->ontology = NULL;
+    this->highlightpolygon = NULL;
 }
 
 OverviewDockWidget::~OverviewDockWidget()
@@ -49,6 +51,7 @@ void OverviewDockWidget::setOntology(OwlOntology *onto){
 void OverviewDockWidget::clearall()
 {
     this->m_scene->clear();
+    this->highlightpolygon = NULL;
 }
 
 void OverviewDockWidget::addOverviewLine(OwlClass *start, OwlClass *end, QPen pen)
@@ -78,6 +81,7 @@ void OverviewDockWidget::addTreeConnector(DPolyline pl,QPen pen)
 void OverviewDockWidget::fixSceneRect(){
     QRectF rect;
     for(int i=0;i<m_scene->items().size();i++){
+        if(m_scene->items()[i]!=this->highlightpolygon)
         rect |= m_scene->items()[i]->boundingRect();
     }
     rect = rect.adjusted(-20,-20,20,20);
@@ -161,4 +165,19 @@ void OverviewDockWidget::resizeEvent(QResizeEvent *event){
     ui->comboBox_LayoutMethod->setGeometry(QRect(0, 0, posx, 28));
     ui->comboBox_Direction->setGeometry(QRect(posx, 0, w-posx, 28));
     ui->dockWidget->setGeometry(QRect(0, 10, w, h-35));
+}
+
+void OverviewDockWidget::highlightItems(QList<OwlClass *> cls)
+{
+    if(this->highlightpolygon!=NULL)m_scene->removeItem(highlightpolygon);
+    QColor grey(0, 0, 0, 60);
+    QPolygon polygon = QPolygon(m_scene->sceneRect().toRect());
+    for(int i=0;i<cls.size();i++){
+        double x = cls[i]->overviewshape->pos().rx() - 10;
+        double y = cls[i]->overviewshape->pos().ry() - 10;
+        QRectF viewRect = QRectF(x,y,20,20);
+        polygon = polygon.subtracted(QPolygon(viewRect.toRect()));
+    }
+
+    highlightpolygon = m_scene->addPolygon(polygon,QPen(Qt::transparent),QBrush(grey));
 }

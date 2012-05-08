@@ -44,6 +44,9 @@ public:
 
     void fixSceneRect();
 
+    QGraphicsItem * highlightpolygon;
+    void highlightItems(QList<OwlClass *> cls);
+
     //event
     void resizeEvent(QResizeEvent *event);
 

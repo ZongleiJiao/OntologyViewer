@@ -91,7 +91,7 @@ private:
     void quadrantRadialTree(QList<OwlClass *> graph, double rangeAngle);
 
     const static double TREE_siblingDistance = 2;
-    const static double TREE_levelDistance = 20;
+    const static double TREE_levelDistance = 15;
     const static double TREE_subtreeDistance = 8;
     const static double TREE_treeDistance = 10;
 

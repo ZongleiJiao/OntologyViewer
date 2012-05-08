@@ -283,6 +283,8 @@ void Overview::drawOverview(OverviewDockWidget *wid)
         }
     }
     wid->fixSceneRect();
+    wid->highlightItems(indetailedCls);
+
 }
 
 void Overview::drawOverview(Canvas *canvas)
