@@ -142,8 +142,8 @@ void Overview::drawOverview(OverviewDockWidget *wid)
             {
                 double sx = classes[i]->overviewshape->pos().rx();
                 double sy = classes[i]->overviewshape->pos().ry();
-                double ex = sx + TREE_levelDistance/2;
-                double ey = sy;
+                double ex;
+                double ey;
 
                 double sp;
                 double ep;
@@ -158,11 +158,12 @@ void Overview::drawOverview(OverviewDockWidget *wid)
 
                 if(this->orientation == ogdf::leftToRight)
                 {
-                    ex = sx + TREE_levelDistance/2 + 4;
-                    ey = sy;                    
-                    if(rsub.size()>1){
-                        cp = ( classes[i]->overviewshape->pos().rx()
-                               + rsub[0]->overviewshape->pos().rx())/2;
+                    cp = ( classes[i]->overviewshape->pos().rx()
+                           + classes[i]->subclasses[0]->overviewshape->pos().rx())/2;
+                    sx += classes[i]->overviewshape->width()/2;
+                    ex = cp;
+                    ey = sy;
+                    if(rsub.size()>1){                        
                         sp = ep = rsub[0]->overviewshape->pos().ry();
                         for(int j=1;j<rsub.size();j++){
                             double py = rsub[j]->overviewshape->pos().ry();
@@ -174,12 +175,13 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                 }
                 else if(this->orientation == ogdf::rightToLeft)
                 {
-                    ex = sx - TREE_levelDistance/2 - 1;
+                    cp = ( classes[i]->overviewshape->pos().rx()
+                           + classes[i]->subclasses[0]->overviewshape->pos().rx())/2;
+                    sx-= classes[i]->overviewshape->width()/2;
+                    ex = cp;
                     ey = sy;
 
                     if(rsub.size()>1){
-                        cp = ( classes[i]->overviewshape->pos().rx()
-                               + rsub[0]->overviewshape->pos().rx())/2;
                         sp = ep = rsub[0]->overviewshape->pos().ry();
                         for(int j=1;j<rsub.size();j++){
                             double py = rsub[j]->overviewshape->pos().ry();
@@ -191,11 +193,12 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                 }
                 else if(this->orientation == ogdf::bottomToTop)
                 {
+                    cp = ( classes[i]->overviewshape->pos().ry()
+                           + classes[i]->subclasses[0]->overviewshape->pos().ry())/2;
                     ex = sx;
-                    ey = sy + TREE_levelDistance/2 + 4;
-                    if(rsub.size()>1){
-                        cp = ( classes[i]->overviewshape->pos().ry()
-                               + rsub[0]->overviewshape->pos().ry())/2;
+                    ey = cp;
+                    sy += classes[i]->overviewshape->height()/2;
+                    if(rsub.size()>1){                        
                         sp = ep = rsub[0]->overviewshape->pos().rx();
                         for(int j=1;j<rsub.size();j++){
                             double px = rsub[j]->overviewshape->pos().rx();
@@ -206,11 +209,12 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                     }
                 }
                 else{
+                    cp = ( classes[i]->overviewshape->pos().ry()
+                           + classes[i]->subclasses[0]->overviewshape->pos().ry())/2;
                     ex = sx;
-                    ey = sy - TREE_levelDistance/2 - 1;
+                    ey = cp;
+                    sy -= classes[i]->overviewshape->height()/2;
                     if(rsub.size()>1){
-                        cp = ( classes[i]->overviewshape->pos().ry()
-                               + rsub[0]->overviewshape->pos().ry())/2;
                         sp = ep = rsub[0]->overviewshape->pos().rx();
                         for(int j=1;j<rsub.size();j++){
                             double px = rsub[j]->overviewshape->pos().rx();
@@ -229,25 +233,28 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                 double sy = classes[i]->overviewshape->pos().ry();
                 double ex = sx;
                 double ey = sy;
-
                 if(this->orientation == ogdf::leftToRight)
-                {
-                    ex = sx - TREE_levelDistance/2 - 1;
+                {                    
+                    ex = (sx+classes[i]->superclasses[0]->overviewshape->pos().rx())/2;
                     ey = sy;
+                    sx = sx - classes[i]->overviewshape->width()/2;
                 }
                 else if(this->orientation == ogdf::rightToLeft)
                 {
-                    ex = sx + TREE_levelDistance/2 + 4;
+                    ex = (sx+classes[i]->superclasses[0]->overviewshape->pos().rx())/2;
                     ey = sy;
+                    sx = sx + classes[i]->overviewshape->width()/2;
                 }
                 else if(this->orientation == ogdf::bottomToTop)
                 {
                     ex = sx;
-                    ey = sy - TREE_levelDistance/2 - 1;
+                    ey = (sy+classes[i]->superclasses[0]->overviewshape->pos().ry())/2;
+                    sy-= classes[i]->overviewshape->height()/2;
                 }
                 else{
                     ex = sx;
-                    ey = sy + TREE_levelDistance/2 + 4;
+                    ey = (sy+classes[i]->superclasses[0]->overviewshape->pos().ry())/2;
+                    sy+= classes[i]->overviewshape->height()/2;
                 }
                 wid->m_scene->addLine(sx,sy,ex,ey,pen);
             }
