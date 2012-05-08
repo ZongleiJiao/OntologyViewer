@@ -80,9 +80,7 @@ void OverviewDockWidget::fixSceneRect(){
     for(int i=0;i<m_scene->items().size();i++){
         rect |= m_scene->items()[i]->boundingRect();
     }
-
     rect = rect.adjusted(-20,-20,20,20);
-
     this->m_scene->setSceneRect(rect);
 }
 
