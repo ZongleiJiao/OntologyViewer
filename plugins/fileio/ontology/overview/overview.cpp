@@ -891,22 +891,6 @@ void Overview::ogdfLayout(QList<OwlClass *> graph)
         }
     }
 
-//    RadialTreeLayout tl;
-//    tl.levelDistance(this->TREE_levelDistance);
-//    tl.rootSelection(RadialTreeLayout::rootIsSource);
-//    tl.call(ga);
-
-//    StressMajorization tl;
-//    tl.setIterations(7);
-//    tl.call(ga);
-
-//    FastMultipoleEmbedder tl;
-//    tl.setDefaultEdgeLength(this->SINGLE_EDGE_LENGTH);
-//    tl.setDefaultNodeSize(4);
-//    tl.setNumIterations(20);
-//    tl.setRandomize(true);
-//    tl.call(ga);
-
     SpringEmbedderFR tl;
     tl.minDistCC(this->SINGLE_EDGE_LENGTH);
     tl.iterations(16);
