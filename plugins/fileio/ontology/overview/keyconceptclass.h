@@ -28,13 +28,15 @@ public:
         //for visiting histories
         int visitTimes;
         QDateTime lastvisitedTime;
+        int landmark;
     }measure;
 
     QList<measure> measures;
 
     //init with all classes
     KeyConceptClass(OwlOntology * ontology);
-
+    ~KeyConceptClass();
+    bool isScoreFileChanged;
     int getIndexOfClasses(QString shortname);
 
     OwlOntology * m_ontology;
@@ -102,6 +104,7 @@ public:
     int checkfile();
     void updateClassLastVisitedTime(QString shortname,const QDateTime time);
     void updateClassVisitedTime(QString shortname,int inc);
+    void updateClassLandmark(QString shortname, int lk);
 
     //sort measures
     void sortMeasuresByScore();

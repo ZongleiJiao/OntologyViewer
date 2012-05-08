@@ -19,6 +19,13 @@ KeyConceptClass::KeyConceptClass(OwlOntology *ontology)
 //        mi.score = 0;
         measures.append(mi);
     }
+    this->isScoreFileChanged = false;
+}
+
+KeyConceptClass::~KeyConceptClass()
+{
+    if(this->isScoreFileChanged)
+        this->writeScoreFile();
 }
 
 //get index of classes by its shortname
@@ -341,6 +348,7 @@ void KeyConceptClass::computeScore()
         //init visited times & last visited time
         measures[i].visitTimes=1;
         measures[i].lastvisitedTime = QDateTime::currentDateTime();
+        measures[i].landmark = 0;
     }
 }
 
@@ -459,6 +467,7 @@ void KeyConceptClass::writeScoreFile()
         node.setAttribute("Score",measures[i].score);
         node.setAttribute("VisitedTimes",measures[i].visitTimes);
         node.setAttribute("LastVisitedTime",measures[i].lastvisitedTime.toString());
+        node.setAttribute("Landmark", measures[i].landmark);
         nodes.appendChild(node);
     }
 
@@ -525,6 +534,7 @@ void KeyConceptClass::readScoreFile()
 void KeyConceptClass::computeOverallScore()
 {
     /** version 1: overallscore = wSC*score + wVT* VT/MaxVT + wLV * (1-LVidx/num)
+        version 2: overallscore = 100*landmark + wSC*score + wVT* VT/MaxVT + wLV * (1-LVidx/num)
         Add Landmark!!**/
     //Get maxVT
     double maxvt=1.0;
@@ -538,8 +548,8 @@ void KeyConceptClass::computeOverallScore()
     //compute overallscore
     for(int i=0;i<num;i++)
     {
-        measures[i].overallscore =
-                overallscore_wSC * measures[i].score
+        measures[i].overallscore = 100*measures[i].landmark
+                + overallscore_wSC * measures[i].score
                 + overallscore_wVT * double(measures[i].visitTimes)/maxvt
                 + overallscore_wLV * (1 - i/num);
     }
@@ -582,6 +592,7 @@ void KeyConceptClass::sortMeasuresByLastVisitedTime()
 
 void KeyConceptClass::updateClassVisitedTime(QString shortname, int inc)
 {
+    this->isScoreFileChanged = true;
     for(int i = 0;i<measures.size();i++){
         if(measures[i].classname.toLower()==shortname.toLower())
         {
@@ -593,6 +604,7 @@ void KeyConceptClass::updateClassVisitedTime(QString shortname, int inc)
 
 void KeyConceptClass::updateClassLastVisitedTime(QString shortname, const QDateTime time)
 {
+    this->isScoreFileChanged = true;
     for(int i = 0;i<measures.size();i++){
         if(measures[i].classname.toLower()==shortname.toLower())
         {
@@ -601,3 +613,16 @@ void KeyConceptClass::updateClassLastVisitedTime(QString shortname, const QDateT
         }
     }
 }
+
+void KeyConceptClass::updateClassLandmark(QString shortname, int lk)
+{
+    this->isScoreFileChanged = true;
+    for(int i = 0;i<measures.size();i++){
+        if(measures[i].classname.toLower()==shortname.toLower())
+        {
+            measures[i].landmark = lk;
+            break;
+        }
+    }
+}
+

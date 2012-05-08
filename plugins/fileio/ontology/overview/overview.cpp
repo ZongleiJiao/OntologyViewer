@@ -14,7 +14,8 @@
 #include <ogdf/basic/GraphAttributes.h>
 #include <ogdf/tree/TreeLayout.h>
 #include <ogdf/tree/RadialTreeLayout.h>
-#include <ogdf/energybased/StressMajorizationSimple.h>
+#include <ogdf/energybased/FastMultipoleEmbedder.h>
+#include <ogdf/energybased/SpringEmbedderFR.h>
 
 
 #define PI 3.14159265
@@ -126,10 +127,10 @@ void Overview::drawOverview(OverviewDockWidget *wid)
     //draw line
     if(isOrthogonalTreeLayout){
         QPen pen = QPen(QColor("black"));
-        for(int i=0;i<treeconnectors.size();i++)
-        {            
-            wid->addTreeConnector(treeconnectors[i],pen);
-        }
+//        for(int i=0;i<treeconnectors.size();i++)
+//        {
+//            wid->addTreeConnector(treeconnectors[i],pen);
+//        }
         for(int i=0;i<classes.size();i++)
         {
             pen = QPen(QColor("black"));
@@ -142,27 +143,84 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                 double ex = sx + TREE_levelDistance/2;
                 double ey = sy;
 
+                double sp;
+                double ep;
+                double cp;
+                QList<OwlClass *> rsub;
+                if(classes[i]->subclasses.size()>1){
+                    for(int j=0;j<classes[i]->subclasses.size();j++){
+                        if(classes[i]->subclasses[j]->superclasses[0]==classes[i])
+                            rsub.append(classes[i]->subclasses[j]);
+                    }
+                }
+
                 if(this->orientation == ogdf::leftToRight)
                 {
-                    ex = sx + TREE_levelDistance/2 + 3;
-                    ey = sy;
+                    ex = sx + TREE_levelDistance/2 + 4;
+                    ey = sy;                    
+                    if(rsub.size()>1){
+                        cp = ( classes[i]->overviewshape->pos().rx()
+                               + rsub[0]->overviewshape->pos().rx())/2;
+                        sp = ep = rsub[0]->overviewshape->pos().ry();
+                        for(int j=1;j<rsub.size();j++){
+                            double py = rsub[j]->overviewshape->pos().ry();
+                            sp = std::min(sp,py);
+                            ep = std::max(ep,py);
+                        }
+                        wid->m_scene->addLine(cp,sp,cp,ep,pen);
+                    }
                 }
                 else if(this->orientation == ogdf::rightToLeft)
                 {
-                    ex = sx - TREE_levelDistance/2;
+                    ex = sx - TREE_levelDistance/2 - 1;
                     ey = sy;
+
+                    if(rsub.size()>1){
+                        cp = ( classes[i]->overviewshape->pos().rx()
+                               + rsub[0]->overviewshape->pos().rx())/2;
+                        sp = ep = rsub[0]->overviewshape->pos().ry();
+                        for(int j=1;j<rsub.size();j++){
+                            double py = rsub[j]->overviewshape->pos().ry();
+                            sp = std::min(sp,py);
+                            ep = std::max(ep,py);
+                        }
+                        wid->m_scene->addLine(cp,sp,cp,ep,pen);
+                    }
                 }
                 else if(this->orientation == ogdf::bottomToTop)
                 {
                     ex = sx;
-                    ey = sy + TREE_levelDistance/2 + 3;
+                    ey = sy + TREE_levelDistance/2 + 4;
+                    if(rsub.size()>1){
+                        cp = ( classes[i]->overviewshape->pos().ry()
+                               + rsub[0]->overviewshape->pos().ry())/2;
+                        sp = ep = rsub[0]->overviewshape->pos().rx();
+                        for(int j=1;j<rsub.size();j++){
+                            double px = rsub[j]->overviewshape->pos().rx();
+                            sp = std::min(sp,px);
+                            ep = std::max(ep,px);
+                        }
+                        wid->m_scene->addLine(sp,cp,ep,cp,pen);
+                    }
                 }
                 else{
                     ex = sx;
-                    ey = sy - TREE_levelDistance/2;
+                    ey = sy - TREE_levelDistance/2 - 1;
+                    if(rsub.size()>1){
+                        cp = ( classes[i]->overviewshape->pos().ry()
+                               + rsub[0]->overviewshape->pos().ry())/2;
+                        sp = ep = rsub[0]->overviewshape->pos().rx();
+                        for(int j=1;j<rsub.size();j++){
+                            double px = rsub[j]->overviewshape->pos().rx();
+                            sp = std::min(sp,px);
+                            ep = std::max(ep,px);
+                        }
+                        wid->m_scene->addLine(sp,cp,ep,cp,pen);
+                    }
                 }
 
-                wid->m_scene->addLine(sx,sy,ex,ey,pen);
+                wid->m_scene->addLine(sx,sy,ex,ey,pen);                
+
             }
             if(!classes[i]->superclasses.empty()){
                 double sx = classes[i]->overviewshape->pos().rx();
@@ -172,22 +230,22 @@ void Overview::drawOverview(OverviewDockWidget *wid)
 
                 if(this->orientation == ogdf::leftToRight)
                 {
-                    ex = sx - TREE_levelDistance/2;
+                    ex = sx - TREE_levelDistance/2 - 1;
                     ey = sy;
                 }
                 else if(this->orientation == ogdf::rightToLeft)
                 {
-                    ex = sx + TREE_levelDistance/2 + 3;
+                    ex = sx + TREE_levelDistance/2 + 4;
                     ey = sy;
                 }
                 else if(this->orientation == ogdf::bottomToTop)
                 {
                     ex = sx;
-                    ey = sy - TREE_levelDistance/2;
+                    ey = sy - TREE_levelDistance/2 - 1;
                 }
                 else{
                     ex = sx;
-                    ey = sy + TREE_levelDistance/2 + 3;
+                    ey = sy + TREE_levelDistance/2 + 4;
                 }
                 wid->m_scene->addLine(sx,sy,ex,ey,pen);
             }
@@ -765,8 +823,8 @@ void Overview::treeLayout(QList<OwlClass *> graph)
         node nd = g.newNode();
         ga.x(nd) = graph[i]->overviewshape->pos().rx();
         ga.y(nd) = graph[i]->overviewshape->pos().ry();
-        ga.width(nd) = graph[i]->overviewshape->width();
-        ga.height(nd) = graph[i]->overviewshape->height();
+        ga.width(nd) = 6;//graph[i]->overviewshape->width();
+        ga.height(nd) = 6;//graph[i]->overviewshape->height();
         nodes.append(nd);
     }
     for(int i=0;i<graph.size();i++)
@@ -837,9 +895,22 @@ void Overview::ogdfLayout(QList<OwlClass *> graph)
 //    tl.rootSelection(RadialTreeLayout::rootIsSource);
 //    tl.call(ga);
 
-    StressMajorization tl;
-    tl.setIterations(7);
+//    StressMajorization tl;
+//    tl.setIterations(7);
+//    tl.call(ga);
+
+//    FastMultipoleEmbedder tl;
+//    tl.setDefaultEdgeLength(this->SINGLE_EDGE_LENGTH);
+//    tl.setDefaultNodeSize(4);
+//    tl.setNumIterations(20);
+//    tl.setRandomize(true);
+//    tl.call(ga);
+
+    SpringEmbedderFR tl;
+    tl.minDistCC(this->SINGLE_EDGE_LENGTH);
+    tl.iterations(16);
     tl.call(ga);
+
 
     for(int i=0;i<nodes.size();i++){
         graph[i]->overviewshape->setCentrePos(QPointF(ga.x(nodes[i]),ga.y(nodes[i])));
@@ -948,12 +1019,15 @@ void Overview::layoutmethodChanged(QString method)
         this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
     }
     if(method == "FMS"){
-        this->FMSLayout(false);
+//        this->FMSLayout(false);
+        this->ogdfLayout(classes);
         this->m_detailview->m_canvas->setOptLayoutMode(Canvas::OrganicLayout);
         this->m_detailview->m_canvas->setIdealConnectorLength(80);
     }
     if(method == "FMS(Projection)"){
-        this->FMSLayout(true);
+//        this->FMSLayout(true);
+        this->ogdfLayout(classes);
+        this->projection(classes);
         this->m_detailview->m_canvas->setOptLayoutMode(Canvas::FlowLayout);
         this->m_detailview->m_canvas->setIdealConnectorLength(80);
     }
