@@ -124,6 +124,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
     wid->clearall();    
     //draw shape
     for(int i=0;i<classes.size();i++){
+        cout<<classes[i]->shortname.toStdString()<<endl;
         wid->addOverviewShape(classes[i]);
     }
     //draw line
@@ -138,7 +139,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
             pen = QPen(QColor("black"));
             bool inlst = this->indetailedCls.contains(classes[i]);
             if(inlst)pen = QPen(QColor("red"));
-            if(!classes[i]->subclasses.empty())
+            if((!classes[i]->subclasses.empty())&&classes[i]->URI.left(9)!="[COMPACT]")
             {
                 double sx = classes[i]->overviewshape->pos().rx();
                 double sy = classes[i]->overviewshape->pos().ry();
@@ -833,7 +834,7 @@ void Overview::treeLayout(QList<OwlClass *> graph)
     {
         OwlClass * c = graph[i];
         graph.removeOne(c);
-        if(c->subclasses.empty()){
+        if(c->subclasses.empty()&&c->superclasses.size()==1){
             graph.append(c);
         }
         else graph.insert(0,c);
@@ -884,6 +885,74 @@ void Overview::treeLayout(QList<OwlClass *> graph)
     }
 
 
+}
+
+void Overview::compactTreeLayout(double maxW,double maxH)
+{
+    this->isOrthogonalTreeLayout = true;
+    this->treeLayout(classes);
+    this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+
+    this->drawOverview(m_wid);
+
+    double w = m_wid->m_scene->sceneRect().width();
+    double h = m_wid->m_scene->sceneRect().height();
+
+    if(w>maxW||h>maxH){
+
+        QList<OwlClass *> removedClasses;   //hidden classes
+        QList<OwlClass *> addedClasses;     //new classes contains the hidden classes
+        for(int i=0;i<classes.size();i++){
+            OwlClass * tmp = classes[i];
+            if(tmp->subclasses.size()>2){
+                QList<OwlClass *> cls;
+                //get the subclasses should be hidden
+                for(int j=0;j<tmp->subclasses.size();j++){
+                    OwlClass * c = tmp->subclasses[j];
+                    if(c->subclasses.empty()&&c->superclasses.size()==1)
+                    {
+                        cls.append(c);
+                    }
+                }
+                if(cls.size()>2){
+                    removedClasses.append(cls);
+                    OwlClass * ctclass = new OwlClass();
+                    ctclass->subclasses.append(cls);
+                    ctclass->superclasses.append(tmp);
+                    ctclass->shortname = "Contains subclasses:";
+                    ctclass->URI = "[COMPACT]"+tmp->shortname;
+                    ctclass->overviewshape = new OverviewClassShape();
+                    ctclass->overviewshape->setStatus(OverviewClassShape::STATUS_COMPACT);
+                    addedClasses.append(ctclass);
+
+                    tmp->subclasses.append(ctclass);
+                    for(int k=0;k<cls.size();k++){
+                        ctclass->shortname += "\n"+cls[k]->shortname;
+                        tmp->subclasses.removeAll(cls[k]);
+                    }
+                }
+                cls.clear();
+            }
+        }
+        for(int i=0;i<removedClasses.size();i++){
+            classes.removeAll(removedClasses[i]);
+        }
+        classes.append(addedClasses);
+
+        this->treeLayout(classes);
+        this->drawOverview(m_wid);
+
+        //restore
+        for(int i=0;i<addedClasses.size();i++){
+            for(int j=0;j<addedClasses[i]->superclasses.size();j++)
+                addedClasses[i]->superclasses[j]->overviewshape->setCentrePos(addedClasses[i]->overviewshape->pos());
+
+            addedClasses[i]->superclasses[0]->subclasses.append(addedClasses[i]->subclasses);
+            addedClasses[i]->superclasses[0]->subclasses.removeAll(addedClasses[i]);
+            classes.append(addedClasses[i]->subclasses);
+            classes.removeAll(addedClasses[i]);
+        }
+    }
 }
 
 void Overview::ogdfLayout(QList<OwlClass *> graph)
@@ -937,11 +1006,13 @@ void Overview::widSceneClicked(QPointF pos)
     int minidx = -1;
     for(int i = 0;i<this->classes.size();i++)
     {
-        classes[i]->overviewshape->setStatus(OverviewClassShape::STATUS_OutDetailview);
-        double d = EuclideanDistance(pos,classes[i]->overviewshape->pos());
-        if(d<mind){
-            mind = d;
-            minidx = i;
+        if(classes[i]->URI.left(9)!="[COMPACT]"){
+            classes[i]->overviewshape->setStatus(OverviewClassShape::STATUS_OutDetailview);
+            double d = EuclideanDistance(pos,classes[i]->overviewshape->pos());
+            if(d<mind){
+                mind = d;
+                minidx = i;
+            }
         }
     }
     //sent to detailview
@@ -1029,9 +1100,14 @@ void Overview::layoutmethodChanged(QString method)
         this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
     }
     if(method == "Orthogonal Tree"){
-        this->isOrthogonalTreeLayout = true;
-        this->treeLayout(classes);
-        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+//        this->isOrthogonalTreeLayout = true;
+//        this->treeLayout(classes);
+//        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+        this->compactTreeLayout(200,200);
+        this->m_detailview->m_canvas->setOptAutomaticGraphLayout(true);
+        this->m_detailview->m_canvas->setOptPreventOverlaps(true);
+        this->m_detailview->m_canvas->fully_restart_graph_layout();
+        return;
     }
     if(method == "Radial Tree(90)"){
         this->quadrantRadialTree(classes,90);
@@ -1121,5 +1197,3 @@ void Overview::updatelayout(){
     this->layoutmethodChanged(this->currentLayoutMethod);
 }
 
-//add detailed view response nodes,QList<> indetailedCls, QList<> tempaddednodes
-//remove when clicked other place of overview, then add new

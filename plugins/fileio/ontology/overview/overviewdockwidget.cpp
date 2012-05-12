@@ -126,6 +126,28 @@ void OverviewDockWidget::addOverviewShape(OwlClass *cls)
 //        this->setSize(QSizeF(8,8));
         it = m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::SUPERCLASS_SHAPE_FOCUSED_COLOR));
         break;
+    case OverviewClassShape::STATUS_COMPACT:
+    {
+        QGraphicsTextItem * io = new QGraphicsTextItem;
+        io->setPos(x-8,y-8);
+        QFont font;
+        font.setPixelSize(7);
+        font.setBold(false);
+        font.setFamily("Calibri");
+        io->setFont(font);
+        io->setDefaultTextColor(QColor("black"));
+
+        QString s = QString::number(cls->subclasses.size());
+        io->setPlainText(s);
+
+        it = m_scene->addRect(x-6,y-4,12,8,QPen(QColor("black")),QBrush(QColor("pink"),Qt::LinearGradientPattern));
+        m_scene->addItem(io);
+
+        for(int i=0;i<cls->subclasses.size();i++){
+            cls->subclasses[i]->overviewshape->setCentrePos(QPointF(x,y));
+        }
+    }
+        break;
     default:
         break;
     }

@@ -17,7 +17,8 @@ public:
         STATUS_InDetailview_Default = 2,
         STATUS_InDetailview_Focused = 3,
         STATUS_InDetailview_SubFocused = 4,
-        STATUS_InDetailview_SuperFocused = 5
+        STATUS_InDetailview_SuperFocused = 5,
+        STATUS_COMPACT = 6
     };
 
     void setStatus(status stats);

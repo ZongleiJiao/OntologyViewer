@@ -98,6 +98,7 @@ private:
 
     QList<DPolyline> treeconnectors;
     void treeLayout(QList<OwlClass *> graph);
+    void compactTreeLayout(double maxW,double maxH);
     void ogdfLayout(QList<OwlClass *> graph);
 
     void connectWgt(OverviewDockWidget *wgt);
