@@ -1,7 +1,6 @@
 #include "overview.h"
 #include <overviewclassshape.h>
 #include <stack>
-#include "plugins/fileio/ontology/overview/keyconceptclass.h"
 #include <cmath>
 #include <limits>
 #include "libvpsc/solve_VPSC.h"
@@ -14,7 +13,8 @@
 #include <ogdf/basic/GraphAttributes.h>
 #include <ogdf/tree/TreeLayout.h>
 #include <ogdf/tree/RadialTreeLayout.h>
-#include <ogdf/energybased/StressMajorizationSimple.h>
+#include <ogdf/energybased/FastMultipoleEmbedder.h>
+#include <ogdf/energybased/SpringEmbedderFR.h>
 
 
 #define PI 3.14159265
@@ -27,14 +27,17 @@ Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *
     QObject(parent)
 {
     this->numOfClasses = numOfNode;
-    KeyConceptClass *kc=new KeyConceptClass(ontology);
-    classes = convertOverviewShapes(kc->getNKeyClasses(this->numOfClasses));
+    kcTool=new KeyConceptClass(ontology);
+    originalclasses.clear();
+    originalclasses.append(kcTool->getNKeyClasses(this->numOfClasses));
+    classes.clear();
+    classes.append(convertOverviewShapes(originalclasses));
     numOfClasses=classes.size();
     m_ontology = ontology;
     this->m_detailview = new DetailedView(canvas,ontology);
     this->isOrthogonalTreeLayout = false;
     this->orientation = ogdf::leftToRight;
-    this->currentLayoutMethod = "Tree";
+    this->currentLayoutMethod = "Orthogonal Tree";
 
 }
 
@@ -121,73 +124,138 @@ void Overview::drawOverview(OverviewDockWidget *wid)
     wid->clearall();    
     //draw shape
     for(int i=0;i<classes.size();i++){
+        cout<<classes[i]->shortname.toStdString()<<endl;
         wid->addOverviewShape(classes[i]);
     }
     //draw line
     if(isOrthogonalTreeLayout){
         QPen pen = QPen(QColor("black"));
-        for(int i=0;i<treeconnectors.size();i++)
-        {            
-            wid->addTreeConnector(treeconnectors[i],pen);
-        }
+//        for(int i=0;i<treeconnectors.size();i++)
+//        {
+//            wid->addTreeConnector(treeconnectors[i],pen);
+//        }
         for(int i=0;i<classes.size();i++)
         {
             pen = QPen(QColor("black"));
             bool inlst = this->indetailedCls.contains(classes[i]);
             if(inlst)pen = QPen(QColor("red"));
-            if(!classes[i]->subclasses.empty())
+            if((!classes[i]->subclasses.empty())&&classes[i]->URI.left(9)!="[COMPACT]")
             {
                 double sx = classes[i]->overviewshape->pos().rx();
                 double sy = classes[i]->overviewshape->pos().ry();
-                double ex = sx + TREE_levelDistance/2;
-                double ey = sy;
+                double ex;
+                double ey;
+
+                double sp;
+                double ep;
+                double cp;
+                QList<OwlClass *> rsub;
+                if(classes[i]->subclasses.size()>1){
+                    for(int j=0;j<classes[i]->subclasses.size();j++){
+                        if(classes[i]->subclasses[j]->superclasses[0]==classes[i])
+                            rsub.append(classes[i]->subclasses[j]);
+                    }
+                }
 
                 if(this->orientation == ogdf::leftToRight)
                 {
-                    ex = sx + TREE_levelDistance/2 + 3;
+                    cp = ( classes[i]->overviewshape->pos().rx()
+                           + classes[i]->subclasses[0]->overviewshape->pos().rx())/2;
+                    sx += classes[i]->overviewshape->width()/2;
+                    ex = cp;
                     ey = sy;
+                    if(rsub.size()>1){                        
+                        sp = ep = rsub[0]->overviewshape->pos().ry();
+                        for(int j=1;j<rsub.size();j++){
+                            double py = rsub[j]->overviewshape->pos().ry();
+                            sp = std::min(sp,py);
+                            ep = std::max(ep,py);
+                        }
+                        wid->m_scene->addLine(cp,sp,cp,ep,pen);
+                    }
                 }
                 else if(this->orientation == ogdf::rightToLeft)
                 {
-                    ex = sx - TREE_levelDistance/2;
+                    cp = ( classes[i]->overviewshape->pos().rx()
+                           + classes[i]->subclasses[0]->overviewshape->pos().rx())/2;
+                    sx-= classes[i]->overviewshape->width()/2;
+                    ex = cp;
                     ey = sy;
+
+                    if(rsub.size()>1){
+                        sp = ep = rsub[0]->overviewshape->pos().ry();
+                        for(int j=1;j<rsub.size();j++){
+                            double py = rsub[j]->overviewshape->pos().ry();
+                            sp = std::min(sp,py);
+                            ep = std::max(ep,py);
+                        }
+                        wid->m_scene->addLine(cp,sp,cp,ep,pen);
+                    }
                 }
                 else if(this->orientation == ogdf::bottomToTop)
                 {
+                    cp = ( classes[i]->overviewshape->pos().ry()
+                           + classes[i]->subclasses[0]->overviewshape->pos().ry())/2;
                     ex = sx;
-                    ey = sy + TREE_levelDistance/2 + 3;
+                    ey = cp;
+                    sy += classes[i]->overviewshape->height()/2;
+                    if(rsub.size()>1){                        
+                        sp = ep = rsub[0]->overviewshape->pos().rx();
+                        for(int j=1;j<rsub.size();j++){
+                            double px = rsub[j]->overviewshape->pos().rx();
+                            sp = std::min(sp,px);
+                            ep = std::max(ep,px);
+                        }
+                        wid->m_scene->addLine(sp,cp,ep,cp,pen);
+                    }
                 }
                 else{
+                    cp = ( classes[i]->overviewshape->pos().ry()
+                           + classes[i]->subclasses[0]->overviewshape->pos().ry())/2;
                     ex = sx;
-                    ey = sy - TREE_levelDistance/2;
+                    ey = cp;
+                    sy -= classes[i]->overviewshape->height()/2;
+                    if(rsub.size()>1){
+                        sp = ep = rsub[0]->overviewshape->pos().rx();
+                        for(int j=1;j<rsub.size();j++){
+                            double px = rsub[j]->overviewshape->pos().rx();
+                            sp = std::min(sp,px);
+                            ep = std::max(ep,px);
+                        }
+                        wid->m_scene->addLine(sp,cp,ep,cp,pen);
+                    }
                 }
 
-                wid->m_scene->addLine(sx,sy,ex,ey,pen);
+                wid->m_scene->addLine(sx,sy,ex,ey,pen);                
+
             }
             if(!classes[i]->superclasses.empty()){
                 double sx = classes[i]->overviewshape->pos().rx();
                 double sy = classes[i]->overviewshape->pos().ry();
                 double ex = sx;
                 double ey = sy;
-
                 if(this->orientation == ogdf::leftToRight)
-                {
-                    ex = sx - TREE_levelDistance/2;
+                {                    
+                    ex = (sx+classes[i]->superclasses[0]->overviewshape->pos().rx())/2;
                     ey = sy;
+                    sx = sx - classes[i]->overviewshape->width()/2;
                 }
                 else if(this->orientation == ogdf::rightToLeft)
                 {
-                    ex = sx + TREE_levelDistance/2 + 3;
+                    ex = (sx+classes[i]->superclasses[0]->overviewshape->pos().rx())/2;
                     ey = sy;
+                    sx = sx + classes[i]->overviewshape->width()/2;
                 }
                 else if(this->orientation == ogdf::bottomToTop)
                 {
                     ex = sx;
-                    ey = sy - TREE_levelDistance/2;
+                    ey = (sy+classes[i]->superclasses[0]->overviewshape->pos().ry())/2;
+                    sy-= classes[i]->overviewshape->height()/2;
                 }
                 else{
                     ex = sx;
-                    ey = sy + TREE_levelDistance/2 + 3;
+                    ey = (sy+classes[i]->superclasses[0]->overviewshape->pos().ry())/2;
+                    sy+= classes[i]->overviewshape->height()/2;
                 }
                 wid->m_scene->addLine(sx,sy,ex,ey,pen);
             }
@@ -215,6 +283,9 @@ void Overview::drawOverview(OverviewDockWidget *wid)
             }
         }
     }
+    wid->fixSceneRect();
+    wid->highlightItems(indetailedCls);
+
 }
 
 void Overview::drawOverview(Canvas *canvas)
@@ -758,6 +829,17 @@ void Overview::treeLayout(QList<OwlClass *> graph)
     Graph g;
     GraphAttributes ga(g,GraphAttributes::nodeGraphics|GraphAttributes::edgeGraphics );
 
+    int n=graph.size();
+    for(int i=0;i<n;i++)
+    {
+        OwlClass * c = graph[i];
+        graph.removeOne(c);
+        if(c->subclasses.empty()&&c->superclasses.size()==1){
+            graph.append(c);
+        }
+        else graph.insert(0,c);
+    }
+
     QList<node> nodes;
     QList<edge> edges;
     for(int i=0;i<graph.size();i++)
@@ -801,6 +883,76 @@ void Overview::treeLayout(QList<OwlClass *> graph)
         DPolyline pl = ga.bends(edges[i]);
         treeconnectors.append(pl);
     }
+
+
+}
+
+void Overview::compactTreeLayout(double maxW,double maxH)
+{
+    this->isOrthogonalTreeLayout = true;
+    this->treeLayout(classes);
+    this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+
+    this->drawOverview(m_wid);
+
+    double w = m_wid->m_scene->sceneRect().width();
+    double h = m_wid->m_scene->sceneRect().height();
+
+    if(w>maxW||h>maxH){
+
+        QList<OwlClass *> removedClasses;   //hidden classes
+        QList<OwlClass *> addedClasses;     //new classes contains the hidden classes
+        for(int i=0;i<classes.size();i++){
+            OwlClass * tmp = classes[i];
+            if(tmp->subclasses.size()>2){
+                QList<OwlClass *> cls;
+                //get the subclasses should be hidden
+                for(int j=0;j<tmp->subclasses.size();j++){
+                    OwlClass * c = tmp->subclasses[j];
+                    if(c->subclasses.empty()&&c->superclasses.size()==1)
+                    {
+                        cls.append(c);
+                    }
+                }
+                if(cls.size()>2){
+                    removedClasses.append(cls);
+                    OwlClass * ctclass = new OwlClass();
+                    ctclass->subclasses.append(cls);
+                    ctclass->superclasses.append(tmp);
+                    ctclass->shortname = "Contains subclasses:";
+                    ctclass->URI = "[COMPACT]"+tmp->shortname;
+                    ctclass->overviewshape = new OverviewClassShape();
+                    ctclass->overviewshape->setStatus(OverviewClassShape::STATUS_COMPACT);
+                    addedClasses.append(ctclass);
+
+                    tmp->subclasses.append(ctclass);
+                    for(int k=0;k<cls.size();k++){
+                        ctclass->shortname += "\n"+cls[k]->shortname;
+                        tmp->subclasses.removeAll(cls[k]);
+                    }
+                }
+                cls.clear();
+            }
+        }
+        for(int i=0;i<removedClasses.size();i++){
+            classes.removeAll(removedClasses[i]);
+        }
+        classes.append(addedClasses);
+
+        this->treeLayout(classes);
+        this->drawOverview(m_wid);
+
+        //restore
+        for(int i=0;i<addedClasses.size();i++){
+            for(int j=0;j<addedClasses[i]->superclasses.size();j++)
+                addedClasses[i]->superclasses[j]->overviewshape->setCentrePos(addedClasses[i]->overviewshape->pos());
+
+            addedClasses[i]->superclasses[0]->subclasses.append(addedClasses[i]->subclasses);
+            addedClasses[i]->superclasses[0]->subclasses.removeAll(addedClasses[i]);
+            classes.append(addedClasses[i]->subclasses);
+            classes.removeAll(addedClasses[i]);
+        }
+    }
 }
 
 void Overview::ogdfLayout(QList<OwlClass *> graph)
@@ -832,14 +984,11 @@ void Overview::ogdfLayout(QList<OwlClass *> graph)
         }
     }
 
-//    RadialTreeLayout tl;
-//    tl.levelDistance(this->TREE_levelDistance);
-//    tl.rootSelection(RadialTreeLayout::rootIsSource);
-//    tl.call(ga);
-
-    StressMajorization tl;
-    tl.setIterations(7);
+    SpringEmbedderFR tl;
+    tl.minDistCC(this->SINGLE_EDGE_LENGTH);
+    tl.iterations(16);
     tl.call(ga);
+
 
     for(int i=0;i<nodes.size();i++){
         graph[i]->overviewshape->setCentrePos(QPointF(ga.x(nodes[i]),ga.y(nodes[i])));
@@ -857,11 +1006,13 @@ void Overview::widSceneClicked(QPointF pos)
     int minidx = -1;
     for(int i = 0;i<this->classes.size();i++)
     {
-        classes[i]->overviewshape->setStatus(OverviewClassShape::STATUS_OutDetailview);
-        double d = EuclideanDistance(pos,classes[i]->overviewshape->pos());
-        if(d<mind){
-            mind = d;
-            minidx = i;
+        if(classes[i]->URI.left(9)!="[COMPACT]"){
+            classes[i]->overviewshape->setStatus(OverviewClassShape::STATUS_OutDetailview);
+            double d = EuclideanDistance(pos,classes[i]->overviewshape->pos());
+            if(d<mind){
+                mind = d;
+                minidx = i;
+            }
         }
     }
     //sent to detailview
@@ -871,6 +1022,22 @@ void Overview::widSceneClicked(QPointF pos)
     QList<OwlClass *> rlst;
 
     if(idx!=-1)rlst.append(this->m_detailview->drawClassView(m_ontology->classes[idx]));
+/** remove this part since the architecture of overview changes frequently.
+    Remove it to keep stable. **/
+//    //remove all temp added classes
+//    this->originalclasses.clear();
+//    this->originalclasses.append(kcTool->getNKeyClasses(this->numOfClasses));
+//    tempaddedCls.clear();
+//    //original classes list add new
+//    for(int i=0;i<rlst.size();i++){
+//        if(!originalclasses.contains(rlst[i])){
+//            tempaddedCls.append(rlst[i]);
+//            this->originalclasses.append(rlst[i]);
+//        }
+//    }
+//    //convert to classes
+//    classes.clear();
+//    classes.append(this->convertOverviewShapes(originalclasses));
 
     //get back from detailed view ->ov
     indetailedCls.clear();
@@ -893,9 +1060,7 @@ void Overview::widSceneClicked(QPointF pos)
 
     m_ontology->ontoclass_clicked(m_ontology->classes[idx]->shape);
 
-    this->drawOverview(m_wid);
-//    m_wid->sceneClicked(pos);
-
+    this->updatelayout();
 }
 
 void Overview::detailView_ClickedClass(QString shortname)
@@ -935,9 +1100,14 @@ void Overview::layoutmethodChanged(QString method)
         this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
     }
     if(method == "Orthogonal Tree"){
-        this->isOrthogonalTreeLayout = true;
-        this->treeLayout(classes);
-        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+//        this->isOrthogonalTreeLayout = true;
+//        this->treeLayout(classes);
+//        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+        this->compactTreeLayout(200,200);
+        this->m_detailview->m_canvas->setOptAutomaticGraphLayout(true);
+        this->m_detailview->m_canvas->setOptPreventOverlaps(true);
+        this->m_detailview->m_canvas->fully_restart_graph_layout();
+        return;
     }
     if(method == "Radial Tree(90)"){
         this->quadrantRadialTree(classes,90);
@@ -948,12 +1118,15 @@ void Overview::layoutmethodChanged(QString method)
         this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
     }
     if(method == "FMS"){
-        this->FMSLayout(false);
+//        this->FMSLayout(false);
+        this->ogdfLayout(classes);
         this->m_detailview->m_canvas->setOptLayoutMode(Canvas::OrganicLayout);
         this->m_detailview->m_canvas->setIdealConnectorLength(80);
     }
     if(method == "FMS(Projection)"){
-        this->FMSLayout(true);
+//        this->FMSLayout(true);
+        this->ogdfLayout(classes);
+        this->projection(classes);
         this->m_detailview->m_canvas->setOptLayoutMode(Canvas::FlowLayout);
         this->m_detailview->m_canvas->setIdealConnectorLength(80);
     }
@@ -1020,3 +1193,7 @@ void Overview::showlayout(OverviewDockWidget *wid)
     this->connectWgt(wid);
     this->directionChanged("L->R");
 }
+void Overview::updatelayout(){
+    this->layoutmethodChanged(this->currentLayoutMethod);
+}
+

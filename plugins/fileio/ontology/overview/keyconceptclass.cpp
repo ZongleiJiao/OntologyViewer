@@ -19,6 +19,16 @@ KeyConceptClass::KeyConceptClass(OwlOntology *ontology)
 //        mi.score = 0;
         measures.append(mi);
     }
+    this->isScoreFileChanged = false;
+
+    ontofilename = ontologyfile->absoluteFilePath();
+    scorefilename = ontofilename.left(ontofilename.length()-4)+"_score.xml";
+}
+
+KeyConceptClass::~KeyConceptClass()
+{
+    if(this->isScoreFileChanged)
+        this->writeScoreFile();
 }
 
 //get index of classes by its shortname
@@ -341,6 +351,7 @@ void KeyConceptClass::computeScore()
         //init visited times & last visited time
         measures[i].visitTimes=1;
         measures[i].lastvisitedTime = QDateTime::currentDateTime();
+        measures[i].landmark = 0;
     }
 }
 
@@ -386,10 +397,12 @@ QList<OwlClass *> KeyConceptClass::getNKeyClasses(int n)
         this->writeScoreFile();
     }
 
+    cout<<"KC computing overall scores"<<endl;
     this->computeOverallScore();
     //top n overall score classes
     if(n>classnum)n=classnum;
     for(int i=0;i<n;i++)result<<classes[measures[i].idx];
+    cout<<"KC return "<<n<<" classes."<<endl;
     return result;
 }
 
@@ -401,9 +414,6 @@ int KeyConceptClass::checkfile()
     //score file does not match: -3
     //owl file changed: 0
     //else 1;
-
-    QString ontofilename = ontologyfile->absoluteFilePath();
-    QString scorefilename = ontofilename.left(ontofilename.length()-4)+"_score.xml";
 
     QFile scorefile(scorefilename);
     if (!scorefile.open(QIODevice::ReadOnly)){
@@ -422,9 +432,9 @@ int KeyConceptClass::checkfile()
         scorefile.close();
         return -3;
     }
-
+    QFileInfo *ontof = new QFileInfo(ontofilename);
     QString mdate = root.elementsByTagName("OWLFile").at(0).toElement().attribute("LastModified");
-    if(mdate != ontologyfile->lastModified().toString())
+    if(mdate != ontof->lastModified().toString())
     {
         cout<<"OWL FILE HAS BEEN CHANGED!"<<endl;
         scorefile.close();
@@ -459,6 +469,7 @@ void KeyConceptClass::writeScoreFile()
         node.setAttribute("Score",measures[i].score);
         node.setAttribute("VisitedTimes",measures[i].visitTimes);
         node.setAttribute("LastVisitedTime",measures[i].lastvisitedTime.toString());
+        node.setAttribute("Landmark", measures[i].landmark);
         nodes.appendChild(node);
     }
 
@@ -477,8 +488,8 @@ void KeyConceptClass::writeScoreFile()
 
 void KeyConceptClass::readScoreFile()
 {
-    QString ontofilename = ontologyfile->absoluteFilePath();
-    QString scorefilename = ontofilename.left(ontofilename.length()-4)+"_score.xml";
+//    QString ontofilename = ontologyfile->absoluteFilePath();
+//    QString scorefilename = ontofilename.left(ontofilename.length()-4)+"_score.xml";
 
     QFile scorefile(scorefilename);
     if (!scorefile.open(QIODevice::ReadOnly)){
@@ -525,6 +536,7 @@ void KeyConceptClass::readScoreFile()
 void KeyConceptClass::computeOverallScore()
 {
     /** version 1: overallscore = wSC*score + wVT* VT/MaxVT + wLV * (1-LVidx/num)
+        version 2: overallscore = 100*landmark + wSC*score + wVT* VT/MaxVT + wLV * (1-LVidx/num)
         Add Landmark!!**/
     //Get maxVT
     double maxvt=1.0;
@@ -538,8 +550,8 @@ void KeyConceptClass::computeOverallScore()
     //compute overallscore
     for(int i=0;i<num;i++)
     {
-        measures[i].overallscore =
-                overallscore_wSC * measures[i].score
+        measures[i].overallscore = 100*measures[i].landmark
+                + overallscore_wSC * measures[i].score
                 + overallscore_wVT * double(measures[i].visitTimes)/maxvt
                 + overallscore_wLV * (1 - i/num);
     }
@@ -582,6 +594,7 @@ void KeyConceptClass::sortMeasuresByLastVisitedTime()
 
 void KeyConceptClass::updateClassVisitedTime(QString shortname, int inc)
 {
+    this->isScoreFileChanged = true;
     for(int i = 0;i<measures.size();i++){
         if(measures[i].classname.toLower()==shortname.toLower())
         {
@@ -593,6 +606,7 @@ void KeyConceptClass::updateClassVisitedTime(QString shortname, int inc)
 
 void KeyConceptClass::updateClassLastVisitedTime(QString shortname, const QDateTime time)
 {
+    this->isScoreFileChanged = true;
     for(int i = 0;i<measures.size();i++){
         if(measures[i].classname.toLower()==shortname.toLower())
         {
@@ -601,3 +615,16 @@ void KeyConceptClass::updateClassLastVisitedTime(QString shortname, const QDateT
         }
     }
 }
+
+void KeyConceptClass::updateClassLandmark(QString shortname, int lk)
+{
+    this->isScoreFileChanged = true;
+    for(int i = 0;i<measures.size();i++){
+        if(measures[i].classname.toLower()==shortname.toLower())
+        {
+            measures[i].landmark = lk;
+            break;
+        }
+    }
+}
+

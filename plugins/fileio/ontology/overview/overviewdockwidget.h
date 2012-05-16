@@ -42,6 +42,11 @@ public:
     void addOverviewLine(OwlClass *start,OwlClass *end,QPen pen);
     void addTreeConnector(DPolyline pl,QPen pen);
 
+    void fixSceneRect();
+
+    QGraphicsItem * highlightpolygon;
+    void highlightItems(QList<OwlClass *> cls);
+
     //event
     void resizeEvent(QResizeEvent *event);
 
