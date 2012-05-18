@@ -825,6 +825,14 @@ void Overview::quadrantRadialTree(QList<OwlClass *> graph,double rangeAngle)
 }
 void Overview::sortSubclassesByAscending(QList<OwlClass *> graph)
 {
+    for(int i=0;i<graph.size()-1;i++){
+        int min=i;
+        for(int j=i+1;j<graph.size();j++){
+            if(QString::compare(graph[j]->shortname,graph[min]->shortname)<0)
+                min=j;
+        }
+        if(min!=i)graph.swap(i,min);
+    }
     for(int i=0;i<graph.size();i++){
         QList<OwlClass *> subs = graph[i]->subclasses;
         if(subs.size()>1){
