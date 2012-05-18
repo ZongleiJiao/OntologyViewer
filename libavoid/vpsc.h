@@ -64,11 +64,14 @@ using vpsc::delete_object;
 
 #else
 
+#include <iostream>
+#include <fstream>
 #include <vector>
 #include <list>
 #include <set>
 #include <queue>
-
+#include <stdlib.h>
+using namespace std;
 namespace Avoid {
 
 class Variable;

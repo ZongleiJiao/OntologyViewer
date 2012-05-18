@@ -1197,3 +1197,5 @@ void Overview::updatelayout(){
     this->layoutmethodChanged(this->currentLayoutMethod);
 }
 
+//add detailed view response nodes,QList<> indetailedCls, QList<> tempaddednodes
+//remove when clicked other place of overview, then add new
