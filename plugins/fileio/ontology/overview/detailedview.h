@@ -21,8 +21,9 @@ public:
     void setCanvas(Canvas *canvas);
     void setOntology(OwlOntology * ontology);
     void setViewLimit(int entityNum, int relationNum);
+    int getIndexByShortname(QList<OwlClass *> lst, QString shortname);
 
-    QList<OwlClass *> drawClassView(OwlClass *centerNode);
+    QList<OwlClass *> drawClassView(OwlClass *centerNode,QList<OwlClass *> overviewClasses);
 private:
     int m_entitynum;
     QList<OwlClass *> getNextLevelClasses(QList<OwlClass *> cls);

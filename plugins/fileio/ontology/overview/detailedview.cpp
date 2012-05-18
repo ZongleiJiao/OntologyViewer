@@ -2,6 +2,7 @@
 #include <stack>
 
 using namespace std;
+
 DetailedView::DetailedView(Canvas *canvas, OwlOntology *ontology, QObject *parent) :
     QObject(parent)
 {
@@ -14,8 +15,20 @@ void DetailedView::setViewLimit(int entityNum, int relationNum)
     this->limitEntityNum = entityNum;
     this->limitRelationNum = relationNum;
 }
-
-QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode)
+int DetailedView::getIndexByShortname(QList<OwlClass *> lst, QString shortname)
+{
+    int rs=-1;
+    for(int i=0;i<lst.size();i++)
+    {
+        if(lst[i]->shortname.toLower()==shortname.toLower())
+        {
+            rs=i;
+            break;
+        }
+    }
+    return rs;
+}
+QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlClass *> overviewClasses)
 {
     for(int i=0;i<dclasses.size();i++)m_canvas->removeItem(dclasses[i]->shape);
     for(int i=0;i<dedges.size();i++){
@@ -40,7 +53,12 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode)
 
     for(int i=0;i<dclasses.size();i++)
     {
-        dclasses[i]->shape->setCentrePos(QPointF(0,i));
+//        dclasses[i]->shape->setCentrePos(QPointF(0,i));
+        int idx = getIndexByShortname(overviewClasses,dclasses[i]->shortname);
+        if(idx!=-1){
+            QPointF p = overviewClasses[idx]->overviewshape->pos();
+            dclasses[i]->shape->setCentrePos(p);
+        }
         m_canvas->addItem(dclasses[i]->shape);
     }
 

@@ -53,6 +53,7 @@ public:
     void showlayout(Canvas *canvas);
     void showlayout(OverviewDockWidget *wid);
     void updatelayout();
+    void setOrthogonalConnectors(Canvas *canvas,bool isOrthogonal);
 private:
     /** FMS Drawing Algorithm implementation **/
     const static int MIN_K=10;
@@ -98,6 +99,7 @@ private:
 
     QList<DPolyline> treeconnectors;
     void treeLayout(QList<OwlClass *> graph);
+    void sortSubclassesByAscending(QList<OwlClass *> graph);
     void compactTreeLayout(double maxW,double maxH);
     void ogdfLayout(QList<OwlClass *> graph);
 

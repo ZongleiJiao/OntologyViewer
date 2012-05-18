@@ -144,7 +144,9 @@ void OverviewDockWidget::addOverviewShape(OwlClass *cls)
         m_scene->addItem(io);
 
         for(int i=0;i<cls->subclasses.size();i++){
-            cls->subclasses[i]->overviewshape->setCentrePos(QPointF(x,y));
+            double sx = x+0.0001*i;
+            double sy = y+0.0001*i;
+            cls->subclasses[i]->overviewshape->setCentrePos(QPointF(sx,sy));
         }
     }
         break;

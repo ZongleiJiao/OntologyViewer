@@ -27,6 +27,7 @@ Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *
     QObject(parent)
 {
     this->numOfClasses = numOfNode;
+    this->sortSubclassesByAscending(ontology->classes);
     kcTool=new KeyConceptClass(ontology);
     originalclasses.clear();
     originalclasses.append(kcTool->getNKeyClasses(this->numOfClasses));
@@ -822,6 +823,21 @@ void Overview::quadrantRadialTree(QList<OwlClass *> graph,double rangeAngle)
     }
 
 }
+void Overview::sortSubclassesByAscending(QList<OwlClass *> graph)
+{
+    for(int i=0;i<graph.size();i++){
+        QList<OwlClass *> subs = graph[i]->subclasses;
+        if(subs.size()>1){
+            for(int m=0;m<subs.size()-1;m++){
+                int min=m;
+                for(int k=m+1;k<subs.size();k++)
+                    if(QString::compare(subs[k]->shortname,subs[min]->shortname)<0)
+                        min=k;
+                if(min!=m)subs.swap(m,min);
+            }
+        }
+    }
+}
 
 void Overview::treeLayout(QList<OwlClass *> graph)
 {
@@ -829,16 +845,17 @@ void Overview::treeLayout(QList<OwlClass *> graph)
     Graph g;
     GraphAttributes ga(g,GraphAttributes::nodeGraphics|GraphAttributes::edgeGraphics );
 
-    int n=graph.size();
-    for(int i=0;i<n;i++)
-    {
-        OwlClass * c = graph[i];
-        graph.removeOne(c);
-        if(c->subclasses.empty()&&c->superclasses.size()==1){
-            graph.append(c);
-        }
-        else graph.insert(0,c);
-    }
+    this->sortSubclassesByAscending(graph);
+//    int n=graph.size();
+//    for(int i=0;i<n;i++)
+//    {
+//        OwlClass * c = graph[i];
+//        graph.removeOne(c);
+//        if(c->subclasses.empty()&&c->superclasses.size()==1){
+//            graph.append(c);
+//        }
+//        else graph.insert(0,c);
+//    }
 
     QList<node> nodes;
     QList<edge> edges;
@@ -939,6 +956,8 @@ void Overview::compactTreeLayout(double maxW,double maxH)
         }
         classes.append(addedClasses);
 
+        this->sortSubclassesByAscending(classes);
+
         this->treeLayout(classes);
         this->drawOverview(m_wid);
 
@@ -1021,7 +1040,7 @@ void Overview::widSceneClicked(QPointF pos)
 
     QList<OwlClass *> rlst;
 
-    if(idx!=-1)rlst.append(this->m_detailview->drawClassView(m_ontology->classes[idx]));
+    if(idx!=-1)rlst.append(this->m_detailview->drawClassView(m_ontology->classes[idx],classes));
 /** remove this part since the architecture of overview changes frequently.
     Remove it to keep stable. **/
 //    //remove all temp added classes
@@ -1087,13 +1106,14 @@ void Overview::detailView_ClickedClass(QString shortname)
         if(ix!=-1)classes[ix]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SuperFocused);
     }
 
-    this->drawOverview(m_wid);
+    this->updatelayout();
 }
 
 void Overview::layoutmethodChanged(QString method)
 {
     this->currentLayoutMethod = method;
     this->isOrthogonalTreeLayout = false;
+    this->setOrthogonalConnectors(this->m_detailview->m_canvas,false);
 
     if(method == "Tree"){
         this->treeLayout(classes);
@@ -1106,6 +1126,7 @@ void Overview::layoutmethodChanged(QString method)
         this->compactTreeLayout(200,200);
         this->m_detailview->m_canvas->setOptAutomaticGraphLayout(true);
         this->m_detailview->m_canvas->setOptPreventOverlaps(true);
+        this->setOrthogonalConnectors(this->m_detailview->m_canvas,true);
         this->m_detailview->m_canvas->fully_restart_graph_layout();
         return;
     }
@@ -1197,5 +1218,17 @@ void Overview::updatelayout(){
     this->layoutmethodChanged(this->currentLayoutMethod);
 }
 
-//add detailed view response nodes,QList<> indetailedCls, QList<> tempaddednodes
-//remove when clicked other place of overview, then add new
+void Overview::setOrthogonalConnectors(Canvas *canvas, bool isOrthogonal)
+{
+    QList<CanvasItem *> canvas_items = canvas->items();
+
+    for (int i = 0; i < canvas_items.size(); ++i)
+    {
+        Connector *connector = dynamic_cast<Connector *> (canvas_items.at(i));
+        if (connector)
+        {
+            if(isOrthogonal)connector->setRoutingType(Connector::orthogonal);
+            else connector->setRoutingType(Connector::polyline);
+        }
+    }
+}
