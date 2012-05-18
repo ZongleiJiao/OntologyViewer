@@ -886,6 +886,16 @@ void Overview::treeLayout(QList<OwlClass *> graph)
                 edges.append(e);
             }
         }
+//        for(int j=0;j<graph[i]->subclasses.size();j++){
+//            OwlClass * sub = graph[i]->subclasses[j];
+//            if(sub->superclasses[0]==graph[i]){
+//                int idx = getIndexByShortname(graph,sub->shortname);
+//                if(idx!=-1){
+//                    edge e =g.newEdge(nodes[i],nodes[idx]);
+//                    edges.append(e);
+//                }
+//            }
+//        }
     }
 
     TreeLayout tl;
