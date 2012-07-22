@@ -369,7 +369,8 @@ HEADERS       = \
     overview/overviewscene.h \
     overview/overview.h \
     owlentity.h \
-    overview/detailedview.h
+    overview/detailedview.h \
+    ontologydb.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -715,7 +716,8 @@ SOURCES       = plugin.cpp \
     overview/overviewscene.cpp \
     overview/overview.cpp \
     owlentity.cpp \
-    overview/detailedview.cpp
+    overview/detailedview.cpp \
+    ontologydb.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm
