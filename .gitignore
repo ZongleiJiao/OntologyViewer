@@ -26,5 +26,8 @@ diff
 
 #files different between mac and linux
 #plugins/fileio/ontology/ontology.pro
-plugins/fileio/ontology/libontology/java_wrapper.cpp
+
+
+
+#plugins/fileio/ontology/libontology/java_wrapper.cpp
 
