@@ -58,6 +58,8 @@
 #include <QMainWindow>
 
 #include <overview/keyconceptclass.h>
+#include "widgets/detailvisualizationdockwidget.h"
+
 
 using namespace std;
 using namespace dunnart;
@@ -187,12 +189,17 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     this->overviewwid->show();
     this->equclasswid->show();
 
+
+
     cout<<"Start loading ontology :"<<fileInfo.completeBaseName().toStdString()<<endl;
+    QTime st = QTime::currentTime();
+    st.start();
     OwlOntology * onto = new OwlOntology(canvas,this->appmainwin,this->equclasswid);
-
     onto->loadontology(fileInfo);
-
+    cout<<"T:"<<st.elapsed()<<endl;
     cout<<"Finish loading. Total " <<onto->classes.size()<<" class notes."<<endl;
+
+    onto->loadontologyFromDB(fileInfo);
 
     /** text output **/
 //    cout<<onto->toQString().toStdString();
@@ -204,10 +211,12 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
       **/
 
     this->overviewwid->setOntology(onto);
-    Overview * ov = new Overview(500,onto,canvas);
+    Overview * ov = new Overview(300,onto,canvas);
     cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
+    cout<<"T:"<<st.elapsed()<<endl;
     cout<<"drawing overview..."<<endl;
     ov->showlayout(this->overviewwid);
+    cout<<"T:"<<st.elapsed()<<endl;
 
     /** classview, individualview, propertyview can
       * be displayed together or individually.
@@ -243,6 +252,20 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 
 
 //    cout<<onto->ontologyname.toStdString()<<endl;
+
+
+    DetailVisualizationDockWidget * dvDW = new DetailVisualizationDockWidget(onto,onto->classes[0]);
+    //this->appmainwin->addDockWidget(Qt::LeftDockWidgetArea,dvDW);
+    dvDW->show();
+//    QString x = "ObjectIntersectionOf(<Student> ObjectAllValuesFrom(<hasChildren> <Female>) ObjectHasValue(<hasGender> <male>) ObjectExactCardinality(3 <hasChildren> Thing))";
+//    QString x1 = "<Student>";
+//    QString x2 ="ObjectIntersectionOf(<Person> ObjectSomeValuesFrom(<hasHabitat> <University>) DataHasValue(<isHardWorking> \"true\"^^xsd:boolean))";
+//    Expression * e = new Expression();
+//    e = e->getExpressionData(onto,x2);
+//    dvDW->drawExpression(e,370);
+//    cout<<e->getHeight()<<endl;
+//    cout<<e->subExpressions.size()<<endl;
+
     return true;
 }
 

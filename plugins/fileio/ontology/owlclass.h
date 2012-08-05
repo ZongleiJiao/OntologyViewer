@@ -27,6 +27,7 @@ public:
     QList<OwlClass *> superclasses;
     QList<OwlClass *> disjointclasses;
     QList<OwlIndividual *> individuals;
+
     QList<QString> propertydomains;
     QList<QString> propertyranges;
 
@@ -34,7 +35,10 @@ public:
     OverviewClassShape * overviewshape;
     QString equivalentclass;
 
-
+    QStringList anonymousSubs;
+    QStringList anonymousSupers;
+    QStringList anonymousDisjoints;
+    QStringList anonymousEqus;
 
     QList<Connector *> individualconnectors;
     QList<Connector *> classesconnectors;

@@ -15,6 +15,8 @@
 #include <ontoindividual.h>
 #include <ontoproperty.h>
 
+#include <ontologydb.h>
+
 using namespace dunnart;
 using namespace std;
 
@@ -75,7 +77,7 @@ OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin, DetailDockWidget 
 */
 
 //const
-const QColor OwlOntology::CLASS_SHAPE_COLOR = QColor(65,105,225);
+const QColor OwlOntology::CLASS_SHAPE_COLOR = OwlClass::CLASS_SHAPE_COLOR;
 const QColor OwlOntology::INDIVIDUAL_SHAPE_COLOR = QColor(238,130,238);
 const QColor OwlOntology::PROPERTY_SHAPE_COLOR = QColor(143,188,143);
 
@@ -114,6 +116,47 @@ int OwlOntology::getIndexOfProperties(QString shortname)
     return -1;
 }
 
+//load ontology from database
+void OwlOntology::loadontologyFromDB(const QFileInfo &fileInfo)
+{
+    QString filename = fileInfo.absoluteFilePath();
+    this->ontologyname = fileInfo.absoluteFilePath();
+    this->ontologyfile = &fileInfo;
+
+    OntologyDB * db = new OntologyDB();
+    db->openDB();
+
+    //get ontology ID
+    this->ontologyID = db->getOntologyID(filename);
+    cout<<this->ontologyID<<endl;
+    //get namespace for the URI
+    this->owlnamespace = db->getOntologyNamespace(filename);
+    cout<<owlnamespace.toStdString()<<endl;
+    //get all individuals
+    QList<QString> idvs = db->getAllIndividualNames(this->ontologyID);
+    for(int i=0;i<idvs.size();i++)
+    {
+        //set individual name
+//        OwlIndividual * tmpindividual = new OwlIndividual();
+//        tmpindividual->shortname=QString(owlindividuals[i]->toString());
+//        tmpindividual->URI="<" + owlnamespace + tmpindividual->shortname + ">";
+
+//        //create shape
+//        tmpindividual->shape = new OntologyIndividualShape();
+//        tmpindividual->shape->setIdString(tmpindividual->shortname);
+//        tmpindividual->shape->setLabel(tmpindividual->shortname);
+//        tmpindividual->shape->setToolTip(tmpindividual->URI);
+//        tmpindividual->shape->setSize(QSizeF(150,20));
+//        tmpindividual->shape->setFillColour(this->INDIVIDUAL_SHAPE_COLOR);
+
+
+//        //append tmpindividual to list
+//        this->individuals.append(tmpindividual);
+    }
+
+
+}
+
 //load ontology using owlapi via OWLAPIWrapper
 void OwlOntology::loadontology(const QFileInfo& fileInfo)
 {
@@ -123,6 +166,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
     edu::monash::infotech::OWLAPIWrapper * wp = new edu::monash::infotech::OWLAPIWrapper();
     //load owl file
     QString filename = fileInfo.absoluteFilePath();
+    cout<<filename.toStdString()<<"()()()()()()"<<endl;
     this->ontologyname = fileInfo.absoluteFilePath();
     this->ontologyfile = &fileInfo;
     wp->loadOntologyFile(filename.toUtf8().constData());
@@ -449,9 +493,9 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
         }
     }
 
-    cout<<"///////////get information of this ontology/////////////////"<<endl;
+//    cout<<"///////////get information of this ontology/////////////////"<<endl;
     this->getOntoInfo();
-    cout<<"///////////get information of this ontology/////////////////"<<endl;
+//    cout<<"///////////get information of this ontology/////////////////"<<endl;
 }
 
 ///////////get information of this ontology/////////////////

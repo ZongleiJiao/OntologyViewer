@@ -52,6 +52,7 @@ public:
     ShowNodesDockWidget * typedwgt;
     DetailInfoDockWidget * deatildwgt;
 
+    int ontologyID;
     QString ontologyname;
     const QFileInfo * ontologyfile;
     QString owlnamespace;
@@ -74,6 +75,7 @@ public:
     int getIndexOfClasses(QString shortname);
     int getIndexOfProperties(QString shortname);
     void loadontology(const QFileInfo& fileInfo);
+    void loadontologyFromDB(const QFileInfo& fileInfo);
     void drawClassView(Canvas *canvas);
     void drawIndividualView(Canvas *canvas);
     void drawPropertyView(Canvas *canvas);

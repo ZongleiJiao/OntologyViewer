@@ -252,11 +252,12 @@ void KeyConceptClass::computeDensities()
         D=wLD*localdensity + wGD*globaldensity
     **/
     computeGlobalDensities();
-    computeLocalDensities();
+//    computeLocalDensities();
     for(int i=0;i<classnum;i++)
     {
-        measures[i].density = density_wLD * measures[i].localdensity
-                + density_wGD * measures[i].globaldensity;
+//        measures[i].density = density_wLD * measures[i].localdensity
+//                + density_wGD * measures[i].globaldensity;
+        measures[i].density = measures[i].globaldensity;
     }
 }
 
@@ -324,13 +325,14 @@ void KeyConceptClass::computePopularities()
 {
     /** P=wLP*LP + wGP*GP **/
     cout<<"Computing GlobalPopularities..."<<endl;
-    computeGlobalPopularities();
+//    computeGlobalPopularities();
     cout<<"Computing LocalPopularities..."<<endl;
-    computeLocalPopularities();
+//    computeLocalPopularities();
     for(int i=0;i<classnum;i++)
     {
-        measures[i].popularity = popularity_wLP * measures[i].localpopularity
-                + popularity_wGP * measures[i].globalpopularity;
+//        measures[i].popularity = popularity_wLP * measures[i].localpopularity
+//                + popularity_wGP * measures[i].globalpopularity;
+        measures[i].popularity = measures[i].globalpopularity;
     }
 }
 

@@ -1,5 +1,6 @@
 
 QT           += xml svg
+QT           += sql
 TEMPLATE      = lib
 CONFIG       += qt plugin
 TARGET        = $$qtLibraryTarget(fileio_ontology)
@@ -369,7 +370,11 @@ HEADERS       = \
     overview/overviewscene.h \
     overview/overview.h \
     owlentity.h \
-    overview/detailedview.h
+    overview/detailedview.h \
+    ontologydb.h \
+    overview/overviewshape.h \
+    widgets/detailvisualizationdockwidget.h \
+    expression.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -715,7 +720,11 @@ SOURCES       = plugin.cpp \
     overview/overviewscene.cpp \
     overview/overview.cpp \
     owlentity.cpp \
-    overview/detailedview.cpp
+    overview/detailedview.cpp \
+    ontologydb.cpp \
+    overview/overviewshape.cpp \
+    widgets/detailvisualizationdockwidget.cpp \
+    expression.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm
@@ -738,7 +747,17 @@ FORMS += \
     widgets/historydockwidget.ui \
     widgets/informationboxdockwidget.ui \
     widgets/shownodesdockwidget.ui \
-    widgets/detailinfodockwidget.ui
+    widgets/detailinfodockwidget.ui \
+    widgets/detailvisualizationdockwidget.ui
+
+
+
+
+
+
+
+
+
 
 
 

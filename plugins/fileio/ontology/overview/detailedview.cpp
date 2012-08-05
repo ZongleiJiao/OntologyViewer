@@ -44,7 +44,7 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
     m_entitynum=1;
     int totalclassnum = m_ontology->classes.size();
     if(n>totalclassnum)n=totalclassnum;
-    cout<<"Classes in detailed view:"<<n<<endl;
+    //cout<<"Classes in detailed view:"<<n<<endl;
 
     while(dclasses.size()<n){
         QList<OwlClass *> nextClasses = getNextLevelClasses(dclasses);
