@@ -254,9 +254,9 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    cout<<onto->ontologyname.toStdString()<<endl;
 
 
-    DetailVisualizationDockWidget * dvDW = new DetailVisualizationDockWidget(onto,onto->classes[0]);
+//    DetailVisualizationDockWidget * dvDW = new DetailVisualizationDockWidget(onto,onto->classes[0]);
     //this->appmainwin->addDockWidget(Qt::LeftDockWidgetArea,dvDW);
-    dvDW->show();
+//    dvDW->show();
 //    QString x = "ObjectIntersectionOf(<Student> ObjectAllValuesFrom(<hasChildren> <Female>) ObjectHasValue(<hasGender> <male>) ObjectExactCardinality(3 <hasChildren> Thing))";
 //    QString x1 = "<Student>";
 //    QString x2 ="ObjectIntersectionOf(<Person> ObjectSomeValuesFrom(<hasHabitat> <University>) DataHasValue(<isHardWorking> \"true\"^^xsd:boolean))";

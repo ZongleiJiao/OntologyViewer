@@ -32,7 +32,7 @@ Expression * Expression::getExpressionData(OwlOntology *onto, QString expStr)
     else if(expStr.startsWith("Data"))
     {
         startpos=4;
-        exp->symbol += "Object";
+        exp->symbol += "Data";
     }
     else
     {

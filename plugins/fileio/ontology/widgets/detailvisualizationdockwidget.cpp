@@ -28,6 +28,7 @@ DetailVisualizationDockWidget::DetailVisualizationDockWidget(OwlOntology *onto, 
     equs += "ObjectIntersectionOf(<Student> ObjectAllValuesFrom(<hasChildren> <Female>) ObjectHasValue(<hasGender> <male>) ObjectExactCardinality(3 <hasChildren> Thing))";
     subs += "abc";
     supers += "expsss";
+    disjoints +="ObjectIntersectionOf(<Koala> ObjectHasValue(<hasDegree> <PhD>))";
     //assign data
 
     //ui operation
