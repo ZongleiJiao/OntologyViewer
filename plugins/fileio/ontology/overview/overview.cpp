@@ -123,11 +123,13 @@ int Overview::getIndexByShortname(QList<OwlClass *> lst, QString shortname)
 void Overview::drawOverview(OverviewDockWidget *wid)
 {
     wid->clearall();    
+    wid->animationPre();
     //draw shape
     for(int i=0;i<classes.size();i++){
-        cout<<classes[i]->shortname.toStdString()<<endl;
+        //cout<<classes[i]->shortname.toStdString()<<endl;
         wid->addOverviewShape(classes[i]);
     }
+    wid->animationStart();
     //draw line
     if(isOrthogonalTreeLayout){
         QPen pen = QPen(QColor("black"));
@@ -172,7 +174,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                             sp = std::min(sp,py);
                             ep = std::max(ep,py);
                         }
-                        wid->m_scene->addLine(cp,sp,cp,ep,pen);
+                        wid->addLine(cp,sp,cp,ep,pen);
                     }
                 }
                 else if(this->orientation == ogdf::rightToLeft)
@@ -190,7 +192,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                             sp = std::min(sp,py);
                             ep = std::max(ep,py);
                         }
-                        wid->m_scene->addLine(cp,sp,cp,ep,pen);
+                        wid->addLine(cp,sp,cp,ep,pen);
                     }
                 }
                 else if(this->orientation == ogdf::bottomToTop)
@@ -207,7 +209,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                             sp = std::min(sp,px);
                             ep = std::max(ep,px);
                         }
-                        wid->m_scene->addLine(sp,cp,ep,cp,pen);
+                        wid->addLine(sp,cp,ep,cp,pen);
                     }
                 }
                 else{
@@ -223,11 +225,11 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                             sp = std::min(sp,px);
                             ep = std::max(ep,px);
                         }
-                        wid->m_scene->addLine(sp,cp,ep,cp,pen);
+                        wid->addLine(sp,cp,ep,cp,pen);
                     }
                 }
 
-                wid->m_scene->addLine(sx,sy,ex,ey,pen);                
+                wid->addLine(sx,sy,ex,ey,pen);
 
             }
             if(!classes[i]->superclasses.empty()){
@@ -258,7 +260,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                     ey = (sy+classes[i]->superclasses[0]->overviewshape->pos().ry())/2;
                     sy+= classes[i]->overviewshape->height()/2;
                 }
-                wid->m_scene->addLine(sx,sy,ex,ey,pen);
+                wid->addLine(sx,sy,ex,ey,pen);
             }
             if(classes[i]->superclasses.size()>1)
             {                
@@ -379,11 +381,11 @@ QList<OwlClass *> Overview::k_centers(QList<OwlClass *> nodes, int k)
     QList<OwlClass *> result;
     //add the first node as k0
     result.append(nodes[0]);
-    cout<<k<<" -- K-centre[0]:"<<result.last()->shortname.toStdString()<<endl;
+    //cout<<k<<" -- K-centre[0]:"<<result.last()->shortname.toStdString()<<endl;
     for(int i=1;i<k;i++)
     {
         result.append(getFarthestNode(result));
-        cout<<"K-centre["<<i<<"]:"<<result.last()->shortname.toStdString()<<endl;
+       // cout<<"K-centre["<<i<<"]:"<<result.last()->shortname.toStdString()<<endl;
     }
 
     return result;
@@ -391,7 +393,7 @@ QList<OwlClass *> Overview::k_centers(QList<OwlClass *> nodes, int k)
 
 OwlClass * Overview::getFarthestNode(QList<OwlClass *> nodes)
 {
-    cout<<"=====getFarthestNode====="<<endl;
+   // cout<<"=====getFarthestNode====="<<endl;
     int idxfstnode=-1;
     int fstdistance=0;
     for(int i=0;i<nodes.size();i++)
@@ -401,7 +403,7 @@ OwlClass * Overview::getFarthestNode(QList<OwlClass *> nodes)
         {
 
             if((!nodes.contains(classes[j]))&&(distance[idx][j]>fstdistance)){
-                cout<<"D["<<idx<<"]["<<j<<"]:"<<distance[idx][j]<<" "<<endl;
+                //cout<<"D["<<idx<<"]["<<j<<"]:"<<distance[idx][j]<<" "<<endl;
                 fstdistance=distance[idx][j];
                 idxfstnode = j;
             }
@@ -743,7 +745,7 @@ void Overview::quadrantRadialTree(QList<OwlClass *> graph,double rangeAngle)
                 double y = r * sin(curAngle * PI/180);
                 angles.append(curAngle);
                 nextlevel[i]->overviewshape->setCentrePos(QPointF(x,y));
-                cout<<nextlevel[i]->shortname.toStdString()<<" :: x = "<<x<<" y = "<<y<<endl;
+                //cout<<nextlevel[i]->shortname.toStdString()<<" :: x = "<<x<<" y = "<<y<<endl;
             }
         }
         //draw level>2
@@ -924,6 +926,7 @@ void Overview::treeLayout(QList<OwlClass *> graph)
 
 void Overview::compactTreeLayout(double maxW,double maxH)
 {
+
     this->isOrthogonalTreeLayout = true;
     this->treeLayout(classes);
     this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);

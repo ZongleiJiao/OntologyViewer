@@ -7,6 +7,7 @@
 #include <overview/overviewscene.h>
 #include <owlontology.h>
 #include <ogdf/basic/geometry.h>
+#include <overview/overviewshape.h>
 using namespace dunnart;
 using namespace ogdf;
 
@@ -33,6 +34,18 @@ public:
     QGraphicsView *m_view;
     QPointF m_centerpos;
 
+    QList<OverviewShape *> gitems;
+    QList<QPointF> oripos;
+    QList<QPointF> oriabspos;
+    QList<QGraphicsItem *> lines;
+    QList<int> gitem_status;
+    QList<OverviewShape *> hideclasses;
+
+    int getGItemID(QString shortname);
+
+    QParallelAnimationGroup *ani_group;
+    void animationPre();
+    void animationStart();
 //    Canvas *my_canvas;
 //    CanvasView * my_view;
     void setOntology(OwlOntology * onto);
@@ -40,6 +53,7 @@ public:
 
     void addOverviewShape(OwlClass *shape);
     void addOverviewLine(OwlClass *start,OwlClass *end,QPen pen);
+    void addLine(qreal sx, qreal sy, qreal ex, qreal ey, QPen pen);
     void addTreeConnector(DPolyline pl,QPen pen);
 
     void fixSceneRect();

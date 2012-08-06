@@ -94,9 +94,9 @@ void OwlClass::setFocused(bool focus, Canvas *canvas)
     }
 }
 
-const QColor OwlClass::CLASS_SHAPE_COLOR = QColor(65,105,225);
-const QColor OwlClass::CLASS_SHAPE_FOCUSED_COLOR = QColor("orange");
-const QColor OwlClass::SUBCLASS_SHAPE_FOCUSED_COLOR = QColor("purple");
-const QColor OwlClass::SUPERCLASS_SHAPE_FOCUSED_COLOR = QColor("yellow");
+const QColor OwlClass::CLASS_SHAPE_COLOR = QColor(214,233,252);
+const QColor OwlClass::CLASS_SHAPE_FOCUSED_COLOR = QColor(68,153,238);
+const QColor OwlClass::SUBCLASS_SHAPE_FOCUSED_COLOR = QColor(142,194,245);
+const QColor OwlClass::SUPERCLASS_SHAPE_FOCUSED_COLOR = QColor(197,218,1);
 const QColor OwlClass::CLASS_CONNECTOR_COLOR = QColor("blue");
 const QColor OwlClass::CLASS_CONNECTOR_FOCUSED_COLOR = QColor("red");

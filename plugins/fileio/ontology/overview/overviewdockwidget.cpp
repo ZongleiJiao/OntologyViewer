@@ -4,6 +4,7 @@
 #include <ogdf/basic/Graph.h>
 #include <ogdf/basic/GraphAttributes.h>
 
+using namespace std;
 
 OverviewDockWidget::OverviewDockWidget(QWidget *parent) :
     QDockWidget(parent),
@@ -37,6 +38,7 @@ OverviewDockWidget::OverviewDockWidget(QWidget *parent) :
 
     this->ontology = NULL;
     this->highlightpolygon = NULL;
+    this->ani_group = new QParallelAnimationGroup;
 }
 
 OverviewDockWidget::~OverviewDockWidget()
@@ -48,19 +50,20 @@ void OverviewDockWidget::setOntology(OwlOntology *onto){
     this->ontology = onto;
 }
 
-void OverviewDockWidget::clearall()
-{
-    this->m_scene->clear();
-    this->highlightpolygon = NULL;
-}
-
 void OverviewDockWidget::addOverviewLine(OwlClass *start, OwlClass *end, QPen pen)
 {
     qreal sx = start->overviewshape->pos().rx();
     qreal sy = start->overviewshape->pos().ry();
     qreal ex = end->overviewshape->pos().rx();
     qreal ey = end->overviewshape->pos().ry();
-    m_scene->addLine(sx,sy,ex,ey,pen);
+    QGraphicsItem *it = m_scene->addLine(sx,sy,ex,ey,pen);
+    lines.append(it);
+}
+
+void OverviewDockWidget::addLine(qreal sx, qreal sy, qreal ex, qreal ey, QPen pen)
+{
+    QGraphicsItem *it = this->m_scene->addLine(sx,sy,ex,ey,pen);
+    lines.append(it);
 }
 
 void OverviewDockWidget::addTreeConnector(DPolyline pl,QPen pen)
@@ -72,7 +75,10 @@ void OverviewDockWidget::addTreeConnector(DPolyline pl,QPen pen)
         qreal x = (*iter).m_x;
         qreal y = (*iter).m_y;
 //        std::cout<<"P: x="<<x<<", y="<<y<<endl;
-        if(x0!=-167&&y0!=-167)m_scene->addLine(x0,y0,x,y,pen);
+        if(x0!=-167&&y0!=-167){
+            QGraphicsItem *it = m_scene->addLine(x0,y0,x,y,pen);
+            lines.append(it);
+        }
         x0=x;
         y0=y;
     }
@@ -88,47 +94,124 @@ void OverviewDockWidget::fixSceneRect(){
     this->m_scene->setSceneRect(rect);
 }
 
+int OverviewDockWidget::getGItemID(QString shortname)
+{
+    for(int i=0;i<gitems.length();i++){
+        if(gitems[i]->toolTip().toLower()==shortname.toLower())
+            return i;
+    }
+    return -1;
+}
+
+void OverviewDockWidget::animationPre(){
+    ani_group->clear();
+}
+
+void OverviewDockWidget::animationStart(){
+    ani_group->start();
+    for(int i=0;i<this->hideclasses.size();i++){
+        this->hideclasses[i]->setVisible(false);
+    }
+}
+
+void OverviewDockWidget::clearall()
+{
+//    this->m_scene->clear();
+    for(int i=0;i<lines.size();i++){
+        m_scene->removeItem(lines[i]);
+    }
+    lines.clear();
+    for(int i=0;i<this->hideclasses.size();i++){
+        this->hideclasses[i]->setVisible(true);
+    }
+    hideclasses.clear();
+    this->highlightpolygon = NULL;
+}
+
+
 void OverviewDockWidget::addOverviewShape(OwlClass *cls)
 {
     qreal x = cls->overviewshape->pos().rx();
     qreal y = cls->overviewshape->pos().ry();
-
     int stat = cls->overviewshape->getStatus();
-    QGraphicsItem *it;
+
+    int gid = getGItemID(cls->shortname);
+    if(gid!=-1){
+        if(stat==gitem_status[gid]){
+            QPropertyAnimation * ani = new QPropertyAnimation(gitems[gid], "pos");
+            ani->setDuration(1000);
+            ani->setStartValue(oripos[gid]);
+            qreal ex = oripos[gid].rx() + (x - oriabspos[gid].rx());
+            qreal ey = oripos[gid].ry() + (y - oriabspos[gid].ry());
+            ani->setEndValue(QPointF(ex, ey));
+            oripos[gid]=QPointF(ex,ey);
+            oriabspos[gid]=QPointF(x,y);
+            ani_group->addAnimation(ani);
+
+            return;
+        }
+        else{
+            m_scene->removeItem(gitems[gid]);
+            gitems.removeAt(gid);
+            gitem_status.removeAt(gid);
+            oripos.removeAt(gid);
+            oriabspos.removeAt(gid);
+        }
+    }
+
+    OverviewShape *its = NULL;
     switch(stat)
     {
     case OverviewClassShape::STATUS_Hide:
-//        this->setFillColour(QColor("gray"));
-//        this->setSize(QSizeF(1,1));
         break;
     case OverviewClassShape::STATUS_OutDetailview:
-//        this->setFillColour(QColor("gray"));
-//        this->setSize(QSizeF(4,4));        
-        it = m_scene->addRect(x-2,y-2,4,4,QPen(QColor("black")),QBrush(QColor("gray")));
+//        it = m_scene->addRect(x-2,y-2,4,4,QPen(QColor("black")),QBrush(QColor("gray")));
+        its = new OverviewShape();
+        its->setRect(x-2,y-2,4,4);
+        its->setPen(QPen(QColor("black")));
+        its->setBrush(QBrush(QColor("gray")));
+        m_scene->addItem(its);
+
+        cout<<"x,y = "<<x<<","<<y<<endl;
+        cout<<"POS = "<<its->pos().rx()<<","<<its->pos().ry()<<endl;
+
         break;
     case OverviewClassShape::STATUS_InDetailview_Default:
-//        this->setFillColour(OwlClass::CLASS_SHAPE_COLOR);
-//        this->setSize(QSizeF(8,8));
-        it = m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::CLASS_SHAPE_COLOR));
+//        it = m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::CLASS_SHAPE_COLOR));
+        its = new OverviewShape();
+        its->setRect(x-3,y-3,6,6);
+        its->setPen(QPen(QColor("black")));
+        its->setBrush(QBrush(OwlClass::CLASS_SHAPE_COLOR));
+        m_scene->addItem(its);
+
         break;
     case OverviewClassShape::STATUS_InDetailview_Focused:
-//        this->setFillColour(OwlClass::CLASS_SHAPE_FOCUSED_COLOR);
-//        this->setSize(QSizeF(8,8));
-        it = m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::CLASS_SHAPE_FOCUSED_COLOR));
+//        it = m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::CLASS_SHAPE_FOCUSED_COLOR));
+        its = new OverviewShape();
+        its->setRect(x-3,y-3,6,6);
+        its->setPen(QPen(QColor("black")));
+        its->setBrush(QBrush(OwlClass::CLASS_SHAPE_FOCUSED_COLOR));
+        m_scene->addItem(its);
         break;
     case OverviewClassShape::STATUS_InDetailview_SubFocused:
-//        this->setFillColour(OwlClass::SUBCLASS_SHAPE_FOCUSED_COLOR);
-//        this->setSize(QSizeF(8,8));
-        it = m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::SUBCLASS_SHAPE_FOCUSED_COLOR));
+//        it = m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::SUBCLASS_SHAPE_FOCUSED_COLOR));
+        its = new OverviewShape();
+        its->setRect(x-3,y-3,6,6);
+        its->setPen(QPen(QColor("black")));
+        its->setBrush(QBrush(OwlClass::SUBCLASS_SHAPE_FOCUSED_COLOR));
+        m_scene->addItem(its);
         break;
     case OverviewClassShape::STATUS_InDetailview_SuperFocused:
-//        this->setFillColour(OwlClass::SUPERCLASS_SHAPE_FOCUSED_COLOR);
-//        this->setSize(QSizeF(8,8));
-        it = m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::SUPERCLASS_SHAPE_FOCUSED_COLOR));
+//        it = m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::SUPERCLASS_SHAPE_FOCUSED_COLOR));
+        its = new OverviewShape();
+        its->setRect(x-3,y-3,6,6);
+        its->setPen(QPen(QColor("black")));
+        its->setBrush(QBrush(OwlClass::SUPERCLASS_SHAPE_FOCUSED_COLOR));
+        m_scene->addItem(its);
         break;
     case OverviewClassShape::STATUS_COMPACT:
     {
-        QGraphicsTextItem * io = new QGraphicsTextItem;
+        QGraphicsTextItem * io = new QGraphicsTextItem();
         io->setPos(x-8,y-8);
         QFont font;
         font.setPixelSize(7);
@@ -140,21 +223,104 @@ void OverviewDockWidget::addOverviewShape(OwlClass *cls)
         QString s = QString::number(cls->subclasses.size());
         io->setPlainText(s);
 
-        it = m_scene->addRect(x-6,y-4,12,8,QPen(QColor("black")),QBrush(QColor("pink"),Qt::LinearGradientPattern));
+        QGraphicsItem * it = m_scene->addRect(x-6,y-4,12,8,QPen(QColor("black")),QBrush(QColor("pink"),Qt::LinearGradientPattern));
         m_scene->addItem(io);
+        this->lines.append(io);
+        this->lines.append(it);
 
         for(int i=0;i<cls->subclasses.size();i++){
             double sx = x+0.0001*i;
             double sy = y+0.0001*i;
             cls->subclasses[i]->overviewshape->setCentrePos(QPointF(sx,sy));
+            this->addOverviewShape(cls->subclasses[i]);
+            int gidx = getGItemID(cls->subclasses[i]->shortname);
+            if(gidx!=-1)this->hideclasses.append(gitems[gidx]);
         }
     }
         break;
     default:
         break;
     }
-    if(it != NULL)it->setToolTip(cls->shortname);
+    if(its != NULL){
+        its->setToolTip(cls->shortname);
+        oripos.append(its->pos());
+        oriabspos.append(QPointF(x,y));
+        gitems.append(its);
+        gitem_status.append(stat);
+    }
 }
+
+
+//void OverviewDockWidget::addOverviewShape(OwlClass *cls)
+//{
+//    qreal x = cls->overviewshape->pos().rx();
+//    qreal y = cls->overviewshape->pos().ry();
+
+//    int stat = cls->overviewshape->getStatus();
+//    QGraphicsItem *it;
+//    switch(stat)
+//    {
+//    case OverviewClassShape::STATUS_Hide:
+//// this->setFillColour(QColor("gray"));
+//// this->setSize(QSizeF(1,1));
+//        break;
+//    case OverviewClassShape::STATUS_OutDetailview:
+//// this->setFillColour(QColor("gray"));
+//// this->setSize(QSizeF(4,4));
+//        it = m_scene->addRect(x-2,y-2,4,4,QPen(QColor("black")),QBrush(QColor("gray")));
+//        break;
+//    case OverviewClassShape::STATUS_InDetailview_Default:
+//// this->setFillColour(OwlClass::CLASS_SHAPE_COLOR);
+//// this->setSize(QSizeF(8,8));
+//        it = m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::CLASS_SHAPE_COLOR));
+//        break;
+//    case OverviewClassShape::STATUS_InDetailview_Focused:
+//// this->setFillColour(OwlClass::CLASS_SHAPE_FOCUSED_COLOR);
+//// this->setSize(QSizeF(8,8));
+//        it = m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::CLASS_SHAPE_FOCUSED_COLOR));
+//        break;
+//    case OverviewClassShape::STATUS_InDetailview_SubFocused:
+//// this->setFillColour(OwlClass::SUBCLASS_SHAPE_FOCUSED_COLOR);
+//// this->setSize(QSizeF(8,8));
+//        it = m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::SUBCLASS_SHAPE_FOCUSED_COLOR));
+//        break;
+//    case OverviewClassShape::STATUS_InDetailview_SuperFocused:
+//// this->setFillColour(OwlClass::SUPERCLASS_SHAPE_FOCUSED_COLOR);
+//// this->setSize(QSizeF(8,8));
+//        it = m_scene->addRect(x-3,y-3,6,6,QPen(QColor("black")),QBrush(OwlClass::SUPERCLASS_SHAPE_FOCUSED_COLOR));
+//        break;
+//    case OverviewClassShape::STATUS_COMPACT:
+//    {
+//        QGraphicsTextItem * io = new QGraphicsTextItem;
+//        io->setPos(x-8,y-8);
+//        QFont font;
+//        font.setPixelSize(7);
+//        font.setBold(false);
+//        font.setFamily("Calibri");
+//        io->setFont(font);
+//        io->setDefaultTextColor(QColor("black"));
+
+//        QString s = QString::number(cls->subclasses.size());
+//        io->setPlainText(s);
+
+//        it = m_scene->addRect(x-6,y-4,12,8,QPen(QColor("black")),QBrush(QColor("pink"),Qt::LinearGradientPattern));
+//        m_scene->addItem(io);
+
+//        for(int i=0;i<cls->subclasses.size();i++){
+//            double sx = x+0.0001*i;
+//            double sy = y+0.0001*i;
+//            cls->subclasses[i]->overviewshape->setCentrePos(QPointF(sx,sy));
+//        }
+//    }
+//        break;
+//    default:
+//        break;
+//    }
+//    if(it != NULL)it->setToolTip(cls->shortname);
+//}
+
+
+
 
 void OverviewDockWidget::sceneClicked(QPointF pos)
 {
@@ -164,7 +330,8 @@ void OverviewDockWidget::sceneClicked(QPointF pos)
     QRectF viewRect = QRectF(m_centerpos.rx()-40,m_centerpos.ry()-30,80,60);
     QPolygon polygon = QPolygon(m_scene->sceneRect().toRect()).subtracted(
             QPolygon(viewRect.toRect()));
-    m_scene->addPolygon(polygon,QPen(Qt::transparent),QBrush(grey));
+    QGraphicsItem *it = m_scene->addPolygon(polygon,QPen(Qt::transparent),QBrush(grey));
+    lines.append(it);
 }
 
 void OverviewDockWidget::layoutMethodChanged(QString method)
@@ -204,4 +371,5 @@ void OverviewDockWidget::highlightItems(QList<OwlClass *> cls)
     }
 
     highlightpolygon = m_scene->addPolygon(polygon,QPen(Qt::transparent),QBrush(grey));
+    lines.append(highlightpolygon);
 }

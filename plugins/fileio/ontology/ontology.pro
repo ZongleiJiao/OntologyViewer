@@ -1,5 +1,6 @@
 
 QT           += xml svg
+QT           += sql
 TEMPLATE      = lib
 CONFIG       += qt plugin
 TARGET        = $$qtLibraryTarget(fileio_ontology)
@@ -370,7 +371,10 @@ HEADERS       = \
     overview/overview.h \
     owlentity.h \
     overview/detailedview.h \
-    ontologydb.h
+    ontologydb.h \
+    overview/overviewshape.h \
+    widgets/detailvisualizationdockwidget.h \
+    expression.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -717,11 +721,17 @@ SOURCES       = plugin.cpp \
     overview/overview.cpp \
     owlentity.cpp \
     overview/detailedview.cpp \
-    ontologydb.cpp
+    ontologydb.cpp \
+    overview/overviewshape.cpp \
+    widgets/detailvisualizationdockwidget.cpp \
+    expression.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm
 else:unix|win32: LIBS += -L/usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client/ -ljvm
+
+LIBS += -L$$DESTDIR -lvpsc -logdf
+
 
 INCLUDEPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
 DEPENDPATH += /usr/lib/jvm/java-6-sun-1.6.0.26/jre/lib/i386/client
@@ -740,7 +750,17 @@ FORMS += \
     widgets/historydockwidget.ui \
     widgets/informationboxdockwidget.ui \
     widgets/shownodesdockwidget.ui \
-    widgets/detailinfodockwidget.ui
+    widgets/detailinfodockwidget.ui \
+    widgets/detailvisualizationdockwidget.ui
+
+
+
+
+
+
+
+
+
 
 
 
