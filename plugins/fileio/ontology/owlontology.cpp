@@ -16,6 +16,7 @@
 #include <ontoproperty.h>
 
 #include <ontologydb.h>
+#include <widgets/detailvisualizationdockwidget.h>
 
 using namespace dunnart;
 using namespace std;
@@ -1315,6 +1316,13 @@ void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
 void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
 {
     int idx = this->getIndexOfClasses(classshape->idString());
+
+    if(idx!=-1){
+        //show details
+        DetailVisualizationDockWidget * detailwgt = new DetailVisualizationDockWidget(this,classes[idx]);
+        detailwgt->show();
+    }
+
     if(idx!=-1&&classes[idx]->equivalentclass.trimmed()!="")
     {
         equclasswid->clearall();
@@ -1348,10 +1356,8 @@ void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
         equclasswid->my_canvas->setOptLayoutMode(maincanvas->FlowLayout);
         equclasswid->my_canvas->setOptPreventOverlaps(true);
         equclasswid->my_canvas->fully_restart_graph_layout();
-
-        //equclasswid->setGeometry(100,0,600,600);
-
     }
+
 }
 
 //get individual information to add on infowidget
