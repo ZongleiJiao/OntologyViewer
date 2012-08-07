@@ -6,20 +6,26 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>259</width>
-    <height>141</height>
+    <width>261</width>
+    <height>325</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Search</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="searchBtn">
     <property name="geometry">
      <rect>
       <x>157</x>
       <y>11</y>
-      <width>84</width>
+      <width>71</width>
       <height>32</height>
      </rect>
     </property>
@@ -27,7 +33,7 @@
      <string>Search</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit">
+   <widget class="QLineEdit" name="input">
     <property name="geometry">
      <rect>
       <x>11</x>
@@ -37,11 +43,11 @@
      </rect>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBox">
+   <widget class="QCheckBox" name="classCB">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>50</y>
+      <y>70</y>
       <width>73</width>
       <height>20</height>
      </rect>
@@ -50,11 +56,11 @@
      <string>Classes</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBox_2">
+   <widget class="QCheckBox" name="individualCB">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>80</y>
+      <y>100</y>
       <width>93</width>
       <height>20</height>
      </rect>
@@ -63,11 +69,11 @@
      <string>Individuals</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBox_3">
+   <widget class="QCheckBox" name="oPropertyCB">
     <property name="geometry">
      <rect>
       <x>109</x>
-      <y>50</y>
+      <y>70</y>
       <width>130</width>
       <height>20</height>
      </rect>
@@ -76,17 +82,65 @@
      <string>Object Properties</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBox_4">
+   <widget class="QCheckBox" name="dPropertyCB">
     <property name="geometry">
      <rect>
       <x>109</x>
-      <y>80</y>
+      <y>100</y>
       <width>118</width>
       <height>20</height>
      </rect>
     </property>
     <property name="text">
      <string>Data Properties</string>
+    </property>
+   </widget>
+   <widget class="QListWidget" name="resultList">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>130</y>
+      <width>241</width>
+      <height>161</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="sorting">
+    <property name="geometry">
+     <rect>
+      <x>11</x>
+      <y>40</y>
+      <width>144</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>Default</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Alphabetically</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Importance</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QPushButton" name="clearBtn">
+    <property name="geometry">
+     <rect>
+      <x>157</x>
+      <y>40</y>
+      <width>71</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Clear</string>
     </property>
    </widget>
   </widget>

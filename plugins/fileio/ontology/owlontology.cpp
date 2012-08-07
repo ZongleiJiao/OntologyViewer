@@ -21,6 +21,7 @@
 using namespace dunnart;
 using namespace std;
 
+//OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
 OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin, DetailDockWidget *equwid)
 {
     this->maincanvas = canvas;
@@ -496,6 +497,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
 
 //    cout<<"///////////get information of this ontology/////////////////"<<endl;
     this->getOntoInfo();
+    //    emit(this->loading("111"));
 //    cout<<"///////////get information of this ontology/////////////////"<<endl;
 }
 
@@ -1300,6 +1302,7 @@ void OwlOntology::ontoclass_clicked(OntologyClassShape *classshape)
     }
     emit clickedClass(classes[idx]->shortname);
     cout << this->getClassInfo(selectedClass).toStdString();
+    emit(this->loading(classshape->idString()));
 }
 
 void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
@@ -1311,6 +1314,7 @@ void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
         this->maincanvas->fully_restart_graph_layout();
     }
     this->currentfocusedclassidx = -1;
+    emit(this->loading("OntologyInfor"));
 }
 
 void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
@@ -1472,6 +1476,30 @@ QList<OwlProperty *> OwlOntology::getOwlPropertyByName(QString name){
     return propertyList;
 }
 
+QList<OwlProperty *> OwlOntology::getOwlDataPropertyByName(QString name){
+    QList<OwlProperty *> propertyList;
+
+    for(int i=0;i<properties.size();i++){
+        if(properties[i]->isDataProperty() && properties[i]->shortname.contains(name,Qt::CaseInsensitive)){
+            propertyList.append(properties[i]);
+        }
+    }
+
+    return propertyList;
+}
+
+QList<OwlProperty *> OwlOntology::getOwlObjectPropertyByName(QString name){
+    QList<OwlProperty *> propertyList;
+
+    for(int i=0;i<properties.size();i++){
+        if(properties[i]->isObjectProperty() && properties[i]->shortname.contains(name,Qt::CaseInsensitive)){
+            propertyList.append(properties[i]);
+        }
+    }
+
+    return propertyList;
+}
+
 
 //get entities by expression pattern(c$aaa+ddd[ AND x OR y NOT z) i$bbb+fff(+x-y)-ggg p$ccc+hhh(+x-y)-jjj)
 void OwlOntology::getEntityByText(QString text){
@@ -1524,6 +1552,34 @@ void OwlOntology::getEntityByText(QString text){
 
 }
 
+
+void OwlOntology::removeIndividualView(Canvas *canvas){
+
+    int n = this->classes.size();
+    for(int j=0; j<n; j++){
+        if(this->classes.at(j)->isIndividualsShowed){
+            this->classes.at(j)->hideIndividuals(canvas);
+        }
+    }
+    this->maincanvas->fully_restart_graph_layout();
+}
+
+void OwlOntology::removeClassView(Canvas *canvas){
+    int m = this->classes.size();
+    int n = -1;
+    for(int i=0;i<m;i++){
+        if(!this->classes[i]->classesconnectors.isEmpty()){
+            n = this->classes[i]->classesconnectors.size();
+
+            for(int j=0;j<n;j++){
+                this->maincanvas->removeItem(this->classes[i]->classesconnectors[j]);
+            }
+        }
+        this->maincanvas->removeItem(this->classes[i]->shape);
+    }
+    this->maincanvas->restart_graph_layout();
+
+}
 
 
 

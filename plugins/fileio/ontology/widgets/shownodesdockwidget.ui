@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>364</width>
+    <width>262</width>
     <height>63</height>
    </rect>
   </property>
@@ -14,7 +14,7 @@
    <string>Show entities by type</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <widget class="QCheckBox" name="checkBox">
+   <widget class="QCheckBox" name="propertyCB">
     <property name="geometry">
      <rect>
       <x>170</x>
@@ -27,7 +27,7 @@
      <string>Properties</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBox_4">
+   <widget class="QCheckBox" name="individualCB">
     <property name="geometry">
      <rect>
       <x>80</x>
@@ -40,20 +40,7 @@
      <string>Individuals</string>
     </property>
    </widget>
-   <widget class="QCheckBox" name="checkBox_2">
-    <property name="geometry">
-     <rect>
-      <x>260</x>
-      <y>10</y>
-      <width>99</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Label of arc</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="checkBox_3">
+   <widget class="QCheckBox" name="classCB">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -64,6 +51,9 @@
     </property>
     <property name="text">
      <string>Classes</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>

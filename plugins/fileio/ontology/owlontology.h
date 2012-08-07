@@ -22,6 +22,7 @@ class OwlOntology:public QObject
     Q_OBJECT
 signals:
     void clickedClass(QString);
+    void loading(QString);
 public slots:
     void ontoclass_clicked(OntologyClassShape * classshape);
     void ontoclass_doubleclicked(OntologyClassShape * classshape);
@@ -44,13 +45,13 @@ public:
     QMainWindow * appmainwindow;
     Canvas * maincanvas;
     DetailDockWidget * equclasswid;
-    ZoomDockWidget * zoomdwgt;
-    FilterDockWidget * filterdwgt;
-    HistoryDockWidget * historydwgt;
-    SearchDockWidget * searchdwgt;
-    InformationBoxDockWidget *infoboxdwgt;
-    ShowNodesDockWidget * typedwgt;
-    DetailInfoDockWidget * deatildwgt;
+//    ZoomDockWidget * zoomdwgt;
+//    FilterDockWidget * filterdwgt;
+//    HistoryDockWidget * historydwgt;
+//    SearchDockWidget * searchdwgt;
+//    InformationBoxDockWidget *infoboxdwgt;
+//    ShowNodesDockWidget * typedwgt;
+//    DetailInfoDockWidget * deatildwgt;
 
     int ontologyID;
     QString ontologyname;
@@ -70,6 +71,7 @@ public:
     int currentfocusedclassidx;
 
     //methods
+//    OwlOntology(Canvas * canvas,QMainWindow *mainwin);
     OwlOntology(Canvas * canvas,QMainWindow *mainwin,DetailDockWidget * equwid);
     int getIndexOfIndividuals(QString shortname);
     int getIndexOfClasses(QString shortname);
@@ -81,6 +83,9 @@ public:
     void drawPropertyView(Canvas *canvas);
 
     void drawClassOverview(Canvas *canvas);
+
+    void removeIndividualView(Canvas *canvas);
+    void removeClassView(Canvas *canvas);
 
     QString toQString();
 
@@ -98,6 +103,8 @@ public:
     QList<OwlClass *> getOwlClassByName(QString name);
     QList<OwlIndividual *> getOwlIndividualByName(QString name);
     QList<OwlProperty *> getOwlPropertyByName(QString name);
+    QList<OwlProperty *> getOwlDataPropertyByName(QString name);
+    QList<OwlProperty *> getOwlObjectPropertyByName(QString name);
     void getEntityByText(QString text);
 };
 

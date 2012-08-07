@@ -59,6 +59,11 @@
 
 #include <overview/keyconceptclass.h>
 #include "widgets/detailvisualizationdockwidget.h"
+#include <widgets/searchdockwidget.h>
+#include <widgets/informationboxdockwidget.h>
+//#include <widgets/util.h>
+#include <widgets/shownodesdockwidget.h>
+#include <widgets/filterdockwidget.h>
 
 
 using namespace std;
@@ -91,6 +96,10 @@ class OntologyFileIOPlugin :
         QMainWindow * appmainwin;
         OverviewDockWidget *overviewwid;
         DetailDockWidget *equclasswid;
+        SearchDockWidget * searchdwgt;
+        InformationBoxDockWidget *infoboxdwgt;
+        ShowNodesDockWidget * typedwgt;
+        FilterDockWidget * filterdwgt;
 
         OntologyFileIOPlugin()
         {
@@ -170,7 +179,17 @@ class OntologyFileIOPlugin :
             this->appmainwin->addDockWidget(Qt::LeftDockWidgetArea,equclasswid);
             this->equclasswid->setWindowTitle("Equivalent Class");
 
+            searchdwgt = new SearchDockWidget();
+            this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,searchdwgt);
 
+            infoboxdwgt = new InformationBoxDockWidget();
+            this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,infoboxdwgt);
+
+            typedwgt = new ShowNodesDockWidget;
+            this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,typedwgt);
+
+            filterdwgt = new FilterDockWidget();
+            this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,filterdwgt);
         }
 
         void applicationWillClose(CanvasApplication *canvasApplication){}
@@ -188,17 +207,28 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 {
     this->overviewwid->show();
     this->equclasswid->show();
-
-
+    searchdwgt->show();
+    infoboxdwgt->show();
+    typedwgt->show();
+    filterdwgt->show();
 
     cout<<"Start loading ontology :"<<fileInfo.completeBaseName().toStdString()<<endl;
     QTime st = QTime::currentTime();
     st.start();
+    //OwlOntology * onto = new OwlOntology(canvas,this->appmainwin);
     OwlOntology * onto = new OwlOntology(canvas,this->appmainwin,this->equclasswid);
     onto->loadontology(fileInfo);
     cout<<"T:"<<st.elapsed()<<endl;
     cout<<"Finish loading. Total " <<onto->classes.size()<<" class notes."<<endl;
 
+    this->searchdwgt->setOntology(onto);
+    this->infoboxdwgt->setOntology(onto);
+    this->typedwgt->setOntology(onto);
+    filterdwgt->setOntology(onto);
+    this->infoboxdwgt->displayInfo("OntologyInfor");
+
+//    Util * util = new Util(onto);
+//    util->connectWgt(this->infoboxdwgt);
     onto->loadontologyFromDB(fileInfo);
 
     /** text output **/

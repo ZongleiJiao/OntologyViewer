@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>243</width>
+    <width>261</width>
     <height>62</height>
    </rect>
   </property>
@@ -14,27 +14,40 @@
    <string>Filter nodes by name</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <widget class="QLineEdit" name="lineEdit">
+   <widget class="QLineEdit" name="name">
     <property name="geometry">
      <rect>
       <x>15</x>
       <y>4</y>
-      <width>144</width>
+      <width>111</width>
       <height>22</height>
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QPushButton" name="filterBtn">
     <property name="geometry">
      <rect>
-      <x>161</x>
-      <y>1</y>
+      <x>131</x>
+      <y>0</y>
       <width>60</width>
       <height>32</height>
      </rect>
     </property>
     <property name="text">
      <string>Go</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="clearBtn">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>0</y>
+      <width>69</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Clear</string>
     </property>
    </widget>
   </widget>
