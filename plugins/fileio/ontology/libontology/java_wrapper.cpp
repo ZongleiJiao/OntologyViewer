@@ -32,8 +32,8 @@ int initJavaWrapper(int argc,char **argv)
         JavaVMOption options[3];
         JavaVMInitArgs vm_args;
         options[0].optionString = "-Djava.compiler=NONE";                                       /* disable JIT */
-//        options[1].optionString = "-Djava.class.path=../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar"; // path for linux
-        options[1].optionString = "-Djava.class.path=../../../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar"; // path for mac
+        options[1].optionString = "-Djava.class.path=../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar"; // path for linux
+//        options[1].optionString = "-Djava.class.path=../../../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar"; // path for mac
         options[2].optionString = "-verbose:none";                                              /* print JNI-related messages */
         vm_args.version = JNI_VERSION_1_2;
         vm_args.options = options;

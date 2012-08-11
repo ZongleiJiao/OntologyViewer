@@ -172,8 +172,8 @@ void OverviewDockWidget::addOverviewShape(OwlClass *cls)
         its->setBrush(QBrush(QColor("gray")));
         m_scene->addItem(its);
 
-        cout<<"x,y = "<<x<<","<<y<<endl;
-        cout<<"POS = "<<its->pos().rx()<<","<<its->pos().ry()<<endl;
+//        cout<<"x,y = "<<x<<","<<y<<endl;
+//        cout<<"POS = "<<its->pos().rx()<<","<<its->pos().ry()<<endl;
 
         break;
     case OverviewClassShape::STATUS_InDetailview_Default:

@@ -4,6 +4,8 @@ OwlIndividual::OwlIndividual()
 {    
 }
 
+const QColor OwlIndividual::INDIVIDUAL_SHAPE_COLOR = QColor(238,130,238);
+
 QString OwlIndividual::toQString(){
     QString res;
     res.append("<--Individual-->");

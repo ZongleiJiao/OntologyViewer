@@ -28,22 +28,19 @@ public:
     QStringListModel *model;
 
 
-    QStringList subs;
-    QStringList equs;
-    QStringList disjoints;
-    QStringList supers;
+    QList<QString> subs;
+    QList<QString> equs;
+    QList<QString> disjoints;
+    QList<QString> supers;
 
-    void drawExpression(Expression * e,qreal rectWidth,qreal sx=0, qreal sy=0);
+    qreal drawExpression(Expression * e,qreal rectWidth,qreal sx=0, qreal sy=0);
 
 private:
     Ui::DetailVisualizationDockWidget *ui;
 
 public slots:
-    void rbtn_subs();
-    void rbtn_supers();
-    void rbtn_equs();
-    void rbtn_disjoints();
-    void lstView_selected(QModelIndex i);
+    void checkbox_Changed();
+//    void lstView_selected(QModelIndex i);
 };
 
 #endif // DETAILVISUALIZATIONDOCKWIDGET_H

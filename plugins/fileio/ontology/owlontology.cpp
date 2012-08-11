@@ -17,6 +17,7 @@
 
 #include <ontologydb.h>
 #include <widgets/detailvisualizationdockwidget.h>
+#include <QStringList>
 
 using namespace dunnart;
 using namespace std;
@@ -68,19 +69,9 @@ OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin, DetailDockWidget 
 //    appmainwindow->restoreDockWidget(zoomdwgt);
 }
 
-/** TODO List:
-1. --all URI name ---only one namespace!!!
-2. --prefix---only one namespace!!!
-3. --properties --done
-4. --about Thing?
-5. --(done) Did not deal with the -1 error when use getIndexOfClasses(),getIndexOfIndividuals(),getIndexOfProperties()
-6. --(done) drawEquivalentClass() and getFormula() has not fully covered all the expressions
-7. link different views
-*/
-
 //const
 const QColor OwlOntology::CLASS_SHAPE_COLOR = OwlClass::CLASS_SHAPE_COLOR;
-const QColor OwlOntology::INDIVIDUAL_SHAPE_COLOR = QColor(238,130,238);
+const QColor OwlOntology::INDIVIDUAL_SHAPE_COLOR = OwlIndividual::INDIVIDUAL_SHAPE_COLOR;
 const QColor OwlOntology::PROPERTY_SHAPE_COLOR = QColor(143,188,143);
 
 const QColor OwlOntology::CLASS_CONNECTOR_COLOR = QColor("blue");
@@ -88,7 +79,7 @@ const QColor OwlOntology::INDIVIDUAL_CONNECTOR_COLOR = QColor("purple");
 const QColor OwlOntology::PROPERTY_CONNECT_TO_CLASS_COLOR = QColor("yellow");
 const QColor OwlOntology::PROPERTY_CONNECTOR_COLOR = QColor("green");
 
-//get index of individuals by its shortname
+//get index of individuals
 int OwlOntology::getIndexOfIndividuals(QString shortname)
 {
     for(int i=0;i<individuals.length();i++)
@@ -97,8 +88,16 @@ int OwlOntology::getIndexOfIndividuals(QString shortname)
     }
     return -1;
 }
+int OwlOntology::getIndexOfIndividualsByURI(QString URI)
+{
+    for(int i=0;i<individuals.length();i++)
+    {
+        if(individuals[i]->URI == URI) return i;
+    }
+    return -1;
+}
 
-//get index of classes by its shortname
+//get index of classes
 int OwlOntology::getIndexOfClasses(QString shortname)
 {
     for(int i=0;i<classes.length();i++)
@@ -108,12 +107,31 @@ int OwlOntology::getIndexOfClasses(QString shortname)
     return -1;
 }
 
-//get index of properties by its shortname
+int OwlOntology::getIndexOfClassesByURI(QString URI)
+{
+    for(int i=0;i<classes.length();i++)
+    {
+        if(classes[i]->URI == URI) return i;
+    }
+    return -1;
+}
+
+
+//get index of properties
 int OwlOntology::getIndexOfProperties(QString shortname)
 {
     for(int i=0;i<properties.length();i++)
     {
         if(properties[i]->shortname.toLower() == shortname.toLower()) return i;
+    }
+    return -1;
+}
+
+int OwlOntology::getIndexOfPropertiesByURI(QString URI)
+{
+    for(int i=0;i<properties.length();i++)
+    {
+        if(properties[i]->URI == URI) return i;
     }
     return -1;
 }
@@ -128,33 +146,218 @@ void OwlOntology::loadontologyFromDB(const QFileInfo &fileInfo)
     OntologyDB * db = new OntologyDB();
     db->openDB();
 
+    cout<<filename.toStdString()<<endl;
     //get ontology ID
     this->ontologyID = db->getOntologyID(filename);
-    cout<<this->ontologyID<<endl;
+
     //get namespace for the URI
-    this->owlnamespace = db->getOntologyNamespace(filename);
-    cout<<owlnamespace.toStdString()<<endl;
+    this->owlnamespace = db->getOntologyNamespace(ontologyID);
+
     //get all individuals
-    QList<QString> idvs = db->getAllIndividualNames(this->ontologyID);
-    for(int i=0;i<idvs.size();i++)
-    {
-        //set individual name
-//        OwlIndividual * tmpindividual = new OwlIndividual();
-//        tmpindividual->shortname=QString(owlindividuals[i]->toString());
-//        tmpindividual->URI="<" + owlnamespace + tmpindividual->shortname + ">";
-
-//        //create shape
-//        tmpindividual->shape = new OntologyIndividualShape();
-//        tmpindividual->shape->setIdString(tmpindividual->shortname);
-//        tmpindividual->shape->setLabel(tmpindividual->shortname);
-//        tmpindividual->shape->setToolTip(tmpindividual->URI);
-//        tmpindividual->shape->setSize(QSizeF(150,20));
-//        tmpindividual->shape->setFillColour(this->INDIVIDUAL_SHAPE_COLOR);
+    this->individuals.clear();
+    this->individuals.append(db->getAllIndividuals(ontologyID));
+    QList<int> dbid_inds;
+    for(int i=0;i<individuals.size();i++)
+        dbid_inds.append(individuals[i]->db_entityID);
 
 
-//        //append tmpindividual to list
-//        this->individuals.append(tmpindividual);
+    //get all named classes
+    this->classes.clear();
+    this->classes.append(db->getAllNamedClasses(ontologyID));
+    QList<int> dbid_classes;
+    for(int i=0;i<classes.size();i++)
+        dbid_classes.append(classes[i]->db_entityID);
+
+    for(int i=0;i<classes.size();i++){
+        //connect signal
+        connect(classes[i]->shape,SIGNAL(myclick(OntologyClassShape*)),this,SLOT(ontoclass_clicked(OntologyClassShape*)));
+        connect(classes[i]->shape,SIGNAL(myDoubleClick(OntologyClassShape*)),this,SLOT(ontoclass_doubleclicked(OntologyClassShape*)));
+        connect(classes[i]->shape,SIGNAL(myRightClick(OntologyClassShape*)),this,SLOT(ontoclass_rightclicked(OntologyClassShape*)));
+
+        //get&set individual relations
+        QString indstr = "[IND]:";
+        QList<int> iURIs = db->getIndividualURIsByClass(classes[i]->db_entityID);
+        for(int j=0;j<iURIs.size();j++){
+            int idx = dbid_inds.indexOf(iURIs[j]);
+            //if found the individual in the list
+            if(idx!=-1){
+                indstr += this->individuals[idx]->shortname + " "; //add to level 2 label
+                //add this class[i] to individual's owner classes list
+                this->individuals[idx]->ownerclasses.append(classes[i]->shortname);
+                //add individuals[idx] to class[i] individuals list
+                classes[i]->individuals<<this->individuals[idx];
+                //create connectors
+                Connector * conn = new Connector();
+                conn->initWithConnection(individuals[idx]->shape, classes[i]->shape);
+                conn->setDirected(true);
+                conn->setColour(this->INDIVIDUAL_CONNECTOR_COLOR);
+
+                classes[i]->individualconnectors<<conn;
+                individuals[idx]->classesconnectors<<conn;
+            }
+        }
+        classes[i]->shape->setLabelByLevels(2,indstr); //set level 2 label
+
+        //get&set named subclasses/superclasses
+        QString substr = "[SUB]:"; //for level label        
+
+        QList<int> subs = db->getSubClasses(classes[i]->db_entityID);
+        for(int j=0; j<subs.size();j++){
+            int idx = dbid_classes.indexOf(subs[j]);
+            if(idx!=-1){
+                substr+= classes[idx]->shortname+" ";
+                classes[i]->subclasses<<classes[idx];
+                classes[idx]->superclasses<<classes[i];
+                //set level 4 label (superclasses)
+                classes[idx]->shape->levelLabels[3]+=classes[i]->shortname+" ";
+            }
+        }
+
+        classes[i]->shape->setLabelByLevels(3,substr); //set level 3 label
+
+        //get&set disjoint classes
+        QString disstr = "[DIS]:";
+        QList<int> diss = db->getDisjointClasses(classes[i]->db_entityID);
+        for(int j=0;j<diss.size();j++){
+            int idx = dbid_classes.indexOf(diss[j]);
+            if(idx!=-1){
+                disstr+= classes[idx]->shortname+" ";
+                classes[i]->disjointclasses<<classes[idx];
+            }
+        }
+        classes[i]->shape->setLabelByLevels(5,disstr);
+        //get&set equivalent classes
+        QString equstr = "[EQU]:";
+        QList<int> equs = db->getEquivalentClasses(classes[i]->db_entityID);
+        for(int j=0;j<equs.size();j++){
+            int idx = dbid_classes.indexOf(equs[j]);
+            if(idx!=-1){
+                equstr+= classes[idx]->shortname+" ";
+                classes[i]->equivalentclasses<<classes[idx];
+            }
+        }
+        classes[i]->shape->setLabelByLevels(6,equstr);
+
+        //anonymous sub/super/equ/disjoint
+        QList<QString> asubs = db->getAnonymousSubClasses(classes[i]->db_entityID);
+        classes[i]->anonymousSubs.clear();
+        classes[i]->anonymousSubs.append(asubs);
+        for(int j=0;j<asubs.size();j++)
+            classes[i]->shape->levelLabels[2] += "*"+asubs[j]+" ";
+
+        QList<QString> asups = db->getAnonymousSuperClasses(classes[i]->db_entityID);
+        classes[i]->anonymousSupers.clear();
+        classes[i]->anonymousSupers.append(asups);
+        for(int j=0;j<asups.size();j++)
+            classes[i]->shape->levelLabels[3] += "*"+asups[j]+" ";
+
+        QList<QString> adiss = db->getAnonymousDisjointClasses(classes[i]->db_entityID);
+        classes[i]->anonymousDisjoints.clear();
+        classes[i]->anonymousDisjoints.append(adiss);
+        for(int j=0;j<adiss.size();j++)
+            classes[i]->shape->levelLabels[4] += "*"+adiss[j]+" ";
+
+        QList<QString> aequs = db->getAnonymousEquivalentClasses(classes[i]->db_entityID);
+        classes[i]->anonymousEqus.clear();
+        classes[i]->anonymousEqus.append(aequs);
+        for(int j=0;j<aequs.size();j++)
+            classes[i]->shape->levelLabels[5] += "*"+aequs[j]+" ";
+
     }
+
+
+    /**
+      Check "Thing" Class, if it does not exist, create one and link it.
+      Then set the superclass of classes without superclasses to "Thing".
+      **/
+    int idxThing = this->getIndexOfClasses("Thing");
+    if(idxThing==-1)
+    {
+        cout<<"Thing not found! Creating..."<<endl;
+        OwlClass * thingClass = new OwlClass();
+        thingClass->shortname = "Thing";
+        thingClass->URI ="owl:Thing";
+        thingClass->shape = new OntologyClassShape();
+        thingClass->shape->setIdString(thingClass->shortname);
+        thingClass->shape->setToolTip(thingClass->URI);
+        thingClass->shape->setPosAndSize(QPointF(200,0),QSizeF(150,20));
+        thingClass->shape->setMyLabel(thingClass->shortname);
+        thingClass->shape->setLabelByLevels(1,thingClass->shortname); //set level 1 label
+        thingClass->shape->setFillColour(this->CLASS_SHAPE_COLOR);
+        classes.append(thingClass);
+        idxThing = classes.size()-1;
+    }
+    for(int i=0;i<classes.size();i++)
+    {
+        if(i!=idxThing&&classes[i]->superclasses.size()==0){
+            classes[i]->superclasses.append(classes[idxThing]);
+            classes[i]->shape->setLabelByLevels(4,"[SUP]:Thing");
+            classes[idxThing]->subclasses.append(classes[i]);
+        }
+    }
+    QString thingsub = "[SUB]:";
+    for(int i=0;i<classes[idxThing]->subclasses.size();i++){
+        thingsub +=classes[idxThing]->subclasses[i]->shortname+" ";
+    }
+    classes[idxThing]->shape->setLabelByLevels(3,thingsub);
+
+    /** dealwith unmatched super/sub relation**/
+    for(int i=0;i<classes.size();i++)
+    {
+        //classes[i]'s superclass does not has subclass(classes[i])
+        //Warn:This needs to add the sub relation connector
+        //Moreover, if the superclass is "Thing", do not create the connector
+        for(int j=0;j<classes[i]->superclasses.size();j++)
+        {
+            if(!classes[i]->superclasses[j]->subclasses.contains(classes[i]))
+            {
+                classes[i]->superclasses[j]->subclasses.append(classes[i]);
+                //set level label, add this subclass
+                classes[i]->superclasses[j]->shape->levelLabels[2] += classes[i]->shortname+" ";
+                //create connectors
+                if(classes[i]->superclasses[j]->shortname.toLower()!="thing")
+                {
+                    Connector * conn = new Connector();
+                    conn->initWithConnection(classes[i]->shape,classes[i]->superclasses[j]->shape);
+                    conn->setDirected(true);
+                    conn->setColour(CLASS_CONNECTOR_COLOR);
+
+                    classes[i]->classesconnectors<<conn;
+                    classes[i]->superclasses[j]->classesconnectors<<conn;
+                }
+            }
+        }
+
+        //classes[i]'s subclass does not has superclass(classes[i])
+        //Since we only use the subclasses to draw the classview, so this does not need add connector
+        for(int j=0;j<classes[i]->subclasses.size();j++)
+        {
+            if(!classes[i]->subclasses[j]->superclasses.contains(classes[i]))
+            {
+                classes[i]->subclasses[j]->superclasses.append(classes[i]);
+                //set level label, add this superclass
+                classes[i]->subclasses[j]->shape->levelLabels[3] += classes[i]->shortname+" ";
+            }
+        }
+    }
+
+    for(int i=0;i<classes.size();i++){
+        QString lstr = classes[i]->shape->getLabel();
+        lstr+=" ";
+        if(!classes[i]->individuals.isEmpty())
+            lstr+="+I ";
+        if(!classes[i]->disjointclasses.empty()||!classes[i]->anonymousDisjoints.empty())
+            lstr+="+D ";
+        if(!classes[i]->equivalentclasses.empty()||!classes[i]->anonymousEqus.empty())
+            lstr+="+E ";
+        lstr = lstr.trimmed();
+        classes[i]->shape->setMyLabel(lstr);
+        classes[i]->shape->levelLabels[0]=lstr;
+    }
+
+    db->closeDB();
+//    cout<<"///////////get information of this ontology/////////////////"<<endl;
+    this->getOntoInfo();
 
 
 }
@@ -229,7 +432,7 @@ void OwlOntology::loadontology(const QFileInfo& fileInfo)
 
         //get equivalent class (Warn!!! only 1 or more???)
         QString tmpstr = QString(wp->getEquivalentClasses(tmpclass->shortname.toLocal8Bit().data()));
-        tmpclass->equivalentclass = tmpstr;
+        tmpclass->anonymousEqus.append(tmpstr);
         tmpclass->shape->setLabelByLevels(6,"[EQU]:"+ this->getFormula(tmpstr)); //set level 6 label
 
         //append tmpclass to list
@@ -1230,7 +1433,7 @@ ShapeObj * OwlOntology::drawEquivalentClass(QString qstr,Canvas *canvas)
 
 void OwlOntology::drawLogicalView(Canvas *canvas){
     for(int i=0;i<classes.size();i++){
-        if(classes[i]->equivalentclass.trimmed()!=""){
+        if(classes[i]->anonymousEqus[0].trimmed()!=""){
             ShapeObj * tp;
 
 //            tp = new RectangleShape();
@@ -1240,11 +1443,11 @@ void OwlOntology::drawLogicalView(Canvas *canvas){
 
              tp= classes[i]->shape;
 
-            tp->setToolTip(getFormula(classes[i]->equivalentclass));
+             tp->setToolTip(getFormula(classes[i]->anonymousEqus[0]));
             canvas->addItem(tp);
 
 
-            ShapeObj * lgcview = drawEquivalentClass(classes[i]->equivalentclass,canvas);
+            ShapeObj * lgcview = drawEquivalentClass(classes[i]->anonymousEqus[0],canvas);
             Connector * conn = new Connector();
             conn->initWithConnection(tp,lgcview);
             conn->setColour(QColor("black"));
@@ -1276,7 +1479,7 @@ QString OwlOntology::getClassInfo(OwlClass *selectedClass){
     this->classInfo.append("Number of Disjoint Classes: "+num_disjointclass+"\n");
     this->classInfo.append("Number of Individuals: "+num_individual+"\n");
 
-    if(selectedClass->equivalentclass.isNull() || selectedClass->equivalentclass.isEmpty()){
+    if(selectedClass->anonymousEqus.isEmpty() && selectedClass->equivalentclasses.isEmpty()){
 
         this->classInfo.append("Has Equivalent Class: NO\n");
     }else{
@@ -1327,40 +1530,40 @@ void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
         detailwgt->show();
     }
 
-    if(idx!=-1&&classes[idx]->equivalentclass.trimmed()!="")
-    {
-        equclasswid->clearall();
-        //root class
-        OntologyClassShape * classshape = new OntologyClassShape();
-        classshape->setIdString(">"+classes[idx]->shortname);
-        classshape->setToolTip(classes[idx]->URI);
-        classshape->setSize(QSizeF(150,20));
-        classshape->setMyLabel(classes[idx]->shortname);
-        classshape->setFillColour(this->CLASS_SHAPE_COLOR);
-        for(int i=0;i<6;i++)
-            classshape->setLabelByLevels(i+1,classes[idx]->shape->levelLabels[i]);
-        equclasswid->my_canvas->addItem(classshape);
-        equclasswid->setWindowTitle("[EQU]"+classes[idx]->shortname);
-        //formula view
-        ShapeObj * fshape = drawEquivalentClass(classes[idx]->equivalentclass,equclasswid->my_canvas);
-        //connection
-        Connector * conn = new Connector();
-        conn->initWithConnection(classshape,fshape);
-        conn->setColour(QColor("brown"));
-        conn->setDirected(true);
-        conn->setLabel("[EQU]");
-        Connector * conn1 = new Connector();
-        conn1->initWithConnection(fshape,classshape);
-        conn1->setColour(QColor("brown"));
-        conn1->setDirected(true);
+//    if(idx!=-1&&classes[idx]->anonymousEqus[0].trimmed()!="")
+//    {
+//        equclasswid->clearall();
+//        //root class
+//        OntologyClassShape * classshape = new OntologyClassShape();
+//        classshape->setIdString(">"+classes[idx]->shortname);
+//        classshape->setToolTip(classes[idx]->URI);
+//        classshape->setSize(QSizeF(150,20));
+//        classshape->setMyLabel(classes[idx]->shortname);
+//        classshape->setFillColour(this->CLASS_SHAPE_COLOR);
+//        for(int i=0;i<6;i++)
+//            classshape->setLabelByLevels(i+1,classes[idx]->shape->levelLabels[i]);
+//        equclasswid->my_canvas->addItem(classshape);
+//        equclasswid->setWindowTitle("[EQU]"+classes[idx]->shortname);
+//        //formula view
+//        ShapeObj * fshape = drawEquivalentClass(classes[idx]->anonymousEqus[0],equclasswid->my_canvas);
+//        //connection
+//        Connector * conn = new Connector();
+//        conn->initWithConnection(classshape,fshape);
+//        conn->setColour(QColor("brown"));
+//        conn->setDirected(true);
+//        conn->setLabel("[EQU]");
+//        Connector * conn1 = new Connector();
+//        conn1->initWithConnection(fshape,classshape);
+//        conn1->setColour(QColor("brown"));
+//        conn1->setDirected(true);
 
-        equclasswid->my_canvas->addItem(conn);
-        equclasswid->my_canvas->addItem(conn1);
-        equclasswid->my_canvas->setOptAutomaticGraphLayout(true);
-        equclasswid->my_canvas->setOptLayoutMode(maincanvas->FlowLayout);
-        equclasswid->my_canvas->setOptPreventOverlaps(true);
-        equclasswid->my_canvas->fully_restart_graph_layout();
-    }
+//        equclasswid->my_canvas->addItem(conn);
+//        equclasswid->my_canvas->addItem(conn1);
+//        equclasswid->my_canvas->setOptAutomaticGraphLayout(true);
+//        equclasswid->my_canvas->setOptLayoutMode(maincanvas->FlowLayout);
+//        equclasswid->my_canvas->setOptPreventOverlaps(true);
+//        equclasswid->my_canvas->fully_restart_graph_layout();
+//    }
 
 }
 

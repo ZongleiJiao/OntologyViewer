@@ -23,9 +23,11 @@ public:
 
     QString URI;
     QString shortname;
+    int db_entityID;
     QList<OwlClass *> subclasses;
     QList<OwlClass *> superclasses;
     QList<OwlClass *> disjointclasses;
+    QList<OwlClass *> equivalentclasses;
     QList<OwlIndividual *> individuals;
 
     QList<QString> propertydomains;
@@ -33,12 +35,11 @@ public:
 
     OntologyClassShape * shape;
     OverviewClassShape * overviewshape;
-    QString equivalentclass;
 
-    QStringList anonymousSubs;
-    QStringList anonymousSupers;
-    QStringList anonymousDisjoints;
-    QStringList anonymousEqus;
+    QList<QString> anonymousSubs;
+    QList<QString> anonymousSupers;
+    QList<QString> anonymousDisjoints;
+    QList<QString> anonymousEqus;
 
     QList<Connector *> individualconnectors;
     QList<Connector *> classesconnectors;

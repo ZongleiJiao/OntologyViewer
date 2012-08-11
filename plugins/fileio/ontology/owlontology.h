@@ -73,11 +73,17 @@ public:
     //methods
 //    OwlOntology(Canvas * canvas,QMainWindow *mainwin);
     OwlOntology(Canvas * canvas,QMainWindow *mainwin,DetailDockWidget * equwid);
+
     int getIndexOfIndividuals(QString shortname);
+    int getIndexOfIndividualsByURI(QString URI);
     int getIndexOfClasses(QString shortname);
+    int getIndexOfClassesByURI(QString URI);
     int getIndexOfProperties(QString shortname);
+    int getIndexOfPropertiesByURI(QString URI);
+
     void loadontology(const QFileInfo& fileInfo);
     void loadontologyFromDB(const QFileInfo& fileInfo);
+
     void drawClassView(Canvas *canvas);
     void drawIndividualView(Canvas *canvas);
     void drawPropertyView(Canvas *canvas);

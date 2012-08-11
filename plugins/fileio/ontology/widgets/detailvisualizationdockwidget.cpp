@@ -7,11 +7,6 @@ DetailVisualizationDockWidget::DetailVisualizationDockWidget(OwlOntology *onto, 
     ui(new Ui::DetailVisualizationDockWidget)
 {
     ui->setupUi(this);
-    bg1 = new QButtonGroup(this);
-    bg1->addButton(ui->radioButton);
-    bg1->addButton(ui->radioButton_2);
-    bg1->addButton(ui->radioButton_3);
-    bg1->addButton(ui->radioButton_4);
 
     this->m_onto = onto;
     this->m_cls = cls;
@@ -21,26 +16,41 @@ DetailVisualizationDockWidget::DetailVisualizationDockWidget(OwlOntology *onto, 
     m_scene = new QGraphicsScene(ui->sceneDockWidget);
     m_view = new QGraphicsView(m_scene,this);
     ui->sceneDockWidget->setWidget(m_view);
-    m_scene->setBackgroundBrush(QBrush(QColor(189, 189, 223)));
+    m_scene->setBackgroundBrush(QBrush(QColor("white")));
 
-    //test data
-    equs += "ObjectIntersectionOf(<Person> ObjectSomeValuesFrom(<hasHabitat> <University>) DataHasValue(<isHardWorking> \"true\"^^xsd:boolean))";
-    equs += "ObjectIntersectionOf(<Student> ObjectAllValuesFrom(<hasChildren> <Female>) ObjectHasValue(<hasGender> <male>) ObjectExactCardinality(3 <hasChildren> Thing))";
-    subs += "abc";
-    supers += "expsss";
-    disjoints +="ObjectIntersectionOf(<Koala> ObjectHasValue(<hasDegree> <PhD>))";
     //assign data
+    for(int i=0;i<cls->subclasses.size();i++){
+        subs.append(cls->subclasses[i]->shortname);
+    }
+    subs.append(cls->anonymousSubs);
+
+    for(int i=0;i<cls->superclasses.size();i++){
+        supers.append(cls->superclasses[i]->shortname);
+    }
+    supers.append(cls->anonymousSupers);
+
+    for(int i=0;i<cls->disjointclasses.size();i++){
+        disjoints.append(cls->disjointclasses[i]->shortname);
+    }
+    disjoints.append(cls->anonymousDisjoints);
+
+    for(int i=0;i<cls->equivalentclasses.size();i++){
+        equs.append(cls->equivalentclasses[i]->shortname);
+    }
+    equs.append(cls->anonymousEqus);
+
 
     //ui operation
-    model = new QStringListModel(this->equs);
-    ui->listView->setModel(this->model);
+    ui->checkBox->setChecked(true);
+    ui->checkBox_2->setChecked(true);
+    ui->checkBox_3->setChecked(true);
+    ui->checkBox_4->setChecked(true);
+    connect(ui->checkBox,SIGNAL(clicked()),this,SLOT(checkbox_Changed()));
+    connect(ui->checkBox_2,SIGNAL(clicked()),this,SLOT(checkbox_Changed()));
+    connect(ui->checkBox_3,SIGNAL(clicked()),this,SLOT(checkbox_Changed()));
+    connect(ui->checkBox_4,SIGNAL(clicked()),this,SLOT(checkbox_Changed()));
 
-    connect(ui->radioButton,SIGNAL(clicked()),this,SLOT(rbtn_subs()));
-    connect(ui->radioButton_2,SIGNAL(clicked()),this,SLOT(rbtn_supers()));
-    connect(ui->radioButton_3,SIGNAL(clicked()),this,SLOT(rbtn_disjoints()));
-    connect(ui->radioButton_4,SIGNAL(clicked()),this,SLOT(rbtn_equs()));
-
-    connect(ui->listView,SIGNAL(clicked(QModelIndex)),this,SLOT(lstView_selected(QModelIndex)));
+    this->checkbox_Changed();
 }
 
 DetailVisualizationDockWidget::~DetailVisualizationDockWidget()
@@ -48,7 +58,7 @@ DetailVisualizationDockWidget::~DetailVisualizationDockWidget()
     delete ui;
 }
 
-void DetailVisualizationDockWidget::drawExpression(Expression * e, qreal rectWidth,qreal sx, qreal sy)
+qreal DetailVisualizationDockWidget::drawExpression(Expression * e, qreal rectWidth,qreal sx, qreal sy)
 {
     qreal rsx = sx+10;
     qreal rsy = sy+5;
@@ -72,40 +82,121 @@ void DetailVisualizationDockWidget::drawExpression(Expression * e, qreal rectWid
     txt->setDefaultTextColor(QColor("black"));
     txt->setPlainText(e->symbol);
 
-    m_scene->addRect(rsx,rsy,rw,rh,QPen(QColor("black")),QBrush(bc,Qt::SolidPattern));
+    QGraphicsItem *it = m_scene->addRect(rsx,rsy,rw,rh,QPen(QColor("black")),QBrush(bc,Qt::SolidPattern));
     m_scene->addItem(txt);
+
+    it->setToolTip(e->fullexpression);
+
+    qreal ey = rsy+rh;
 
     qreal subsy = sy + 25;
     for(int i=0;i<e->subExpressions.size();i++){
         drawExpression(e->subExpressions[i],rw-10,sx+10,subsy);
         subsy+=e->subExpressions[i]->getHeight()+10;
     }
+
+    return ey;
 }
 
-void DetailVisualizationDockWidget::rbtn_subs()
+void DetailVisualizationDockWidget::checkbox_Changed()
 {
-    model->setStringList(subs);
+    m_scene->clear();
+    qreal sx = 0;
+    qreal sy = 0;
+    qreal w = 380;
+    if(ui->checkBox->checkState()==Qt::Checked){
+
+        QGraphicsTextItem * txt = new QGraphicsTextItem();
+        txt->setPos(sx+5,sy);
+        QFont font;
+        font.setPixelSize(10);
+        font.setBold(false);
+        font.setFamily("Calibri");
+        txt->setFont(font);
+        txt->setDefaultTextColor(QColor("black"));
+        txt->setPlainText("[Sub]");
+        m_scene->addItem(txt);
+        m_scene->addLine(sx,sy+15,w,sy+15,QPen(QColor("black")));
+        sy = sy+20;
+
+        for(int i=0;i<subs.size();i++)
+        {
+            m_scene->addEllipse(3,sy+10,4,4,QPen(QColor("black")),QBrush(QColor("blue")));
+            qreal ey = this->drawExpression(Expression::getExpressionData(m_onto,subs[i]),w,sx,sy);
+            sy = ey+5;
+        }
+    }
+    if(ui->checkBox_2->checkState()==Qt::Checked){
+        QGraphicsTextItem * txt = new QGraphicsTextItem();
+        txt->setPos(sx+5,sy);
+        QFont font;
+        font.setPixelSize(10);
+        font.setBold(false);
+        font.setFamily("Calibri");
+        txt->setFont(font);
+        txt->setDefaultTextColor(QColor("black"));
+        txt->setPlainText("[Super]");
+        m_scene->addItem(txt);
+        m_scene->addLine(sx,sy+15,w,sy+15,QPen(QColor("black")));
+        sy = sy+20;
+
+        for(int i=0;i<supers.size();i++)
+        {
+            m_scene->addEllipse(3,sy+10,4,4,QPen(QColor("black")),QBrush(QColor("blue")));
+            qreal ey = this->drawExpression(Expression::getExpressionData(m_onto,supers[i]),w,sx,sy);
+            sy = ey+5;
+        }
+    }
+    if(ui->checkBox_3->checkState()==Qt::Checked){
+        QGraphicsTextItem * txt = new QGraphicsTextItem();
+        txt->setPos(sx+5,sy);
+        QFont font;
+        font.setPixelSize(10);
+        font.setBold(false);
+        font.setFamily("Calibri");
+        txt->setFont(font);
+        txt->setDefaultTextColor(QColor("black"));
+        txt->setPlainText("[Equivalent]");
+        m_scene->addItem(txt);
+        m_scene->addLine(sx,sy+15,w,sy+15,QPen(QColor("black")));
+        sy = sy+20;
+
+        for(int i=0;i<equs.size();i++)
+        {
+            m_scene->addEllipse(3,sy+10,4,4,QPen(QColor("black")),QBrush(QColor("blue")));
+            qreal ey = this->drawExpression(Expression::getExpressionData(m_onto,equs[i]),w,sx,sy);
+            sy = ey+5;
+        }
+    }
+    if(ui->checkBox_4->checkState()==Qt::Checked){
+        QGraphicsTextItem * txt = new QGraphicsTextItem();
+        txt->setPos(sx+5,sy);
+        QFont font;
+        font.setPixelSize(10);
+        font.setBold(false);
+        font.setFamily("Calibri");
+        txt->setFont(font);
+        txt->setDefaultTextColor(QColor("black"));
+        txt->setPlainText("[Disjoint]");
+        m_scene->addItem(txt);
+        m_scene->addLine(sx,sy+15,w,sy+15,QPen(QColor("black")));
+        sy = sy+20;
+
+        for(int i=0;i<disjoints.size();i++)
+        {
+            m_scene->addEllipse(3,sy+10,4,4,QPen(QColor("black")),QBrush(QColor("blue")));
+            qreal ey = this->drawExpression(Expression::getExpressionData(m_onto,disjoints[i]),w,sx,sy);
+            sy = ey+5;
+        }
+    }
+    m_scene->addRect(sx,sy+10,w,10,QPen(Qt::transparent),QBrush(Qt::NoBrush));
 }
 
-void DetailVisualizationDockWidget::rbtn_supers()
-{
-    model->setStringList(supers);
-}
 
-void DetailVisualizationDockWidget::rbtn_disjoints()
-{
-    model->setStringList(disjoints);
-}
-
-void DetailVisualizationDockWidget::rbtn_equs()
-{
-    model->setStringList(equs);
-}
-
-void DetailVisualizationDockWidget::lstView_selected(QModelIndex i)
-{
-    QString s = model->data(i,0).toString();
-    Expression *e = Expression::getExpressionData(m_onto,s);
-    this->m_scene->clear();
-    this->drawExpression(e,370);
-}
+//void DetailVisualizationDockWidget::lstView_selected(QModelIndex i)
+//{
+//    QString s = model->data(i,0).toString();
+//    Expression *e = Expression::getExpressionData(m_onto,s);
+//    this->m_scene->clear();
+//    this->drawExpression(e,370);
+//}

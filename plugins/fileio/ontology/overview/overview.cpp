@@ -51,10 +51,14 @@ QList<OwlClass *> Overview::convertOverviewShapes(QList<OwlClass *> classes)
         OwlClass * newclass = new OwlClass();
         OwlClass * oriclass = classes[i];
         newclass->disjointclasses.append(oriclass->disjointclasses);
-        newclass->equivalentclass = oriclass->equivalentclass;
+        newclass->equivalentclasses.append(oriclass->equivalentclasses);
         newclass->individuals.append(oriclass->individuals);
         newclass->propertydomains.append(oriclass->propertydomains);
         newclass->propertyranges.append(oriclass->propertyranges);
+        newclass->anonymousDisjoints.append(oriclass->anonymousDisjoints);
+        newclass->anonymousEqus<<oriclass->anonymousEqus;
+        newclass->anonymousSubs<<oriclass->anonymousSubs;
+        newclass->anonymousSupers<<oriclass->anonymousSupers;
         newclass->URI = oriclass->URI;
         newclass->shortname = oriclass->shortname;
 

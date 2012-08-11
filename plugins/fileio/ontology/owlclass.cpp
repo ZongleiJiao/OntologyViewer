@@ -2,7 +2,7 @@
 using namespace std;
 OwlClass::OwlClass()
 {    
-    this->equivalentclass="";
+    //this->equivalentclass="";
     this->isIndividualsShowed=false;
     this->isFocused=false;
 }

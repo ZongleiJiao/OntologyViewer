@@ -217,8 +217,11 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     st.start();
     //OwlOntology * onto = new OwlOntology(canvas,this->appmainwin);
     OwlOntology * onto = new OwlOntology(canvas,this->appmainwin,this->equclasswid);
-    onto->loadontology(fileInfo);
-    cout<<"T:"<<st.elapsed()<<endl;
+//    onto->loadontology(fileInfo);
+
+    onto->loadontologyFromDB(fileInfo);
+
+    cout<<endl<<"T:"<<st.elapsed()<<endl;
     cout<<"Finish loading. Total " <<onto->classes.size()<<" class notes."<<endl;
 
     this->searchdwgt->setOntology(onto);
@@ -229,7 +232,6 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 
 //    Util * util = new Util(onto);
 //    util->connectWgt(this->infoboxdwgt);
-    onto->loadontologyFromDB(fileInfo);
 
     /** text output **/
 //    cout<<onto->toQString().toStdString();

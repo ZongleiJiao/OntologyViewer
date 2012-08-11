@@ -77,7 +77,7 @@ Expression * Expression::getExpressionData(OwlOntology *onto, QString expStr)
         QString fstr = str.mid(15, str.length() - 16);
         QList<QString> substrs = splitExpressionStr(fstr);
         exp->type = 1;
-        exp->symbol +="IntersectionOf";
+        exp->symbol +="IntersectionOf (AND)";
         for(int i=0;i<substrs.size();i++){
             exp->subExpressions.append(getExpressionData(exp->ownerOntology,substrs[i]));
         }
@@ -88,7 +88,7 @@ Expression * Expression::getExpressionData(OwlOntology *onto, QString expStr)
         QString fstr = str.mid(8, str.length() - 9);
         QList<QString> substrs = splitExpressionStr(fstr);
         exp->type = 1;
-        exp->symbol +="UnionOf";
+        exp->symbol +="UnionOf (OR)";
         for(int i=0;i<substrs.size();i++){
             exp->subExpressions.append(getExpressionData(exp->ownerOntology,substrs[i]));
         }
@@ -100,7 +100,7 @@ Expression * Expression::getExpressionData(OwlOntology *onto, QString expStr)
         QString fstr = str.mid(13, str.length() - 14);
         QList<QString> substrs = splitExpressionStr(fstr);
         exp->type = 1;
-        exp->symbol +="ComplementOf";
+        exp->symbol +="ComplementOf (NOT)";
         for(int i=0;i<substrs.size();i++){
             exp->subExpressions.append(getExpressionData(exp->ownerOntology,substrs[i]));
         }
@@ -112,7 +112,7 @@ Expression * Expression::getExpressionData(OwlOntology *onto, QString expStr)
         QList<QString> substrs = splitExpressionStr(fstr);
 //        r = "(" + getFormula(substrs.at(0)) +" "+marker+"ONLY " + getFormula(substrs.at(1)) +")";
         exp->type = 1;
-        exp->symbol +="AllValuesFrom";
+        exp->symbol +="AllValuesFrom (ONLY)";
         for(int i=0;i<substrs.size();i++){
             exp->subExpressions.append(getExpressionData(exp->ownerOntology,substrs[i]));
         }
@@ -124,7 +124,7 @@ Expression * Expression::getExpressionData(OwlOntology *onto, QString expStr)
         QList<QString> substrs = splitExpressionStr(fstr);
 //        r = "(" + getFormula(substrs.at(0)) + " "+marker+"SOME " + getFormula(substrs.at(1)) +")";
         exp->type = 1;
-        exp->symbol +="SomeValuesFrom";
+        exp->symbol +="SomeValuesFrom (SOME)";
         for(int i=0;i<substrs.size();i++){
             exp->subExpressions.append(getExpressionData(exp->ownerOntology,substrs[i]));
         }
@@ -136,7 +136,7 @@ Expression * Expression::getExpressionData(OwlOntology *onto, QString expStr)
         QList<QString> substrs = splitExpressionStr(fstr);
 //        r = "(" + getFormula(substrs.at(0)) + " "+marker+"VALUE " + getFormula(substrs.at(1)) +")";
         exp->type = 1;
-        exp->symbol +="HasValue";
+        exp->symbol +="HasValue (VALUE)";
         for(int i=0;i<substrs.size();i++){
             exp->subExpressions.append(getExpressionData(exp->ownerOntology,substrs[i]));
         }
@@ -148,7 +148,7 @@ Expression * Expression::getExpressionData(OwlOntology *onto, QString expStr)
         QList<QString> substrs = splitExpressionStr(fstr);
 //        r = "(" + getFormula(substrs.at(1))+" "+marker+"EXACTLY " +getFormula(substrs.at(0)) + getFormula(substrs.at(2)) +")";
         exp->type = 1;
-        exp->symbol +="ExactCardinality";
+        exp->symbol +="ExactCardinality (EXACTLY)";
         for(int i=0;i<substrs.size();i++){
             exp->subExpressions.append(getExpressionData(exp->ownerOntology,substrs[i]));
         }
@@ -160,7 +160,7 @@ Expression * Expression::getExpressionData(OwlOntology *onto, QString expStr)
         QList<QString> substrs = splitExpressionStr(fstr);
 //        r = "(" + getFormula(substrs.at(1))+" "+marker+"MIN " +getFormula(substrs.at(0)) + getFormula(substrs.at(2)) +")";
         exp->type = 1;
-        exp->symbol +="MinCardinality";
+        exp->symbol +="MinCardinality (MIN)";
         for(int i=0;i<substrs.size();i++){
             exp->subExpressions.append(getExpressionData(exp->ownerOntology,substrs[i]));
         }
@@ -172,15 +172,26 @@ Expression * Expression::getExpressionData(OwlOntology *onto, QString expStr)
         QList<QString> substrs = splitExpressionStr(fstr);
 //        r = "(" + getFormula(substrs.at(1))+" "+marker+"MAX " +getFormula(substrs.at(0)) + getFormula(substrs.at(2)) +")";
         exp->type = 1;
-        exp->symbol +="MaxCardinality";
+        exp->symbol +="MaxCardinality (MAX)";
         for(int i=0;i<substrs.size();i++){
             exp->subExpressions.append(getExpressionData(exp->ownerOntology,substrs[i]));
         }
     }
 
     //others
-    else {
-        exp->type = 5;
+    else {        
+        QString sname = str;
+        int idx = exp->ownerOntology->getIndexOfClasses(sname);
+        if(idx!=-1) exp->type = 2;
+        else{
+            idx = exp->ownerOntology->getIndexOfIndividuals(sname);
+            if(idx!=-1) exp->type = 3;
+            else{
+                idx = exp->ownerOntology->getIndexOfProperties(sname);
+                if(idx!=-1) exp->type = 4;
+                else exp->type = 5;
+            }
+        }
         exp->symbol = str;
     }
     return exp;
