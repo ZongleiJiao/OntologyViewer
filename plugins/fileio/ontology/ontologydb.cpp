@@ -11,7 +11,8 @@ OntologyDB::OntologyDB(QObject *parent) :
 bool OntologyDB::openDB(){
     // Find QSLite driver
     db = QSqlDatabase::addDatabase("QSQLITE");
-    QString path("/run/shm/ontology.db");
+//    QString path("/run/shm/ontology.db");
+    QString path("../../../plugins/fileio/ontology/ontology.db");//DB path for Mac, linux might be different
     db.setDatabaseName(path);
     // Open databasee
     return db.open();
