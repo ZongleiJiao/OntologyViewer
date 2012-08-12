@@ -374,7 +374,8 @@ HEADERS       = \
     ontologydb.h \
     overview/overviewshape.h \
     widgets/detailvisualizationdockwidget.h \
-    expression.h
+    expression.h \
+    ontologyshapes/extensionshape.h
 
 SOURCES       = plugin.cpp \
                 owlclass.cpp \
@@ -724,7 +725,8 @@ SOURCES       = plugin.cpp \
     ontologydb.cpp \
     overview/overviewshape.cpp \
     widgets/detailvisualizationdockwidget.cpp \
-    expression.cpp
+    expression.cpp \
+    ontologyshapes/extensionshape.cpp
 
 mac: LIBS += -F/System/Library/Frameworks/ -framework JavaVM
 else:symbian: LIBS += -ljvm
@@ -752,6 +754,8 @@ FORMS += \
     widgets/shownodesdockwidget.ui \
     widgets/detailinfodockwidget.ui \
     widgets/detailvisualizationdockwidget.ui
+
+
 
 
 

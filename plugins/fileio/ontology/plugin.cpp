@@ -49,6 +49,7 @@
 #include <ontoclass.h>
 #include <ontoindividual.h>
 #include <ontoproperty.h>
+#include <extensionshape.h>
 #include <overviewclassshape.h>
 #include <overview/overview.h>
 #include <widgets/detaildockwidget.h>
@@ -142,6 +143,7 @@ class OntologyFileIOPlugin :
             shapes << "org.dunnart.shapes.ontoindividual";
             shapes << "org.dunnart.shapes.ontoequivalentclass";
             shapes << "org.dunnart.shapes.ontoproperty";
+            shapes << "org.dunnart.shapes.extshape";
             return shapes;
         }
         ShapeObj *generateShapeOfType(QString shapeType)
@@ -161,6 +163,10 @@ class OntologyFileIOPlugin :
             else if (shapeType == "org.dunnart.shapes.ontoproperty")
             {
                 return new OntologyPropertyShape();
+            }
+            else if (shapeType == "org.dunnart.shapes.extshape")
+            {
+                return new ExtensionShape();
             }
             return NULL;
         }

@@ -31,6 +31,7 @@ signals:
 
 public slots:
 
+
 };
 
 #endif // DETAILEDVIEW_H

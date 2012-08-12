@@ -1,6 +1,6 @@
 #include "detailedview.h"
 #include <stack>
-
+#include <extensionshape.h>
 using namespace std;
 
 DetailedView::DetailedView(Canvas *canvas, OwlOntology *ontology, QObject *parent) :
@@ -60,6 +60,41 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
             dclasses[i]->shape->setCentrePos(p);
         }
         m_canvas->addItem(dclasses[i]->shape);
+
+        bool needext = false;
+        for(int j=0;j<dclasses[i]->subclasses.size();j++){
+            if(!dclasses.contains(dclasses[i]->subclasses[j])){
+                needext = true;
+                break;
+            }
+        }
+        if(!needext)
+            for(int j=0;j<dclasses[i]->superclasses.size();j++){
+                if(!dclasses.contains(dclasses[i]->superclasses[j])){
+                    needext = true;
+                    break;
+                }
+            }
+
+        if(needext){
+
+            ExtensionShape * es = new ExtensionShape();
+            es->setFillColour("yellow");
+            es->setLabel("+");
+            es->setSize(QSizeF(20,20));
+            es->linkedClass=dclasses[i];
+            m_canvas->addItem(es);
+
+            Connector * conn = new Connector();
+            conn->initWithConnection(dclasses[i]->shape,es);
+            conn->setColour(QColor("darkgreen"));
+            conn->setDirected(false);
+            conn->setDotted(true);
+            m_canvas->addItem(conn);
+            es->edge = conn;
+
+            //add click to ES??? REMOVE???
+        }
     }
 
     for(int i=0;i<dedges.size();i++)
