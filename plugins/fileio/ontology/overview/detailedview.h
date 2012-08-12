@@ -3,6 +3,7 @@
 #include <canvas.h>
 #include <owlontology.h>
 #include <QObject>
+#include <extensionshape.h>
 
 using namespace dunnart;
 class DetailedView : public QObject
@@ -30,6 +31,8 @@ private:
 signals:
 
 public slots:
+    void extshape_Clicked(ExtensionShape *cs);
+    void extshape_DoubleClicked(ExtensionShape *cs);
 
 
 };

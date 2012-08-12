@@ -84,6 +84,7 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
             es->setSize(QSizeF(20,20));
             es->linkedClass=dclasses[i];
             m_canvas->addItem(es);
+            connect(es,SIGNAL(myclick(ExtensionShape*)),this,SLOT(extshape_Clicked(ExtensionShape*)));
 
             Connector * conn = new Connector();
             conn->initWithConnection(dclasses[i]->shape,es);
@@ -149,4 +150,54 @@ QList<OwlClass *> DetailedView::getNextLevelClasses(QList<OwlClass *> cls)
     return lists;
 }
 
+void DetailedView::extshape_Clicked(ExtensionShape *cs)
+{
+    m_canvas->removeItem(cs->edge);
+    m_canvas->removeItem(cs);
+
+    for(int i=0;i<cs->linkedClass->subclasses.size();i++){
+        OwlClass * tmp = cs->linkedClass->subclasses[i];
+        if(!dclasses.contains(tmp)){
+            m_canvas->addItem(tmp->shape);
+
+            Connector * c = new Connector();
+            c->initWithConnection(tmp->shape,cs->linkedClass->shape);
+            c->setDirected(true);
+            c->setRoutingType(Connector::orthogonal);
+            m_canvas->addItem(c);
+
+            dclasses.append(tmp);
+            dedges.append(c);
+
+
+        }
+    }
+
+    for(int i=0;i<cs->linkedClass->superclasses.size();i++){
+        OwlClass * tmp = cs->linkedClass->superclasses[i];
+        if(!dclasses.contains(tmp)){
+            m_canvas->addItem(tmp->shape);
+
+            Connector * c = new Connector();
+            c->initWithConnection(cs->linkedClass->shape,tmp->shape);
+            c->setDirected(true);
+            c->setRoutingType(Connector::orthogonal);
+            m_canvas->addItem(c);
+
+            dclasses.append(tmp);
+            dedges.append(c);
+        }
+    }
+
+    cs->edge->~Connector();
+    cs->~ShapeObj();
+
+    this->m_canvas->fully_restart_graph_layout();
+
+}
+
+void DetailedView::extshape_DoubleClicked(ExtensionShape *cs)
+{
+
+}
 
