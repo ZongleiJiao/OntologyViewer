@@ -14,6 +14,9 @@ public:
     OwlOntology * m_ontology;
     int limitEntityNum;
     int limitRelationNum;
+    OwlClass *CNode;
+    QList<OwlClass *> Cclasses;
+    QList<OwlIndividual *> dIndividuals;
 
     QList<OwlClass *> dclasses;
     QList<Connector *> dedges;
@@ -24,6 +27,11 @@ public:
     int getIndexByShortname(QList<OwlClass *> lst, QString shortname);
 
     QList<OwlClass *> drawClassView(OwlClass *centerNode,QList<OwlClass *> overviewClasses);
+    void removeClassView();
+    void reDrawClassView();
+    void drawIndividuals();
+    void removeIndividuals();
+
 private:
     int m_entitynum;
     QList<OwlClass *> getNextLevelClasses(QList<OwlClass *> cls);

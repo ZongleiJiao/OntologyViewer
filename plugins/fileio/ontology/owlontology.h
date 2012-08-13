@@ -16,6 +16,7 @@
 #include <widgets/detailinfodockwidget.h>
 #include <QtGui>
 #include <owlentity.h>
+#include <ontologydb.h>
 
 class OwlOntology:public QObject
 {
@@ -23,6 +24,8 @@ class OwlOntology:public QObject
 signals:
     void clickedClass(QString);
     void loading(QString);
+    void savingInterests(QString);
+    void loadHistory();
 public slots:
     void ontoclass_clicked(OntologyClassShape * classshape);
     void ontoclass_doubleclicked(OntologyClassShape * classshape);
@@ -53,6 +56,7 @@ public:
 //    ShowNodesDockWidget * typedwgt;
 //    DetailInfoDockWidget * deatildwgt;
 
+    OntologyDB * db;
     int ontologyID;
     QString ontologyname;
     const QFileInfo * ontologyfile;
@@ -67,6 +71,7 @@ public:
     QList<OwlClass *> searchedClasses;
     QList<OwlIndividual *> searchedIndividuals;
     QList<OwlProperty *> searchedProperties;
+    QList<OwlClass *> dClasses;
 
     int currentfocusedclassidx;
 
@@ -112,6 +117,7 @@ public:
     QList<OwlProperty *> getOwlDataPropertyByName(QString name);
     QList<OwlProperty *> getOwlObjectPropertyByName(QString name);
     void getEntityByText(QString text);
+    OwlClass* getOneClassByName(QString name);
 };
 
 #endif // OWLONTOLOGY_H

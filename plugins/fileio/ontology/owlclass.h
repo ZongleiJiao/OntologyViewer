@@ -24,6 +24,7 @@ public:
     QString URI;
     QString shortname;
     int db_entityID;
+    int db_entity_type;
     QList<OwlClass *> subclasses;
     QList<OwlClass *> superclasses;
     QList<OwlClass *> disjointclasses;
