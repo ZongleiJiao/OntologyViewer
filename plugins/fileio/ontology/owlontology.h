@@ -118,6 +118,7 @@ public:
     QList<OwlProperty *> getOwlObjectPropertyByName(QString name);
     void getEntityByText(QString text);
     OwlClass* getOneClassByName(QString name);
+    QList<OwlClass *> getCurrentOwlClassByName(QString name);
 };
 
 #endif // OWLONTOLOGY_H

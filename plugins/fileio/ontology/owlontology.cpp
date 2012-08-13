@@ -1650,18 +1650,35 @@ QList<OwlClass *> OwlOntology::getOwlClassByName(QString name){
 
     QList<OwlClass *> classList;
     //qSort(classes);
-//    for(int i=0;i<classes.length();i++)
+
+    for(int i=0;i<classes.length();i++)
+    {
+        if(classes[i]->shortname.contains(name,Qt::CaseInsensitive)){
+            classList.append(classes[i]);
+        }
+    }
+//    for(int i=0;i<dClasses.length();i++)
 //    {
-//        if(!classes[i]->shortname.contains(name,Qt::CaseInsensitive)){
-//            classList.append(classes[i]);
+//        if(!dClasses[i]->shortname.contains(name,Qt::CaseInsensitive)){
+//            classList.append(dClasses[i]);
 //        }
 //    }
+//    cout << "------------------------>" << name.toStdString() << classList.size() << endl;
+    return classList;
+}
+
+QList<OwlClass *> OwlOntology::getCurrentOwlClassByName(QString name){
+
+    QList<OwlClass *> classList;
+    //qSort(classes);
+
     for(int i=0;i<dClasses.length();i++)
     {
         if(!dClasses[i]->shortname.contains(name,Qt::CaseInsensitive)){
             classList.append(dClasses[i]);
         }
     }
+//    cout << "------------------------>" << name.toStdString() << classList.size() << endl;
     return classList;
 }
 

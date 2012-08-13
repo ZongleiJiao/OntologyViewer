@@ -167,7 +167,7 @@ void DetailedView::removeClassView(){
     for(int i=0;i<dclasses.size();i++){
         dclasses[i]->shape->setVisible(false);
     }
-
+}
 void DetailedView::extshape_Clicked(ExtensionShape *cs)
 {
     m_canvas->removeItem(cs->edge);
@@ -214,9 +214,9 @@ void DetailedView::extshape_Clicked(ExtensionShape *cs)
 
 }
 
-//void DetailedView::extshape_DoubleClicked(ExtensionShape *cs){
+void DetailedView::extshape_DoubleClicked(ExtensionShape *cs){
 
-//}
+}
 
 
 void DetailedView::reDrawClassView(){

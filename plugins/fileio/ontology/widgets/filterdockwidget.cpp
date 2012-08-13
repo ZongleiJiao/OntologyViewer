@@ -38,7 +38,7 @@ void FilterDockWidget::filterEntities(){
         return;
     }
 
-    QList<OwlClass*> classes = this->ontology->getOwlClassByName(name);
+    QList<OwlClass*> classes = this->ontology->getCurrentOwlClassByName(name);
 
     int m = classes.size();
     int n = -1;
@@ -60,7 +60,6 @@ void FilterDockWidget::clearFilter(){
     ui->name->clear();
     this->ontology->drawClassView(this->ontology->maincanvas);
     this->ontology->maincanvas->restart_graph_layout();
-
 
 }
 
