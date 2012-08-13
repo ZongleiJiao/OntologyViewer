@@ -22,11 +22,15 @@ class OwlOntology:public QObject
     Q_OBJECT
 signals:
     void clickedClass(QString);
+    void hoverEnterClass(QString);
+    void hoverLeaveClass(QString);
     void loading(QString);
 public slots:
     void ontoclass_clicked(OntologyClassShape * classshape);
     void ontoclass_doubleclicked(OntologyClassShape * classshape);
     void ontoclass_rightclicked(OntologyClassShape * classshape);
+    void ontoclass_hoverEnter(QString shortname);
+    void ontoclass_hoverLeave(QString shortname);
 
     void ontoindividual_clicked(OntologyIndividualShape * individualshape);
     void ontoproperty_clicked(OntologyPropertyShape * propertyshape);

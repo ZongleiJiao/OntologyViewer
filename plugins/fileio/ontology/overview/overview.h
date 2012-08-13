@@ -110,6 +110,8 @@ signals:
 public slots:
     void widSceneClicked(QPointF pos);
     void detailView_ClickedClass(QString shortname);
+    void detailView_ClassHoverEnter(QString shortname);
+    void detailView_ClassHoverLeave(QString shortname);
 
     void layoutmethodChanged(QString method);
     void directionChanged(QString dr);

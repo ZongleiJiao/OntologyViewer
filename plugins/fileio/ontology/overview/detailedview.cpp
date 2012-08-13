@@ -35,8 +35,13 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
         m_canvas->removeItem(dedges[i]);
         dedges[i]->~Connector();
     }
+    for(int i=0;i<exts.size();i++){
+        m_canvas->removeItem(exts[i]);
+        exts[i]->~ShapeObj();
+    }
     dclasses.clear();
     dedges.clear();
+    exts.clear();
 
     int n = limitEntityNum;
 
@@ -63,14 +68,16 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
 
         bool needext = false;
         for(int j=0;j<dclasses[i]->subclasses.size();j++){
-            if(!dclasses.contains(dclasses[i]->subclasses[j])){
+            int idx = getIndexByShortname(dclasses,dclasses[i]->subclasses[j]->shortname);
+            if(idx==-1){
                 needext = true;
                 break;
             }
         }
         if(!needext)
             for(int j=0;j<dclasses[i]->superclasses.size();j++){
-                if(!dclasses.contains(dclasses[i]->superclasses[j])){
+                int idx = getIndexByShortname(dclasses,dclasses[i]->superclasses[j]->shortname);
+                if(idx==-1){
                     needext = true;
                     break;
                 }
@@ -84,6 +91,7 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
             es->setSize(QSizeF(20,20));
             es->linkedClass=dclasses[i];
             m_canvas->addItem(es);
+//            es->setPos(dclasses[i]->shape->pos());
             connect(es,SIGNAL(myclick(ExtensionShape*)),this,SLOT(extshape_Clicked(ExtensionShape*)));
 
             Connector * conn = new Connector();
@@ -93,6 +101,9 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
             conn->setDotted(true);
             m_canvas->addItem(conn);
             es->edge = conn;
+
+            exts.append(es);
+            dedges.append(conn);
 
             //add click to ES??? REMOVE???
         }
@@ -151,10 +162,8 @@ QList<OwlClass *> DetailedView::getNextLevelClasses(QList<OwlClass *> cls)
 }
 
 void DetailedView::extshape_Clicked(ExtensionShape *cs)
-{
-    m_canvas->removeItem(cs->edge);
-    m_canvas->removeItem(cs);
-
+{    
+    QList<OwlClass *> excs;
     for(int i=0;i<cs->linkedClass->subclasses.size();i++){
         OwlClass * tmp = cs->linkedClass->subclasses[i];
         if(!dclasses.contains(tmp)){
@@ -168,8 +177,7 @@ void DetailedView::extshape_Clicked(ExtensionShape *cs)
 
             dclasses.append(tmp);
             dedges.append(c);
-
-
+            excs.append(tmp);
         }
     }
 
@@ -186,9 +194,59 @@ void DetailedView::extshape_Clicked(ExtensionShape *cs)
 
             dclasses.append(tmp);
             dedges.append(c);
+            excs.append(tmp);
         }
     }
 
+    for(int i=0;i<excs.size();i++)
+    {
+        bool needext = false;
+        for(int j=0;j<excs[i]->subclasses.size();j++){
+            int idx = getIndexByShortname(dclasses,excs[i]->subclasses[j]->shortname);
+            if(idx==-1){
+                needext = true;
+                break;
+            }
+        }
+        if(!needext)
+            for(int j=0;j<excs[i]->superclasses.size();j++){
+                int idx = getIndexByShortname(dclasses,excs[i]->superclasses[j]->shortname);
+                if(idx==-1){
+                    needext = true;
+                    break;
+                }
+            }
+
+        if(needext){
+
+            ExtensionShape * es = new ExtensionShape();
+            es->setFillColour("yellow");
+            es->setLabel("+");
+            es->setSize(QSizeF(20,20));
+            es->linkedClass=excs[i];
+            m_canvas->addItem(es);
+//            es->setPos(excs[i]->shape->pos());
+            connect(es,SIGNAL(myclick(ExtensionShape*)),this,SLOT(extshape_Clicked(ExtensionShape*)));
+
+            Connector * conn = new Connector();
+            conn->initWithConnection(excs[i]->shape,es);
+            conn->setColour(QColor("darkgreen"));
+            conn->setDirected(false);
+            conn->setDotted(true);
+            m_canvas->addItem(conn);
+            es->edge = conn;
+
+            exts.append(es);
+            dedges.append(conn);
+
+            //add click to ES??? REMOVE???
+        }
+    }
+
+    m_canvas->removeItem(cs->edge);
+    m_canvas->removeItem(cs);
+    dedges.removeAll(cs->edge);
+    exts.removeAll(cs);
     cs->edge->~Connector();
     cs->~ShapeObj();
 

@@ -173,7 +173,8 @@ void OwlOntology::loadontologyFromDB(const QFileInfo &fileInfo)
         connect(classes[i]->shape,SIGNAL(myclick(OntologyClassShape*)),this,SLOT(ontoclass_clicked(OntologyClassShape*)));
         connect(classes[i]->shape,SIGNAL(myDoubleClick(OntologyClassShape*)),this,SLOT(ontoclass_doubleclicked(OntologyClassShape*)));
         connect(classes[i]->shape,SIGNAL(myRightClick(OntologyClassShape*)),this,SLOT(ontoclass_rightclicked(OntologyClassShape*)));
-
+        connect(classes[i]->shape,SIGNAL(myMouseHoverEnter(QString)),this,SLOT(ontoclass_hoverEnter(QString)));
+        connect(classes[i]->shape,SIGNAL(myMouseHoverLeave(QString)),this,SLOT(ontoclass_hoverLeave(QString)));
         //get&set individual relations
         QString indstr = "[IND]:";
         QList<int> iURIs = db->getIndividualURIsByClass(classes[i]->db_entityID);
@@ -1565,6 +1566,17 @@ void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
 //        equclasswid->my_canvas->fully_restart_graph_layout();
 //    }
 
+}
+
+void OwlOntology::ontoclass_hoverEnter(QString shortname){
+    cout<<"onto class hover enter"<<endl;
+    emit this->hoverEnterClass(shortname);
+}
+
+void OwlOntology::ontoclass_hoverLeave(QString shortname){
+    cout<<"onto class hover leave"<<endl;
+
+    emit this->hoverLeaveClass(shortname);
 }
 
 //get individual information to add on infowidget

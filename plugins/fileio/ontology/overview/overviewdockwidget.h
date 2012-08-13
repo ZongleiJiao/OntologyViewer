@@ -33,6 +33,7 @@ public:
     OverviewScene *m_scene;
     QGraphicsView *m_view;
     QPointF m_centerpos;
+    QGraphicsItem *hoverCircle;
 
     QList<OverviewShape *> gitems;
     QList<QPointF> oripos;
