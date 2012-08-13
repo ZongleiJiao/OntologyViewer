@@ -7,20 +7,20 @@
     <x>0</x>
     <y>0</y>
     <width>248</width>
-    <height>251</height>
+    <height>253</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>History Navigation</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <widget class="QTextEdit" name="textEdit">
+   <widget class="QListWidget" name="historyList">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>0</y>
-      <width>221</width>
-      <height>221</height>
+      <y>10</y>
+      <width>231</width>
+      <height>192</height>
      </rect>
     </property>
    </widget>

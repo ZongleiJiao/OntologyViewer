@@ -3,9 +3,6 @@
 #define SHOWNODESDOCKWIDGET_H
 
 #include <QDockWidget>
-
-//#include <owlontology.h>
-
 #include "overview/detailedview.h"
 
 namespace Ui {
@@ -14,9 +11,6 @@ class ShowNodesDockWidget;
 
 }
 class DetailedView;
-//class OwlOntology;
-
-//class Overview;
 
 class ShowNodesDockWidget : public QDockWidget
 
@@ -29,14 +23,9 @@ class ShowNodesDockWidget : public QDockWidget
 public:
 
     OwlOntology *ontology;
-
-//    Overview *overview;
-
     DetailedView *detailedview;
 
-    void setOntology(OwlOntology * onto);
-
-//    void setOntology(Overview *overview);
+    void setOntology(OwlOntology * onto,DetailedView *detailedview);
 
     explicit ShowNodesDockWidget(QWidget *parent = 0);
 

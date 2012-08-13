@@ -101,6 +101,7 @@ class OntologyFileIOPlugin :
         InformationBoxDockWidget *infoboxdwgt;
         ShowNodesDockWidget * typedwgt;
         FilterDockWidget * filterdwgt;
+        HistoryDockWidget * historydwgt;
 
         OntologyFileIOPlugin()
         {
@@ -196,6 +197,10 @@ class OntologyFileIOPlugin :
 
             filterdwgt = new FilterDockWidget();
             this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,filterdwgt);
+
+            historydwgt = new HistoryDockWidget();
+            this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,historydwgt);
+
         }
 
         void applicationWillClose(CanvasApplication *canvasApplication){}
@@ -217,6 +222,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     infoboxdwgt->show();
     typedwgt->show();
     filterdwgt->show();
+    historydwgt->show();
 
     cout<<"Start loading ontology :"<<fileInfo.completeBaseName().toStdString()<<endl;
     QTime st = QTime::currentTime();
@@ -226,14 +232,15 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    onto->loadontology(fileInfo);
 
     onto->loadontologyFromDB(fileInfo);
+//    connect(onto,SIGNAL(loadHistory()),historydwgt,SLOT(loadInterests()));
 
     cout<<endl<<"T:"<<st.elapsed()<<endl;
     cout<<"Finish loading. Total " <<onto->classes.size()<<" class notes."<<endl;
 
     this->searchdwgt->setOntology(onto);
     this->infoboxdwgt->setOntology(onto);
-    this->typedwgt->setOntology(onto);
-    filterdwgt->setOntology(onto);
+
+
     this->infoboxdwgt->displayInfo("OntologyInfor");
 
 //    Util * util = new Util(onto);
@@ -255,6 +262,10 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     cout<<"drawing overview..."<<endl;
     ov->showlayout(this->overviewwid);
     cout<<"T:"<<st.elapsed()<<endl;
+
+    this->typedwgt->setOntology(onto,ov->m_detailview);
+    filterdwgt->setOntology(onto);
+    historydwgt->setOntology(ov->m_detailview);
 
     /** classview, individualview, propertyview can
       * be displayed together or individually.

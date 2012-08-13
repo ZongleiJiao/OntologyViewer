@@ -30,6 +30,10 @@ int DetailedView::getIndexByShortname(QList<OwlClass *> lst, QString shortname)
 }
 QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlClass *> overviewClasses)
 {
+    this->CNode = centerNode;
+    this->Cclasses = overviewClasses;
+
+
     for(int i=0;i<dclasses.size();i++)m_canvas->removeItem(dclasses[i]->shape);
     for(int i=0;i<dedges.size();i++){
         m_canvas->removeItem(dedges[i]);
@@ -113,6 +117,7 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
     {
         m_canvas->addItem(dedges[i]);
     }
+    this->m_ontology->dClasses = dclasses;
     return dclasses;
 }
 
@@ -131,6 +136,10 @@ QList<OwlClass *> DetailedView::getNextLevelClasses(QList<OwlClass *> cls)
                 conn->initWithConnection(node->subclasses[j]->shape,node->shape);
                 conn->setDirected(true);
                 this->dedges.append(conn);
+
+//                node->classesconnectors<<conn;
+                node->subclasses[j]->classesconnectors<<conn;
+
 
                 m_entitynum++;
                 if(m_entitynum >=limitEntityNum||m_entitynum>=m_ontology->classes.size())
@@ -161,6 +170,15 @@ QList<OwlClass *> DetailedView::getNextLevelClasses(QList<OwlClass *> cls)
     return lists;
 }
 
+
+void DetailedView::removeClassView(){
+    for(int i=0;i<dedges.size();i++){
+        dedges[i]->setVisible(false);
+    }
+    for(int i=0;i<dclasses.size();i++){
+        dclasses[i]->shape->setVisible(false);
+    }
+}
 void DetailedView::extshape_Clicked(ExtensionShape *cs)
 {    
     QList<OwlClass *> excs;
@@ -254,8 +272,57 @@ void DetailedView::extshape_Clicked(ExtensionShape *cs)
 
 }
 
-void DetailedView::extshape_DoubleClicked(ExtensionShape *cs)
-{
+void DetailedView::extshape_DoubleClicked(ExtensionShape *cs){
 
 }
 
+
+void DetailedView::reDrawClassView(){
+    for(int i=0;i<dedges.size();i++){
+        dedges[i]->setVisible(true);
+    }
+    for(int j=0;j<dclasses.size();j++){
+        dclasses[j]->shape->setVisible(true);
+    }
+}
+
+void DetailedView::drawIndividuals(){
+
+    if(this->dIndividuals.isEmpty() || dIndividuals.size() == 0){
+        for(int i=0;i<dclasses.size();i++){
+            for(int j=0;j<dclasses[i]->individuals.size();j++){
+                this->m_canvas->addItem(dclasses[i]->individuals[j]->shape);
+                dIndividuals.append(dclasses[i]->individuals[j]);
+            }
+            for(int k=0;k<dclasses[i]->individualconnectors.size();k++){
+                this->m_canvas->addItem(dclasses[i]->individualconnectors[k]);
+            }
+        }
+    }else{
+        for(int i=0;i<dclasses.size();i++){
+            for(int j=0;j<dclasses[i]->individuals.size();j++){
+                dclasses[i]->individuals[j]->shape->setVisible(true);
+            }
+            for(int k=0;k<dclasses[i]->individualconnectors.size();k++){
+                dclasses[i]->individualconnectors[k]->setVisible(true);
+            }
+        }
+    }
+}
+
+
+void DetailedView::removeIndividuals(){
+    if(!dIndividuals.isEmpty() && dIndividuals.size() > 0){
+        for(int i=0;i<dclasses.size();i++){
+            for(int j=0;j<dclasses[i]->individuals.size();j++){
+                dclasses[i]->individuals[j]->shape->setVisible(false);
+            }
+            for(int k=0;k<dclasses[i]->individualconnectors.size();k++){
+                dclasses[i]->individualconnectors[k]->setVisible(false);
+            }
+        }
+    }else{
+        return;
+    }
+
+}

@@ -330,3 +330,40 @@ QList<QString> OntologyDB::getAnonymousEquivalentProperties(int Property_entityi
 
 }
 
+void OntologyDB::saveInterests(int ontoID, int entityID, int entityType){
+
+    if(!db.isOpen()){
+        cout <<"============->"<<ontoID<<" "<<entityID <<" "<<entityType <<" " <<endl;
+        db.open();
+    }
+    QSqlQuery sq;
+
+//    sq.prepare("insert into historyRecord(ontologyID,entityID,entityType) values(?,?,?)");
+    sq.prepare("insert into historyRecord values(?,?,?, datetime('now'))");
+    sq.addBindValue(ontoID);
+    sq.addBindValue(entityID);
+    sq.addBindValue(entityType);
+
+    sq.exec();
+//    cout <<"----------->"<<ontoID<<" "<<entityID <<" "<<entityType <<" " << sq.exec()<<endl;
+}
+
+void OntologyDB::clearHistoryByOntology(int ontoID){
+    if(!db.isOpen()){
+        db.open();
+    }
+    QSqlQuery sq;
+    sq.prepare("delete from historyRecord where ontologyID =?");
+    sq.addBindValue(ontoID);
+    sq.exec();
+}
+
+QList<QString> OntologyDB::loadHistory(int ontoID){
+    if(!db.isOpen()){
+        db.open();
+    }
+    QSqlQuery sq;
+    sq.prepare("select shortname from Classes c, historyRecord h where h.OntologyID = ? and c.entityid = h.entityid");
+    sq.addBindValue(ontoID);
+    sq.exec();
+}

@@ -15,7 +15,7 @@
 #include <ontoindividual.h>
 #include <ontoproperty.h>
 
-#include <ontologydb.h>
+//#include <ontologydb.h>
 #include <widgets/detailvisualizationdockwidget.h>
 #include <QStringList>
 
@@ -139,16 +139,19 @@ int OwlOntology::getIndexOfPropertiesByURI(QString URI)
 //load ontology from database
 void OwlOntology::loadontologyFromDB(const QFileInfo &fileInfo)
 {
+//    connect(this,SIGNAL(loadHistory()), qApp, SLOT(aboutQt()));
+
     QString filename = fileInfo.absoluteFilePath();
     this->ontologyname = fileInfo.absoluteFilePath();
     this->ontologyfile = &fileInfo;
 
-    OntologyDB * db = new OntologyDB();
+    db = new OntologyDB();
     db->openDB();
 
     cout<<filename.toStdString()<<endl;
     //get ontology ID
     this->ontologyID = db->getOntologyID(filename);
+    emit this->loadHistory();
 
     //get namespace for the URI
     this->owlnamespace = db->getOntologyNamespace(ontologyID);
@@ -1468,25 +1471,29 @@ QString OwlOntology::getClassInfo(OwlClass *selectedClass){
     QString num_superclass="0";
     QString num_disjointclass="0";
     QString num_individual="0";
+    QString num_equClass="0";
+
     num_subclass = num_subclass.setNum(selectedClass->subclasses.size());
     num_superclass = num_superclass.setNum(selectedClass->superclasses.size());
     num_disjointclass = num_disjointclass.setNum(selectedClass->disjointclasses.size());
     num_individual = num_individual.setNum(selectedClass->individuals.size());
+    num_equClass = num_equClass.setNum(selectedClass->anonymousEqus.size() + selectedClass->equivalentclasses.size());
 
     this->classInfo.append("Class Name: "+selectedClass->shortname+"\n");
     this->classInfo.append("URI: "+selectedClass->URI+"\n");
     this->classInfo.append("Number of Sub Classes: "+num_subclass+"\n");
     this->classInfo.append("Number of Super Classes: "+num_superclass+"\n");
     this->classInfo.append("Number of Disjoint Classes: "+num_disjointclass+"\n");
+    this->classInfo.append("Number of Equivalent Classes: "+num_equClass+"\n");
     this->classInfo.append("Number of Individuals: "+num_individual+"\n");
 
-    if(selectedClass->anonymousEqus.isEmpty() && selectedClass->equivalentclasses.isEmpty()){
+//    if(selectedClass->anonymousEqus.isEmpty() && selectedClass->equivalentclasses.isEmpty()){
 
-        this->classInfo.append("Has Equivalent Class: NO\n");
-    }else{
+//        this->classInfo.append("Has Equivalent Class: NO\n");
+//    }else{
 
-        this->classInfo.append("Has Equivalent Class: YES\n");
-    }
+//        this->classInfo.append("Has Equivalent Class: YES\n");
+//    }
 
     return this->classInfo;
 }
@@ -1507,6 +1514,7 @@ void OwlOntology::ontoclass_clicked(OntologyClassShape *classshape)
     emit clickedClass(classes[idx]->shortname);
     cout << this->getClassInfo(selectedClass).toStdString();
     emit(this->loading(classshape->idString()));
+    emit(this->savingInterests(classshape->idString()));
 }
 
 void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
@@ -1654,12 +1662,35 @@ QList<OwlClass *> OwlOntology::getOwlClassByName(QString name){
 
     QList<OwlClass *> classList;
     //qSort(classes);
+
     for(int i=0;i<classes.length();i++)
     {
         if(classes[i]->shortname.contains(name,Qt::CaseInsensitive)){
             classList.append(classes[i]);
         }
     }
+//    for(int i=0;i<dClasses.length();i++)
+//    {
+//        if(!dClasses[i]->shortname.contains(name,Qt::CaseInsensitive)){
+//            classList.append(dClasses[i]);
+//        }
+//    }
+//    cout << "------------------------>" << name.toStdString() << classList.size() << endl;
+    return classList;
+}
+
+QList<OwlClass *> OwlOntology::getCurrentOwlClassByName(QString name){
+
+    QList<OwlClass *> classList;
+    //qSort(classes);
+
+    for(int i=0;i<dClasses.length();i++)
+    {
+        if(!dClasses[i]->shortname.contains(name,Qt::CaseInsensitive)){
+            classList.append(dClasses[i]);
+        }
+    }
+//    cout << "------------------------>" << name.toStdString() << classList.size() << endl;
     return classList;
 }
 
@@ -1796,7 +1827,14 @@ void OwlOntology::removeClassView(Canvas *canvas){
 
 }
 
-
+OwlClass* OwlOntology::getOneClassByName(QString name){
+    for(int i=0;i<dClasses.length();i++)
+    {
+        if(QString::compare(name,dClasses[i]->shortname)==0){
+            return dClasses[i];
+        }
+    }
+}
 
 
 

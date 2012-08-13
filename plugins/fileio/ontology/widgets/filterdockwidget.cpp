@@ -1,13 +1,13 @@
 #include "filterdockwidget.h"
 #include "ui_filterdockwidget.h"
-#include <owlclass.h>
-#include <QtGui>
+//#include <owlclass.h>
+//#include <QtGui>
 
 using namespace std;
 
 FilterDockWidget::FilterDockWidget(QWidget *parent) :
     QDockWidget(parent),
-    ontology(NULL),
+//    ontology(NULL),
     ui(new Ui::FilterDockWidget)
 {
     ui->setupUi(this);
@@ -18,7 +18,8 @@ FilterDockWidget::~FilterDockWidget()
     delete ui;
 }
 
-void FilterDockWidget::setOntology(OwlOntology *ontology){
+//void FilterDockWidget::setOntology(OwlOntology *ontology,DetailedView* detailedview){
+    void FilterDockWidget::setOntology(OwlOntology *ontology){
     this->ontology = ontology;
 
     Q_ASSERT(this->ontology);
@@ -37,7 +38,7 @@ void FilterDockWidget::filterEntities(){
         return;
     }
 
-    QList<OwlClass*> classes = this->ontology->getOwlClassByName(name);
+    QList<OwlClass*> classes = this->ontology->getCurrentOwlClassByName(name);
 
     int m = classes.size();
     int n = -1;
@@ -46,6 +47,7 @@ void FilterDockWidget::filterEntities(){
             n = this->ontology->classes[i]->classesconnectors.size();
             for(int j=0;j<n;j++){
                 this->ontology->maincanvas->removeItem(classes[i]->classesconnectors[j]);
+
             }
         }
         this->ontology->maincanvas->removeItem(classes[i]->shape);
@@ -58,6 +60,7 @@ void FilterDockWidget::clearFilter(){
     ui->name->clear();
     this->ontology->drawClassView(this->ontology->maincanvas);
     this->ontology->maincanvas->restart_graph_layout();
+
 }
 
 

@@ -41,7 +41,9 @@ public:
     QList<QString> getAnonymousDisjointProperties(int Property_entityid);
     QList<QString> getAnonymousEquivalentProperties(int Property_entityid);
 
-
+    void saveInterests(int ontoID, int entityID, int entityType);
+    void clearHistoryByOntology(int ontoID);
+    QList<QString> loadHistory(int ontoID);
 private:
     QSqlDatabase db;
 
