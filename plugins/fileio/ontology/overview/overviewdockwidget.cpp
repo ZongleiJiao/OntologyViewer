@@ -39,6 +39,11 @@ OverviewDockWidget::OverviewDockWidget(QWidget *parent) :
     this->ontology = NULL;
     this->highlightpolygon = NULL;
     this->ani_group = new QParallelAnimationGroup;
+
+    QPen p = QPen(QColor("brown"));
+    p.setWidth(2);
+    hoverCircle = m_scene->addEllipse(0,0,12,12,p,QBrush(Qt::NoBrush));
+    hoverCircle->setVisible(false);
 }
 
 OverviewDockWidget::~OverviewDockWidget()

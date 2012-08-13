@@ -1134,6 +1134,26 @@ void Overview::detailView_ClickedClass(QString shortname)
     this->updatelayout();
 }
 
+void Overview::detailView_ClassHoverEnter(QString shortname)
+{
+    cout<<"HI-->"<<shortname.toStdString()<<endl;
+    int idx = getIndexByShortname(this->classes,shortname);
+    if(idx!=-1){
+
+        qreal x = classes[idx]->overviewshape->pos().x() - 6;
+        qreal y = classes[idx]->overviewshape->pos().y() - 6;
+        this->m_wid->hoverCircle->setPos(x,y);
+        this->m_wid->hoverCircle->setVisible(true);
+    }
+}
+
+void Overview::detailView_ClassHoverLeave(QString shortname)
+{
+    cout<<"HO-->"<<shortname.toStdString()<<endl;
+
+    this->m_wid->hoverCircle->setVisible(false);
+}
+
 void Overview::layoutmethodChanged(QString method)
 {
     this->currentLayoutMethod = method;
@@ -1223,6 +1243,8 @@ void Overview::directionChanged(QString dr)
 void Overview::connectWgt(OverviewDockWidget *wgt){
     this->m_wid = wgt;
     connect(m_ontology,SIGNAL(clickedClass(QString)),this,SLOT(detailView_ClickedClass(QString)));
+    connect(m_ontology,SIGNAL(hoverEnterClass(QString)),this,SLOT(detailView_ClassHoverEnter(QString)));
+    connect(m_ontology,SIGNAL(hoverLeaveClass(QString)),this,SLOT(detailView_ClassHoverLeave(QString)));
     connect(wgt->m_scene,SIGNAL(myclick(QPointF)),this,SLOT(widSceneClicked(QPointF)));
     connect(wgt,SIGNAL(layoutChanged(QString)),this,SLOT(layoutmethodChanged(QString)));
     connect(wgt,SIGNAL(directionChanged(QString)),this,SLOT(directionChanged(QString)));

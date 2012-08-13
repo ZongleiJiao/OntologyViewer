@@ -21,6 +21,7 @@ public:
 
     QList<OwlClass *> dclasses;
     QList<Connector *> dedges;
+    QList<ExtensionShape *> exts;
 
     void setCanvas(Canvas *canvas);
     void setOntology(OwlOntology * ontology);

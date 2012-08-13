@@ -14,6 +14,8 @@ class OntologyClassShape: public ShapeObj
     void myclick(OntologyClassShape *shape);
     void myDoubleClick(OntologyClassShape *shape);
     void myRightClick(OntologyClassShape *shape);
+    void myMouseHoverEnter(QString shortname);
+    void myMouseHoverLeave(QString shortname);
 
     public:
         OntologyClassShape();
@@ -23,6 +25,8 @@ class OntologyClassShape: public ShapeObj
         //mouse events sending singnals
         void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
         void mousePressEvent(QGraphicsSceneMouseEvent *event);
+        void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
+        void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
 
         //shape expanding levels
         uint levelsOfDetail(void) const;
@@ -35,6 +39,7 @@ class OntologyClassShape: public ShapeObj
 //        void focusOutEvent(QFocusEvent *event);
 
         QString levelLabels[6] ;
+
 };
 
 
