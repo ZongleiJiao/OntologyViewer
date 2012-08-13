@@ -359,11 +359,16 @@ void OntologyDB::clearHistoryByOntology(int ontoID){
 }
 
 QList<QString> OntologyDB::loadHistory(int ontoID){
+
+cout <<"ontologyID1:"+ontoID<<endl;
     if(!db.isOpen()){
         db.open();
     }
+    cout <<"ontologyID2:"+ontoID<<endl;
     QSqlQuery sq;
+    cout <<"ontologyID3:"+ontoID<<endl;
     sq.prepare("select shortname from Classes c, historyRecord h where h.OntologyID = ? and c.entityid = h.entityid");
     sq.addBindValue(ontoID);
+
     sq.exec();
 }

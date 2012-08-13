@@ -151,7 +151,8 @@ void OwlOntology::loadontologyFromDB(const QFileInfo &fileInfo)
     cout<<filename.toStdString()<<endl;
     //get ontology ID
     this->ontologyID = db->getOntologyID(filename);
-    emit this->loadHistory();
+    cout << "OntologyID----------------" << this->ontologyID<< endl;
+
 
     //get namespace for the URI
     this->owlnamespace = db->getOntologyNamespace(ontologyID);
@@ -362,7 +363,7 @@ void OwlOntology::loadontologyFromDB(const QFileInfo &fileInfo)
 //    cout<<"///////////get information of this ontology/////////////////"<<endl;
     this->getOntoInfo();
 
-
+//    emit this->loadHistory();
 }
 
 //load ontology using owlapi via OWLAPIWrapper
@@ -1824,7 +1825,10 @@ OwlClass* OwlOntology::getOneClassByName(QString name){
     }
 }
 
-
+void OwlOntology::emitLoadhistory(int ontoID){
+    cout << "ontologyid---owlontology---"<<ontoID<<endl;
+    emit(this->loadHistory(ontoID));
+}
 
 
 

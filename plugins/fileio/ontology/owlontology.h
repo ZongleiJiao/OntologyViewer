@@ -25,7 +25,7 @@ signals:
     void clickedClass(QString);
     void loading(QString);
     void savingInterests(QString);
-    void loadHistory();
+    void loadHistory(int);
 public slots:
     void ontoclass_clicked(OntologyClassShape * classshape);
     void ontoclass_doubleclicked(OntologyClassShape * classshape);
@@ -119,6 +119,7 @@ public:
     void getEntityByText(QString text);
     OwlClass* getOneClassByName(QString name);
     QList<OwlClass *> getCurrentOwlClassByName(QString name);
+    void emitLoadhistory(int ontoID);
 };
 
 #endif // OWLONTOLOGY_H

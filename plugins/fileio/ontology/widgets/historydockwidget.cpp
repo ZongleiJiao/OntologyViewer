@@ -18,7 +18,7 @@ HistoryDockWidget::~HistoryDockWidget()
 void HistoryDockWidget::setOntology(DetailedView *detailedview){
     this->detailedview = detailedview;
     connect(this->detailedview->m_ontology,SIGNAL(savingInterests(QString)),this,SLOT(saveInterest(QString)));
-    connect(this->detailedview->m_ontology,SIGNAL(loadHistory()),this,SLOT(loadInterests()),Qt::DirectConnection);
+//    connect(this->detailedview->m_ontology,SIGNAL(loadHistory()),this,SLOT(loadInterests()));
 
     connect(ui->historyList,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(selectedItem(QListWidgetItem*)));
 }
@@ -57,10 +57,13 @@ void HistoryDockWidget::selectedItem(QListWidgetItem *item){
     }
 }
 
-void HistoryDockWidget::loadInterests(){
-    cout << "+++++++++++++++>>>>>" <<endl;
-    QList<QString> his = this->detailedview->m_ontology->db->loadHistory(this->detailedview->m_ontology->ontologyID);
-    for(int i=0;i<his.size();i++){
-        ui->historyList->addItem(his[i]);
-    }
+void HistoryDockWidget::loadInterests(int ontoID){
+cout << "+++++++++++++++>>>>>11111---"<<ontoID<<endl;
+
+//    QList<QString> his = this->detailedview->m_ontology->db->loadHistory(ontoID);
+
+//    cout << "+++++++++++++++>>>>>2222----"<<his.size() <<endl;
+//    for(int i=0;i<his.size();i++){
+//        ui->historyList->addItem(his[i]);
+//    }
 }
