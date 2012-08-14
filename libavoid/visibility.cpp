@@ -43,9 +43,6 @@
 #include "libavoid/router.h"
 #include "libavoid/assertions.h"
 
-#ifdef LINEDEBUG
-  #include "SDL_gfxPrimitives.h"
-#endif
 
 namespace Avoid {
 
@@ -429,18 +426,6 @@ static bool sweepVisible(SweepEdgeList& T, const PointPair& point,
     if (!visible)
     {
         *blocker = (*closestIt).vInf1->id.objID;
-#ifdef LINEDEBUG
-        Point &e1 = (*closestIt).vInf1->point;
-        Point &e2 = (*closestIt).vInf2->point;
-
-        if (router->avoid_screen)
-        {
-            int canx = 151;
-            int cany = 55;
-            lineRGBA(router->avoid_screen, e1.x + canx, e1.y + cany,
-                    e2.x + canx, e2.y + cany, 0, 0, 225, 255);
-        }
-#endif
     }
     return visible;
 }
@@ -546,8 +531,7 @@ void vertexSweep(VertInf *vert)
                 EdgePair intPair = EdgePair(*t, kPrev);
                 e.push_back(intPair);
             }
-            if ((vecDir(kPrev->point, k->point, centerInf->point) == 0) &&
-                    inBetween(kPrev->point, k->point, centerInf->point))
+            if (pointOnLine(kPrev->point, k->point, centerInf->point))
             {
                 // Record that centerPoint is on an obstacle line.
                 onBorderIDs.insert(k->id.objID);
@@ -562,8 +546,7 @@ void vertexSweep(VertInf *vert)
                 EdgePair intPair = EdgePair(*t, kNext);
                 e.push_back(intPair);
             }
-            if ((vecDir(kNext->point, k->point, centerInf->point) == 0) &&
-                    inBetween(kNext->point, k->point, centerInf->point))
+            if (pointOnLine(kNext->point, k->point, centerInf->point))
             {
                 // Record that centerPoint is on an obstacle line.
                 onBorderIDs.insert(k->id.objID);
@@ -585,14 +568,6 @@ void vertexSweep(VertInf *vert)
         VertInf *currInf = (*t).vInf;
         VertID& currID = currInf->id;
         Point&  currPt = currInf->point;
-
-#ifdef LINEDEBUG
-        Sint16 ppx = (int) centerPoint.x;
-        Sint16 ppy = (int) centerPoint.y;
-
-        Sint16 cx = (int) currPt.x;
-        Sint16 cy = (int) currPt.y;
-#endif
 
         const double& currDist = (*t).distance;
 
@@ -639,14 +614,6 @@ void vertexSweep(VertInf *vert)
         {
             if (currVisible)
             {
-#ifdef LINEDEBUG
-                if (router->avoid_screen)
-                {
-                    lineRGBA(router->avoid_screen, ppx + canx, ppy + cany,
-                            cx, cy, 255, 0, 0, 75);
-                    SDL_Delay(1000);
-                }
-#endif
                 db_printf("\tSetting visibility edge... \n\t\t");
                 edge->setDist(currDist);
                 edge->db_print();
@@ -701,12 +668,6 @@ void vertexSweep(VertInf *vert)
                 }
             }
         }
-#ifdef LINEDEBUG
-        if (router->avoid_screen)
-        {
-            SDL_Flip(router->avoid_screen);
-        }
-#endif
     }
 }
 

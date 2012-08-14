@@ -22,14 +22,14 @@
  * Author(s):   Michael Wybrow <mjwybrow@users.sourceforge.net>
 */
 
+// For M_PI.
+// This should be first include for MSVC.
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 #include <algorithm>
 #include <vector>
 #include <climits>
-
-// For M_PI:
-#define _USE_MATH_DEFINES
-#include <cmath>
 
 #include "libavoid/vertices.h"
 #include "libavoid/geometry.h"
@@ -39,9 +39,6 @@
 #include "libavoid/router.h"
 #include "libavoid/debug.h"
 #include "libavoid/assertions.h"
-#ifdef ASTAR_DEBUG
-  #include <SDL_gfxPrimitives.h>
-#endif
 
 namespace Avoid {
 
@@ -586,50 +583,6 @@ void aStarPath(ConnRef *lineRef, VertInf *src, VertInf *tar, VertInf *start)
         db_printf("\n");
 #endif
 
-#if defined(ASTAR_DEBUG)
-        if (router->avoid_screen)
-        {
-            int radius = 5;
-            ANode curr;
-            for (curr = BestNode; curr.prevIndex >= 0; 
-                    curr = DONE[curr.prevIndex])
-            {
-                filledCircleRGBA(router->avoid_screen, 
-                        (int) curr.inf->point.x,
-                        (int) curr.inf->point.y,
-                        radius, 0, 0, 255, 128);
-            }
-            filledCircleRGBA(router->avoid_screen, 
-                    (int) BestNode.inf->point.x,
-                    (int) BestNode.inf->point.y,
-                    radius, 255, 0, 0, 255);
-
-            SDL_Flip(router->avoid_screen);
-            SDL_Delay(500);
-
-            filledCircleRGBA(router->avoid_screen, 
-                    (int) BestNode.inf->point.x,
-                    (int) BestNode.inf->point.y,
-                    radius, 255, 255, 255, 255);
-            filledCircleRGBA(router->avoid_screen, 
-                    (int) BestNode.inf->point.x,
-                    (int) BestNode.inf->point.y,
-                    radius, 0, 255, 0, 128);
-            for (curr = BestNode; curr.prevIndex >= 0; 
-                    curr = DONE[curr.prevIndex])
-            {
-                filledCircleRGBA(router->avoid_screen, 
-                        (int) curr.inf->point.x,
-                        (int) curr.inf->point.y,
-                        radius, 255, 255, 255, 255);
-                filledCircleRGBA(router->avoid_screen, 
-                        (int) curr.inf->point.x,
-                        (int) curr.inf->point.y,
-                        radius, 0, 255, 0, 128);
-            }
-        }
-#endif
-
         if (BestNode.inf == tar)
         {
             // This node is our goal.
@@ -640,12 +593,10 @@ void aStarPath(ConnRef *lineRef, VertInf *src, VertInf *tar, VertInf *start)
             
             // Correct all the pathNext pointers.
             ANode curr;
-            int currIndex = DONE_size - 1;
             for (curr = BestNode; curr.prevIndex > 0; 
                     curr = DONE[curr.prevIndex])
             {
                 curr.inf->pathNext = DONE[curr.prevIndex].inf;
-                currIndex = curr.prevIndex;
             }
             // Check that we've gone through the complete path.
             COLA_ASSERT(curr.prevIndex == 0);

@@ -39,13 +39,16 @@
 #include "libcola/cola.h"
 #include "libcola/shortest_paths.h"
 #include "libcola/straightener.h"
-#include "libcola/cola_log.h"
 #include "libcola/cc_clustercontainmentconstraints.h"
 #include "libcola/cc_nonoverlapconstraints.h"
 
 #ifdef MAKEFEASIBLE_DEBUG
   #include "libcola/output_svg.h"
 #endif
+
+// Needs to come last since it will include windows.h on WIN32 and
+// may mess up C++ std library include on GCC 4.4
+#include "libcola/cola_log.h"
 
 using vpsc::XDIM;
 using vpsc::YDIM;
@@ -758,7 +761,7 @@ void setupVarsAndConstraints(unsigned n, const CompoundConstraints& ccs,
     {
         // Create variables for clusters
         clusterHierarchy->computeBoundingRect(boundingBoxes);
-        clusterHierarchy->createVars(dim,boundingBoxes,vs);
+        clusterHierarchy->createVars(dim, boundingBoxes, vs);
     }
 
     for (CompoundConstraints::const_iterator c = ccs.begin();
@@ -1212,6 +1215,8 @@ void ConstrainedFDLayout::outputInstanceToSVG(std::string instanceName)
     if (clusterHierarchy)
     {
         clusterHierarchy->printCreationCode(fp);
+        fprintf(fp, "    alg.setClusterHierarchy(cluster%llu);\n",
+                (unsigned long long) clusterHierarchy);
     }
     fprintf(fp, "    alg.setConstraints(ccs);\n");
     fprintf(fp, "    alg.makeFeasible();\n");

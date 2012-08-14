@@ -39,21 +39,22 @@
 #include "libavoid/graph.h"
 #include "libavoid/timer.h"
 #include "libavoid/hyperedge.h"
-
-#if defined(LINEDEBUG) || defined(ASTAR_DEBUG) || defined(LIBAVOID_SDL)
-    #include <SDL.h>
-    #ifndef LIBAVOID_SDL
-        #define LIBAVOID_SDL
-    #endif
-#endif
+#include "libavoid/actioninfo.h"
 
 
 namespace Avoid {
 
+// LineReps: Used for highlighting certain areas in debugging output.
+struct LineRep
+{
+    Point begin;
+    Point end;
+};
+typedef std::list<LineRep> LineReps;
+
+
 typedef std::list<unsigned int> IntList;
 
-class ActionInfo;
-typedef std::list<ActionInfo> ActionInfoList;
 class ShapeRef;
 class JunctionRef;
 class ClusterRef;
@@ -130,8 +131,19 @@ enum RoutingParameter
     //!         as a method of checking progress or cancelling overly slow
     //!         operations.
     portDirectionPenalty,
+    //! @brief This parameter defines the spacing distance that will be added
+    //!        to the sides of each shape when determining obstacle sizes for
+    //!        routing.  This controls how closely connectors pass shapes, and
+    //!        can be used to prevent connectors overlapping with shape 
+    //!        boundaries. By default, this distance is set to a value of 0.
+    //! @note  Currently used.
+    shapeBufferDistance,
+    //! @brief This parameter defines the spacing distance that will be used
+    //!        for nudging apart overlapping corners and line segments of 
+    //!        connectors.  By default, this distance is set to a value of 4.
+    idealNudgingDistance,
 
-    // Used for determining the size of the routing parameter array..  
+    // Used for determining the size of the routing parameter array.
     // This should always we the last value in the enum.
     lastRoutingParameterMarker
 };
@@ -205,6 +217,35 @@ class ConnRerouteFlagDelegate {
 static const double zeroParamValue = 0;
 static const double chooseSensibleParamValue = -1;
 
+// NOTE: This is an internal helper class that should not be used by the user.
+//
+// It is used by libtopology to add additional functionality to libavoid
+// while keeping libavoid dependency free.
+class TopologyAddonInterface
+{
+    public:
+        TopologyAddonInterface()
+        {
+        }
+        virtual ~TopologyAddonInterface()
+        {
+        }
+        virtual TopologyAddonInterface *clone(void) const
+        {
+            return new TopologyAddonInterface(*this);
+        }
+
+        virtual void improveOrthogonalTopology(Router *router)
+        {
+            (void)(router);  // Avoid unused parameter warning.
+        }
+        virtual bool outputCode(FILE *fp) const
+        {
+            (void)(fp);  // Avoid unused parameter warning.
+            return false;
+        }
+};
+
 
 //! @brief   The Router class represents a libavoid router instance.
 //!
@@ -255,9 +296,6 @@ class Router {
         // Instrumentation:
         Timer timers;
         int st_checked_edges;
-#ifdef LIBAVOID_SDL
-        SDL_Surface *avoid_screen;
-#endif
 
         //! @brief Allows setting of the behaviour of the router in regard
         //!        to transactions.  This controls whether transactions are
@@ -426,25 +464,6 @@ class Router {
         void moveJunction(JunctionRef *junction, const double xDiff, 
                 const double yDiff);
         
-        //! @brief Sets a spacing distance for overlapping orthogonal 
-        //!        connectors to be nudged apart.
-        //!         
-        //! By default, this distance is set to a value of 4.
-        //!
-        //! This method does not re-trigger post-processing of connectors.
-        //! The new distance will be used the next time rerouting is performed.
-        //!
-        //! @param[in]  dist  The distance to be used for orthogonal nudging.
-        //!
-        void setOrthogonalNudgeDistance(const double dist);
-
-        //! @brief   Returns the spacing distance that overlapping orthogonal
-        //!          connectors are nudged apart.
-        //!
-        //! @return  The current spacing distance used for orthogonal nudging.
-        //!
-        double orthogonalNudgeDistance(void) const;
-
         //! @brief  Sets values for routing parameters, including routing 
         //!         penalties.
         //!
@@ -464,6 +483,9 @@ class Router {
         //! parameter value argument (or a negative value) is specified 
         //! when calling this method, then a sensible penalty value will 
         //! be automatically chosen.
+        //!
+        //! This method does not re-trigger processing of connectors. The new
+        //! parameter value will be used the next time rerouting is performed.
         //!
         //! @param[in] parameter  The type of penalty, a RoutingParameter.
         //! @param[in] value      The value to be set for that parameter.
@@ -580,12 +602,26 @@ class Router {
         void setStaticGraphInvalidated(const bool invalidated);
         ConnType validConnType(const ConnType select = ConnType_None) const;
         bool isInCrossingPenaltyReroutingStage(void) const;
-        
+        void markAllObstaclesAsMoved(void);
+
+        // Interface for libtopology to be able to set an addon to 
+        // provide additional topology improving layout using libavoid
+        // routing.
+        void setTopologyAddon(TopologyAddonInterface *topologyAddon);
+        void improveOrthogonalTopology(void);
+
         // Testing and debugging methods.
         bool existsOrthogonalPathOverlap(const bool atEnds = false);
         bool existsOrthogonalTouchingPaths(void);
-        int  existsOrthogonalCrossings(void);
+        int  existsCrossings(const bool optimisedForConnectorType = false);
         bool existsInvalidOrthogonalPaths(void);
+
+        // Outputs the current diagram.  Used for visualising individual
+        // steps of various algorithms.  lineReps can be used to draw 
+        // attention to specific parts of the diagram that have changed
+        // between steps.
+        void outputDiagramSVG(std::string instanceName, 
+                LineReps *lineReps = NULL);
 
     private:
         friend class ShapeRef;
@@ -597,6 +633,7 @@ class Router {
         friend class MinimumTerminalSpanningTree;
         friend class ConnEnd;
         friend struct HyperEdgeTreeNode;
+        friend class HyperedgeRerouter;
 
         unsigned int assignId(const unsigned int suggestedId);
         void addShape(ShapeRef *shape);
@@ -624,7 +661,6 @@ class Router {
         unsigned int m_largest_assigned_id;
         bool m_consolidate_actions;
         bool m_currently_calling_destructors;
-        double m_orthogonal_nudge_distance;
         double m_routing_parameters[lastRoutingParameterMarker];
         bool m_routing_options[lastRoutingOptionMarker];
         
@@ -635,6 +671,8 @@ class Router {
         bool (*m_slow_routing_callback)(unsigned int, double);
         clock_t m_transaction_start_time;
         bool m_abort_transaction;
+        
+        TopologyAddonInterface *m_topology_addon;
 
         // Overall modes:
         bool m_allows_polyline_routing;

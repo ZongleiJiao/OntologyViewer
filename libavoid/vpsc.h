@@ -71,7 +71,9 @@ using vpsc::delete_object;
 #include <set>
 #include <queue>
 #include <stdlib.h>
+#include <iostream>
 using namespace std;
+
 namespace Avoid {
 
 class Variable;
