@@ -1,6 +1,5 @@
 #ifndef KEYCONCEPTCLASS_H
 #define KEYCONCEPTCLASS_H
-#include <owlclass.h>
 #include <owlontology.h>
 class KeyConceptClass
 {
@@ -74,7 +73,7 @@ public:
 
 
     /** functions **/
-    QList<OwlClass *> getKeyClasses(int n);
+//    QList<OwlClass *> getKeyClasses(int n);
     QList<OwlClass *> getNKeyClasses(int n);
 
     //NCValue
@@ -107,6 +106,13 @@ public:
     void updateClassLastVisitedTime(QString shortname,const QDateTime time);
     void updateClassVisitedTime(QString shortname,int inc);
     void updateClassLandmark(QString shortname, int lk);
+
+    //read/write db
+    int readScore_DB();
+    void writeScore_DB();
+    void updateClassLastVisitedTime_DB(QString shortname,const QDateTime time);
+    void updateClassVisitedTime_DB(QString shortname,int inc);
+    void updateClassLandmark_DB(QString shortname, int lk);
 
     //sort measures
     void sortMeasuresByScore();

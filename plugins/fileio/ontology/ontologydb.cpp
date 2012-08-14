@@ -367,3 +367,64 @@ QList<QString> OntologyDB::loadHistory(int ontoID){
     sq.addBindValue(ontoID);
     sq.exec();
 }
+
+void OntologyDB::clearKeyconcept_Class(int ontoID)
+{
+    if(!db.isOpen()){
+        db.open();
+    }
+    QSqlQuery sq;
+    sq.prepare("delete from keyconcept_Classes where ontologyID = ?");
+    sq.addBindValue(ontoID);
+    sq.exec();
+}
+
+void OntologyDB::insertKeyconcept_Class(int ontoID, int classID, QString shortname, double score, QDateTime lvt, int nov, int lm)
+{
+    if(!db.isOpen()){
+        db.open();
+    }
+    QSqlQuery sq;
+    sq.prepare("insert into keyconcept_Classes (ontologyID, ClassID, Classname,score, lastvisitedTime,numberofvisits,landmark) values (?,?,?,?,?,?,?)");
+    sq.addBindValue(ontoID);
+    sq.addBindValue(classID);
+    sq.addBindValue(shortname);
+    sq.addBindValue(score);
+    sq.addBindValue(lvt);
+    sq.addBindValue(nov);
+    sq.addBindValue(lm);
+    sq.exec();
+}
+
+QList<KeyConcept_DBFormat *> OntologyDB::getKeyconcept_classes(int ontoID)
+{
+    if(!db.isOpen()){
+        db.open();
+    }
+    QSqlQuery sq;
+    sq.prepare("select * from keyconcept_classes where ontologyID = ?");
+    sq.addBindValue(ontoID);
+    sq.exec();
+//0    [id]			integer PRIMARY KEY ASC,
+//1    [OntologyID]		integer, --to avoid join multiple tables for KC
+//2    [ClassID]		integer,
+//3    [ClassName]		varchar(100), --useless??or to avoid join multiple tables for KC
+//4    [Score]			real,
+//5    [LastVisitedTime]	integer,
+//6    [NumberOfVisits]	integer,
+//7    [LandMark]		integer
+    QList<KeyConcept_DBFormat *> rs;
+    while(sq.next()){
+        KeyConcept_DBFormat * r = new KeyConcept_DBFormat();
+        r->ontoID = sq.value(1).toInt();
+        r->classID = sq.value(2).toInt();
+        r->classname = sq.value(3).toString();
+        r->score = sq.value(4).toDouble();
+        r->lastVisitedTime = sq.value(5).toDateTime();
+        r->numberOfVisits = sq.value(6).toInt();
+        r->landmark = sq.value(7).toInt();
+        rs.append(r);
+    }
+
+    return rs;
+}

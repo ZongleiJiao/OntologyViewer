@@ -6,6 +6,7 @@
 #include <owlindividual.h>
 #include <owlclass.h>
 #include <owlproperty.h>
+#include <overview/keyconcept_dbformat.h>
 
 class OntologyDB : public QObject
 {
@@ -44,6 +45,13 @@ public:
     void saveInterests(int ontoID, int entityID, int entityType);
     void clearHistoryByOntology(int ontoID);
     QList<QString> loadHistory(int ontoID);
+
+//    insert into keyconcept_Classes (ontologyID, ClassID, Classname,score, lastvisitedTime,numberofvisits,landmark)
+//    values (1,2,'aaa',123,321312321,321,2);
+
+    void clearKeyconcept_Class(int ontoID);
+    void insertKeyconcept_Class(int ontoID,int classID, QString shortname,qreal score,QDateTime lvt, int nov, int lm);
+    QList<KeyConcept_DBFormat *> getKeyconcept_classes(int ontoID);
 private:
     QSqlDatabase db;
 

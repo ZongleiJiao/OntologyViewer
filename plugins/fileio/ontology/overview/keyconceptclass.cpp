@@ -1,5 +1,7 @@
 #include "keyconceptclass.h"
 #include <stack>
+#include <ontologydb.h>
+#include "keyconcept_dbformat.h"
 
 using namespace std;
 
@@ -358,45 +360,51 @@ void KeyConceptClass::computeScore()
 }
 
 
-QList<OwlClass *> KeyConceptClass::getKeyClasses(int n)
-{
-    QList<OwlClass *> result;
+//QList<OwlClass *> KeyConceptClass::getKeyClasses(int n)
+//{
+//    QList<OwlClass *> result;
 
-    //compute scores
-    computeScore();
+//    //compute scores
+//    computeScore();
 
-    //n must>=1
-    if(n<1) return result;
+//    //n must>=1
+//    if(n<1) return result;
 
-    //get n Top score classes, and other classes
-    this->sortMeasuresByScore(); //sort by score
+//    //get n Top score classes, and other classes
+//    this->sortMeasuresByScore(); //sort by score
 
-    if(n>classnum)n=classnum;
-    for(int i=0;i<n;i++)result.append(classes[measures[i].idx]);
+//    if(n>classnum)n=classnum;
+//    for(int i=0;i<n;i++)result.append(classes[measures[i].idx]);
 
-    this->writeScoreFile();
+//    this->writeScoreFile();
 
-    this->readScoreFile();
-    this->computeOverallScore();
+//    this->readScoreFile();
+//    this->computeOverallScore();
 
-    return result;
-}
+//    return result;
+//}
 
 QList<OwlClass *> KeyConceptClass::getNKeyClasses(int n)
 {
     QList<OwlClass *> result;
 
-    int f= checkfile();
-    if(f==1)
-    {
-        cout<<"Reading score file..."<<endl;
-        this->readScoreFile();
-    }
-    else
-    {
+//    int f= checkfile();
+//    if(f==1)
+//    {
+//        cout<<"Reading score file..."<<endl;
+//        this->readScoreFile();
+//    }
+//    else
+//    {
+//        cout<<"Calculate scores..."<<endl;
+//        computeScore();
+//        this->writeScoreFile();
+//    }
+    int f = readScore_DB();
+    if(f==-1){
         cout<<"Calculate scores..."<<endl;
         computeScore();
-        this->writeScoreFile();
+        writeScore_DB();
     }
 
     cout<<"KC computing overall scores"<<endl;
@@ -629,4 +637,46 @@ void KeyConceptClass::updateClassLandmark(QString shortname, int lk)
         }
     }
 }
+
+void KeyConceptClass::writeScore_DB()
+{
+    OntologyDB *db = new OntologyDB();
+    db->openDB();
+    db->clearKeyconcept_Class(this->m_ontology->ontologyID);
+    for(int i=0;i<this->classes.size();i++){
+        db->insertKeyconcept_Class(
+                    this->m_ontology->ontologyID,
+                    classes[i]->db_entityID,
+                    measures[i].classname,
+                    measures[i].score,
+                    measures[i].lastvisitedTime,
+                    measures[i].visitTimes,
+                    measures[i].landmark);
+    }
+    db->closeDB();
+}
+
+int KeyConceptClass::readScore_DB()
+{
+    OntologyDB * db = new OntologyDB();
+    db->openDB();
+
+    QList<KeyConcept_DBFormat *> rs = db->getKeyconcept_classes(this->m_ontology->ontologyID);
+    if(rs.size()!=measures.size()) return -1;
+
+    for(int i = 0;i<rs.size();i++){
+        for(int j=0;j<measures.size();j++){
+            if(measures[j].classname == rs[i]->classname){
+                measures[j].score = rs[i]->score;
+                measures[j].landmark = rs[i]->landmark;
+                measures[j].lastvisitedTime = rs[i]->lastVisitedTime;
+                measures[j].visitTimes = rs[i]->numberOfVisits;
+                break;
+            }
+        }
+    }
+
+    return 1;
+}
+
 
