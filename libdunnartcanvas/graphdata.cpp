@@ -141,13 +141,6 @@ GraphData::GraphData(Canvas *canvas, bool ignoreEdges,
 //            yMax = std::max(yMax, centreY);
 //            yMin = std::min(yMin, centreY);
 
-            double centreX = rs[nodeIndex]->getCentreX();
-            double centreY = rs[nodeIndex]->getCentreY();
-            xMax = std::max(xMax, centreX);
-            xMin = std::min(xMin, centreX);
-            yMax = std::max(yMax, centreY);
-            yMin = std::min(yMin, centreY);
-
         }
     }
 
