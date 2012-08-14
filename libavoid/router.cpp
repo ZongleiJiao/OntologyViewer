@@ -43,154 +43,6 @@
 namespace Avoid {
 
 
-enum ActionType {
-    ShapeMove,
-    ShapeAdd,
-    ShapeRemove,
-    JunctionMove,
-    JunctionAdd,
-    JunctionRemove,
-    ConnChange,
-    ConnectionPinChange
-};
-
-typedef std::list<std::pair<unsigned int, ConnEnd> > ConnUpdateList;
-
-class ActionInfo {
-    public:
-        ActionInfo(ActionType t, ShapeRef *s, const Polygon& p, bool fM)
-            : type(t),
-              objPtr(s),
-              newPoly(p),
-              firstMove(fM)
-        {
-            COLA_ASSERT(type == ShapeMove);
-        }
-        ActionInfo(ActionType t, ShapeRef *s)
-            : type(t),
-              objPtr(s)
-
-        {
-            COLA_ASSERT((type == ShapeAdd) || (type == ShapeRemove) ||
-                    (type == ShapeMove));
-        }
-        ActionInfo(ActionType t, JunctionRef *j, const Point& p)
-            : type(t),
-              objPtr(j),
-              newPosition(p)
-        {
-            COLA_ASSERT(type == JunctionMove);
-        }
-        ActionInfo(ActionType t, JunctionRef *j)
-            : type(t),
-              objPtr(j)
-        {
-            COLA_ASSERT((type == JunctionAdd) || (type == JunctionRemove) ||
-                    (type == JunctionMove));
-        }
-        ActionInfo(ActionType t, ConnRef *c)
-            : type(t),
-              objPtr(c)
-        {
-            COLA_ASSERT(type == ConnChange);
-        }
-        ActionInfo(ActionType t, ShapeConnectionPin *p)
-            : type(t),
-              objPtr(p)
-        {
-            COLA_ASSERT(type == ConnectionPinChange);
-        }
-        ~ActionInfo()
-        {
-        }
-        Obstacle *obstacle(void) const
-        {
-            COLA_ASSERT((type == ShapeMove) || (type == ShapeAdd) || 
-                    (type == ShapeRemove) || (type == JunctionMove) || 
-                    (type == JunctionAdd) || (type == JunctionRemove));
-            return (static_cast<Obstacle *> (objPtr));
-        }
-        ShapeRef *shape(void) const
-        {
-            return (dynamic_cast<ShapeRef *> (obstacle()));
-        }
-        ConnRef *conn(void) const
-        {
-            COLA_ASSERT(type == ConnChange);
-            return (static_cast<ConnRef *> (objPtr));
-        }
-        JunctionRef *junction(void) const
-        {
-            return (dynamic_cast<JunctionRef *> (obstacle()));
-        }
-        void addConnEndUpdate(const unsigned int type, const ConnEnd& connEnd,
-                bool isConnPinMoveUpdate)
-        {
-            bool alreadyExists = false;
-            for (ConnUpdateList::iterator conn = conns.begin();
-                    conn != conns.end(); ++conn)
-            {
-                // Look for an existing queued change to the same end.
-                if (conn->first == type)
-                {
-                    // Found a queued change to the same endpoint of the
-                    // connector. If this is a pin change as a result of a
-                    // shape move, then leave the user created update
-                    // that was found (since it may be moving the connection
-                    // to connect to a different shape/pin.  But if this is a
-                    // user change, then overwrite the previous change.
-                    alreadyExists = true;
-                    if (!isConnPinMoveUpdate)
-                    {
-                        // Overwrite the queued change with this one.
-                        conn->second = connEnd;
-                    }
-                    break;
-                }
-            }
-
-            if (!alreadyExists)
-            {
-                // Matching change not found, so add this one.
-                conns.push_back(std::make_pair(type, connEnd));
-            }
-        }
-        bool operator==(const ActionInfo& rhs) const
-        {
-            return (type == rhs.type) && (objPtr == rhs.objPtr);
-        }
-        bool operator<(const ActionInfo& rhs) const
-        {
-            if (type != rhs.type)
-            {
-                return type < rhs.type;
-            }
-
-            if (type == ConnChange)
-            {
-                return conn()->id() < rhs.conn()->id();
-            }
-            else if (type == ConnectionPinChange)
-            {
-                // NOTE Comparing pointers may not preserve the order of
-                //      objects, but the order of Connection Pins is not
-                //      used so this is not an issue here.
-                return objPtr < rhs.objPtr;
-            }
-            else
-            {
-                return obstacle()->id() < rhs.obstacle()->id();
-            }
-        }
-        ActionType type;
-        void *objPtr;
-        Polygon newPoly;
-        Point newPosition;
-        bool firstMove;
-        ConnUpdateList conns;
-};
-
-
 Router::Router(const unsigned int flags)
     : visOrthogGraph(true),
       PartialTime(false),
@@ -206,14 +58,11 @@ Router::Router(const unsigned int flags)
       RubberBandRouting(false),
       // Instrumentation:
       st_checked_edges(0),
-#ifdef LIBAVOID_SDL
-      avoid_screen(NULL),
-#endif
       m_largest_assigned_id(0),
       m_consolidate_actions(true),
       m_currently_calling_destructors(false),
-      m_orthogonal_nudge_distance(4.0),
       m_slow_routing_callback(NULL),
+      m_topology_addon(new TopologyAddonInterface()),
       // Mode options:
       m_allows_polyline_routing(false),
       m_allows_orthogonal_routing(false),
@@ -239,6 +88,7 @@ Router::Router(const unsigned int flags)
     m_routing_parameters[segmentPenalty] = 10;
     m_routing_parameters[clusterCrossingPenalty] = 4000;
     m_routing_parameters[portDirectionPenalty] = 100;
+    m_routing_parameters[idealNudgingDistance] = 4.0;
 
     m_routing_options[nudgeOrthogonalSegmentsConnectedToShapes] = false;
     m_routing_options[improveHyperedgeRoutesMovingJunctions] = true;
@@ -286,6 +136,8 @@ Router::~Router()
     COLA_ASSERT(m_obstacles.size() == 0);
     COLA_ASSERT(connRefs.size() == 0);
     COLA_ASSERT(visGraph.size() == 0);
+
+    delete m_topology_addon;
 }
 
 
@@ -434,12 +286,44 @@ void Router::deleteConnector(ConnRef *connector)
 
 void Router::moveShape(ShapeRef *shape, const double xDiff, const double yDiff)
 {
-    Polygon newPoly = shape->polygon();
+    ActionInfo moveInfo(ShapeMove, shape, Polygon(), false);
+    ActionInfoList::iterator found =
+            find(actionList.begin(), actionList.end(), moveInfo);
+
+    Polygon newPoly;
+    if (found != actionList.end())
+    {
+        // The shape already has a queued move, so use that shape position.
+        newPoly = found->newPoly;
+    }
+    else
+    {
+        // Just use the existing position.
+        newPoly = shape->polygon();
+    }
     newPoly.translate(xDiff, yDiff);
 
     moveShape(shape, newPoly);
 }
 
+
+void Router::markAllObstaclesAsMoved(void)
+{
+    for (ObstacleList::iterator obstacleIt = m_obstacles.begin();
+            obstacleIt != m_obstacles.end(); ++obstacleIt)
+    {
+        ShapeRef *shape = dynamic_cast<ShapeRef *> (*obstacleIt);
+        JunctionRef *junction = dynamic_cast<JunctionRef *> (*obstacleIt);
+        if (shape)
+        {
+            moveShape(shape, 0, 0);
+        }
+        else if (junction)
+        {
+            moveJunction(junction, 0, 0);
+        }
+    }
+}
 
 void Router::moveShape(ShapeRef *shape, const Polygon& newPoly, 
         const bool first_move)
@@ -680,7 +564,7 @@ bool Router::processTransaction(void)
                 junction->setPosition(actInf.newPosition);
             }
         }
-        const Polygon& shapePoly = obstacle->polygon();
+        const Polygon& shapePoly = obstacle->routingPolygon();
 
         adjustContainsWithAdd(shapePoly, pid);
 
@@ -790,7 +674,21 @@ void Router::deleteJunction(JunctionRef *junction)
 void Router::moveJunction(JunctionRef *junction, const double xDiff, 
         const double yDiff)
 {
-    Point newPosition = junction->position();
+    ActionInfo moveInfo(JunctionMove, junction, Point());
+    ActionInfoList::iterator found =
+            find(actionList.begin(), actionList.end(), moveInfo);
+
+    Point newPosition;
+    if (found != actionList.end())
+    {
+        // The junction already has a queued move, so use that position.
+        newPosition = found->newPosition;
+    }
+    else
+    {
+        // Just use the existing position.
+        newPosition = junction->position();
+    }
     newPosition.x += xDiff;
     newPosition.y += yDiff;
 
@@ -855,19 +753,6 @@ void Router::deleteCluster(ClusterRef *cluster)
     unsigned int pid = cluster->id();
     
     adjustClustersWithDel(pid);
-}
-
-
-void Router::setOrthogonalNudgeDistance(const double dist)
-{
-    COLA_ASSERT(dist >= 0);
-    m_orthogonal_nudge_distance = dist;
-}
-
-
-double Router::orthogonalNudgeDistance(void) const
-{
-    return m_orthogonal_nudge_distance;
 }
 
 
@@ -1810,7 +1695,7 @@ void Router::setRoutingParameter(const RoutingParameter parameter,
     COLA_ASSERT(parameter < lastRoutingParameterMarker);
     if (value < 0)
     {
-        // Set some sensible parameter value for the parameter being 'active'..
+        // Set some sensible parameter value for the parameter being 'active'.
         switch (parameter)
         {
             case segmentPenalty:
@@ -1827,6 +1712,9 @@ void Router::setRoutingParameter(const RoutingParameter parameter,
                 break;
             case clusterCrossingPenalty:
                 m_routing_parameters[parameter] = 4000;
+                break;
+            case idealNudgingDistance:
+                m_routing_parameters[parameter] = 4.0;
                 break;
             default:
                 m_routing_parameters[parameter] = 50;
@@ -2044,8 +1932,14 @@ bool Router::existsOrthogonalTouchingPaths(void)
 }
 
 
-// XXX: Currently just looks for normal crossings (not orthogonal specific).
-int Router::existsOrthogonalCrossings(void)
+// Counts the number of crossings between all connectors.
+//
+// If optimisedForConnectorType is set, This will only count crossings 
+// between orthogonal connectors if they appear at segment endpoints. 
+// Thus, it can be used on raw connectors but not on simplified orthogonal
+// connectors.
+//
+int Router::existsCrossings(const bool optimisedForConnectorType)
 {
     int count = 0;
     ConnRefList::iterator fin = connRefs.end();
@@ -2057,7 +1951,9 @@ int Router::existsOrthogonalCrossings(void)
         {
             // Determine if this pair overlap
             Avoid::Polygon jRoute = (*j)->displayRoute();
-            ConnectorCrossings cross(iRoute, true, jRoute, *i, *j);
+            ConnRef *iConn = (optimisedForConnectorType) ? *i : NULL;
+            ConnRef *jConn = (optimisedForConnectorType) ? *j : NULL;
+            ConnectorCrossings cross(iRoute, true, jRoute, iConn, jConn);
             cross.checkForBranchingSegments = true;
             for (size_t jInd = 1; jInd < jRoute.size(); ++jInd)
             {
@@ -2108,6 +2004,19 @@ void Router::setSlowRoutingCallback(bool (*func)(unsigned int, double))
     m_slow_routing_callback = func;
 }
 
+
+void Router::setTopologyAddon(TopologyAddonInterface *topologyAddon)
+{
+    COLA_ASSERT(m_topology_addon);
+    delete m_topology_addon;
+    m_topology_addon = topologyAddon->clone();
+}
+
+void Router::improveOrthogonalTopology(void)
+{
+    COLA_ASSERT(m_topology_addon);
+    m_topology_addon->improveOrthogonalTopology(this);
+}
 
 void Router::outputInstanceToSVG(std::string instanceName)
 {
@@ -2170,6 +2079,12 @@ void Router::outputInstanceToSVG(std::string instanceName)
     // Output source code to generate this instance of the router.
     fprintf(fp, "<!-- Source code to generate this instance:\n");
     fprintf(fp, "#include \"libavoid/libavoid.h\"\n");
+    if (m_topology_addon->outputCode(NULL))
+    {
+        fprintf(fp, "#include \"libcola/cola.h\"\n");
+        fprintf(fp, "#include \"libtopology/orthogonal_topology.h\"\n");
+        fprintf(fp, "using namespace cola;\n");
+    }
     fprintf(fp, "using namespace Avoid;\n");
     fprintf(fp, "int main(void) {\n");
     fprintf(fp, "    Router *router = new Router(\n");
@@ -2184,8 +2099,6 @@ void Router::outputInstanceToSVG(std::string instanceName)
         fprintf(fp, "    router->setRoutingOption((RoutingOption)%lu, %s);\n", 
                 (unsigned long)p, (m_routing_options[p]) ? "true" : "false");
     }
-    fprintf(fp, "    router->setOrthogonalNudgeDistance(%g);\n\n",
-            orthogonalNudgeDistance());
     ClusterRefList::reverse_iterator revClusterRefIt = clusterRefs.rbegin();
     while (revClusterRefIt != clusterRefs.rend())
     {
@@ -2216,6 +2129,9 @@ void Router::outputInstanceToSVG(std::string instanceName)
         connRef->outputCode(fp);
         ++revConnRefIt;
     }
+
+    m_topology_addon->outputCode(fp);
+
     fprintf(fp, "    router->processTransaction();\n");
     fprintf(fp, "    router->outputInstanceToSVG();\n");
     fprintf(fp, "    delete router;\n");
@@ -2255,7 +2171,7 @@ void Router::outputInstanceToSVG(std::string instanceName)
 
     fprintf(fp, "<g inkscape:groupmode=\"layer\" "
     "style=\"display: none;\" "
-            "inkscape:label=\"ShapesPoly\">\n");
+            "inkscape:label=\"ShapePolygons\">\n");
     ObstacleList::iterator obstacleIt = m_obstacles.begin();
     while (obstacleIt != m_obstacles.end())
     {
@@ -2283,6 +2199,36 @@ void Router::outputInstanceToSVG(std::string instanceName)
     fprintf(fp, "</g>\n");
 
     fprintf(fp, "<g inkscape:groupmode=\"layer\" "
+    "style=\"display: none;\" "
+            "inkscape:label=\"ObstaclePolygons\">\n");
+    obstacleIt = m_obstacles.begin();
+    while (obstacleIt != m_obstacles.end())
+    {
+        Obstacle *obstacle = *obstacleIt;
+        bool isShape = (NULL != dynamic_cast<ShapeRef *> (obstacle));
+
+        if ( ! isShape )
+        {
+            // Don't output obstacles here, for now.
+            ++obstacleIt;
+            continue;
+        }
+
+        Polygon polygon = obstacle->routingPolygon();
+        fprintf(fp, "<path id=\"poly-%u\" style=\"stroke-width: 1px; "
+                "stroke: black; fill: %s; fill-opacity: 0.3;\" d=\"", 
+                obstacle->id(), (isShape) ? "grey" : "red");
+        for (size_t i = 0; i < polygon.size(); ++i)
+        {
+            fprintf(fp, "%c %g %g ", ((i == 0) ? 'M' : 'L'), 
+                    polygon.at(i).x, polygon.at(i).y);
+        }
+        fprintf(fp, "Z\" />\n");
+        ++obstacleIt;
+    }
+    fprintf(fp, "</g>\n");
+
+    fprintf(fp, "<g inkscape:groupmode=\"layer\" "
             "style=\"display: none;\" "
             "inkscape:label=\"IdealJunctions\">\n");
     for (ObstacleList::iterator obstacleIt = m_obstacles.begin();
@@ -2302,7 +2248,7 @@ void Router::outputInstanceToSVG(std::string instanceName)
     fprintf(fp, "</g>\n");
 
     fprintf(fp, "<g inkscape:groupmode=\"layer\" "
-            "inkscape:label=\"ShapesRect\">\n");
+            "inkscape:label=\"ObstacleRects\">\n");
     obstacleIt = m_obstacles.begin();
     while (obstacleIt != m_obstacles.end())
     {
@@ -2316,14 +2262,13 @@ void Router::outputInstanceToSVG(std::string instanceName)
             continue;
         }
 
-        double minX, minY, maxX, maxY;
-        obstacle->polygon().getBoundingRect(&minX, &minY, &maxX, &maxY);
+        Box bBox = obstacle->routingBox();
 
         fprintf(fp, "<rect id=\"rect-%u\" x=\"%g\" y=\"%g\" width=\"%g\" "
                 "height=\"%g\" style=\"stroke-width: 1px; stroke: black; "
                 "fill: grey; stroke-opacity: 0.1; fill-opacity: 0.1;\" />\n",
-                obstacle->id(), minX + 3, minY + 3, maxX - minX - 6, maxY - minY - 6
-                );
+                obstacle->id(), bBox.min.x, bBox.min.y, 
+                bBox.max.x - bBox.min.x, bBox.max.y - bBox.min.y);
         ++obstacleIt;
     }
     fprintf(fp, "</g>\n");
@@ -2555,6 +2500,147 @@ void Router::outputInstanceToSVG(std::string instanceName)
     //printInfo();
 }
 
+void Router::outputDiagramSVG(std::string instanceName, LineReps *lineReps)
+{
+    std::string filename;
+    if (!instanceName.empty())
+    {
+        filename = instanceName;
+    }
+    else
+    {
+        filename = "libavoid-diagram";
+    }
+    filename += ".svg";
+    FILE *fp = fopen(filename.c_str(), "w");
+
+    if (fp == NULL)
+    {
+        return;
+    }
+
+    double minX = LIMIT;
+    double minY = LIMIT;
+    double maxX = -LIMIT;
+    double maxY = -LIMIT;
+
+    VertInf *curr = vertices.connsBegin();
+    while (curr)
+    {
+        Point p = curr->point;
+
+        reduceRange(p.x);
+        reduceRange(p.y);
+        
+        if (p.x > -LIMIT)
+        {
+            minX = std::min(minX, p.x);
+        }
+        if (p.x < LIMIT)
+        {
+            maxX = std::max(maxX, p.x);
+        }
+        if (p.y > -LIMIT)
+        {
+            minY = std::min(minY, p.y);
+        }
+        if (p.y < LIMIT)
+        {
+            maxY = std::max(maxY, p.y);
+        }
+        curr = curr->lstNext;
+    }
+    minX -= 8;
+    minY -= 8;
+    maxX += 8;
+    maxY += 8;
+
+    fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    fprintf(fp, "<svg xmlns:inkscape=\"http://www.inkscape.org/namespaces/inkscape\" xmlns=\"http://www.w3.org/2000/svg\" width=\"100%%\" height=\"100%%\" viewBox=\"%g %g %g %g\">\n", minX, minY, maxX - minX, maxY - minY);
+
+    fprintf(fp, "<g inkscape:groupmode=\"layer\" "
+            "inkscape:label=\"ShapesRect\">\n");
+    ObstacleList::iterator obstacleIt = m_obstacles.begin();
+    while (obstacleIt != m_obstacles.end())
+    {
+        Obstacle *obstacle = *obstacleIt;
+        bool isShape = (NULL != dynamic_cast<ShapeRef *> (obstacle));
+
+        if ( ! isShape )
+        {
+            // Don't output non-shape obstacles here, for now.
+            ++obstacleIt;
+            continue;
+        }
+
+        Box bBox = obstacle->polygon().offsetBoundingBox(0.0);
+
+        fprintf(fp, "<rect id=\"rect-%u\" x=\"%g\" y=\"%g\" width=\"%g\" "
+                "height=\"%g\" style=\"stroke-width: 1px; stroke: black; "
+                "fill: grey; stroke-opacity: 0.5; fill-opacity: 0.4;\" />\n",
+                obstacle->id(), bBox.min.x, bBox.min.y,
+                bBox.max.x - bBox.min.x, bBox.max.y - bBox.min.y);
+        ++obstacleIt;
+    }
+    fprintf(fp, "</g>\n");
+
+    fprintf(fp, "<g inkscape:groupmode=\"layer\" "
+            "inkscape:label=\"DisplayConnectors\""
+            ">\n");
+    ConnRefList::iterator connRefIt = connRefs.begin();
+    while (connRefIt != connRefs.end())
+    {
+        ConnRef *connRef = *connRefIt;
+    
+        PolyLine route = connRef->displayRoute();
+        if (!route.empty())
+        {
+            fprintf(fp, "<path id=\"disp-%u\" d=\"M %g %g ", connRef->id(),
+                    route.ps[0].x, route.ps[0].y);
+            for (size_t i = 1; i < route.size(); ++i)
+            {
+                fprintf(fp, "L %g %g ", route.ps[i].x, route.ps[i].y);
+            }
+            fprintf(fp, "\" ");
+            fprintf(fp, "style=\"fill: none; stroke: black; "
+                    "stroke-width: 1px;\" />\n");
+
+            /*
+            for (size_t i = 1; i < route.size(); ++i)
+            {
+                if (route.segmentHasCheckpoint[i - 1])
+                {
+                    fprintf(fp, "<path d=\"M %g %g ", 
+                            route.ps[i - 1].x, route.ps[i - 1].y);
+                    fprintf(fp, "L %g %g\" ", route.ps[i].x, route.ps[i].y);
+                    fprintf(fp, "style=\"fill: none; stroke: red; "
+                            "stroke-width: 1px; stroke-opacity: 1;\" />\n");
+                }
+            }
+            */
+        }
+        
+        ++connRefIt;
+    }
+    fprintf(fp, "</g>\n");
+
+    if (lineReps)
+    {
+
+        for (LineReps::iterator it = lineReps->begin(); it != lineReps->end();
+                ++it)
+        {
+            fprintf(fp, "<path d=\"M %g %g ", 
+                    it->begin.x, it->begin.y);
+            fprintf(fp, "L %g %g\" ", it->end.x, it->end.y);
+            fprintf(fp, "style=\"fill: none; stroke: red; "
+                    "stroke-width: 1px; stroke-opacity: 0.7;\" />\n");
+        }
+    }
+
+    fprintf(fp, "</svg>\n");
+    fclose(fp);
+}
 
 ConnRerouteFlagDelegate::ConnRerouteFlagDelegate()
 {

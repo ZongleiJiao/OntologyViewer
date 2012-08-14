@@ -31,7 +31,7 @@ private:
 public slots:
     void saveInterest(QString name);
     void selectedItem(QListWidgetItem* item);
-    void loadInterests();
+    void loadInterests(int ontoID);
 };
 
 #endif // HISTORYDOCKWIDGET_H

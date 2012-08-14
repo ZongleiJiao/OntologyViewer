@@ -64,6 +64,7 @@ void FilterDockWidget::clearFilter(){
 }
 
 
+//TODO glore the filtered nodes, or transpanracy others
 
 
 

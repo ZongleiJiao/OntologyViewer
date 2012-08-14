@@ -24,6 +24,7 @@
 */
 #include <QtGui>
 #include <QtSvg>
+#include <QParallelAnimationGroup>
 
 #include "libdunnartcanvas/canvas.h"
 #include "libdunnartcanvas/shape.h"
@@ -48,6 +49,7 @@
 #include "libdunnartcanvas/ui/createtemplate.h"
 
 #include "libavoid/libavoid.h"
+#include "libtopology/orthogonal_topology.h"
 
 
 namespace dunnart {
@@ -178,7 +180,8 @@ Canvas::Canvas()
       m_edit_mode(ModeSelection),
       m_routing_event_posted(false),
       m_canvas_font(NULL),
-      m_canvas_font_size(DEFAULT_CANVAS_FONT_SIZE)
+      m_canvas_font_size(DEFAULT_CANVAS_FONT_SIZE),
+      m_animation_group(NULL)
 {
     m_ideal_connector_length = 100;
     m_flow_separation_modifier = 0.5;
@@ -227,12 +230,15 @@ Canvas::Canvas()
     // Avoid::PolyLineRouting
     m_router = new Avoid::Router(Avoid::OrthogonalRouting |
             Avoid::PolyLineRouting);
+    m_router->setRoutingParameter(Avoid::shapeBufferDistance, 4.0);
     m_router->setRoutingOption(
             Avoid::nudgeOrthogonalSegmentsConnectedToShapes, true);
 
     m_router->setRoutingParameter(Avoid::segmentPenalty, 50);
     m_router->setRoutingParameter(Avoid::clusterCrossingPenalty, 0);
     //m_router->setRoutingParameter(Avoid::fixedSharedPathPenalty);
+
+    m_animation_group = new QParallelAnimationGroup();
 
     m_selection_resize_handles = QVector<SelectionResizeHandle *>(8);
     for (int i = 0; i < 8; ++i)
@@ -259,6 +265,7 @@ Canvas::~Canvas()
 {
     delete m_graphlayout;
     delete m_router;
+    delete m_animation_group;
 
     if (m_svg_renderer)
     {
@@ -283,7 +290,7 @@ bool Canvas::loadGmlDiagram(const QFileInfo& fileInfo)
 {
     setOptFitWithinPage(true);
     setOptAutomaticGraphLayout(true);
-    avoidBuffer = 10;
+    setOptShapeNonoverlapPadding(10);
     int cxoff, cyoff;
     m_gml_graph = new gml::Graph(this, fileInfo.absolutePath().toStdString(),
             gml::Page(this), gml::COff(cxoff, cyoff));
@@ -573,13 +580,25 @@ void Canvas::drawForeground(QPainter *painter, const QRectF& rect)
 
             if (shape && shape->avoidRef)
             {
-                Avoid::Polygon poly = shape->avoidRef->polygon();
-                Avoid::Point topLeft = poly.at(3);
-                Avoid::Point bottomRight = poly.at(1);
+                // Draw the rectangular box used for orthogonal routing.
+                Avoid::Box bBox = shape->avoidRef->routingBox();
+                Avoid::Point topLeft = bBox.min;
+                Avoid::Point bottomRight = bBox.max;
 
                 QRectF rect(QPointF(topLeft.x, topLeft.y),
                         QPointF(bottomRight.x, bottomRight.y));
                 painter->drawRect(rect);
+
+                // Draw the polygon used for polyline routing.
+                Avoid::Polygon poly = shape->avoidRef->routingPolygon();
+                QPolygonF polygon;
+
+                for (size_t i = 0; i < poly.size(); ++i)
+                {
+                    const Avoid::Point& point = poly.at(i);
+                    polygon << QPointF(point.x, point.y);
+                }
+                painter->drawPolygon(polygon);
             }
         }
     }
@@ -1196,6 +1215,16 @@ void Canvas::setDebugCOLAOutput(const bool value)
     m_graphlayout->setOutputDebugFiles(value);
 }
 
+int Canvas::optRoutingShapePadding(void) const
+{
+    return (int) m_router->routingParameter(Avoid::shapeBufferDistance);
+}
+
+int Canvas::optShapeNonoverlapPadding(void) const
+{
+    return (int) m_opt_shape_nonoverlap_padding;
+}
+
 void Canvas::setOptAutomaticGraphLayout(const bool value)
 {
     // Remember previous value.
@@ -1309,7 +1338,7 @@ void Canvas::setOptPreventOverlaps(const bool value)
 }
 
 
-void Canvas::setOptConnPenaltySegment(const int value)
+void Canvas::setOptRoutingPenaltySegment(const int value)
 {
     m_router->setRoutingParameter(Avoid::segmentPenalty, (double) value);
 
@@ -1324,6 +1353,23 @@ void Canvas::setOptConnRoundingDist(const int value)
     redraw_connectors(this);
 }
 
+
+void Canvas::setOptRoutingShapePadding(const int value)
+{
+    m_router->setRoutingParameter(Avoid::shapeBufferDistance, (double) value);
+    emit optChangedRoutingShapePadding(value);
+
+    m_router->markAllObstaclesAsMoved();
+    reroute_all_connectors(this);
+    update();
+}
+
+void Canvas::setOptShapeNonoverlapPadding(const int value)
+{
+    m_opt_shape_nonoverlap_padding = value;
+    emit optChangedShapeNonoverlapPadding(value);
+    fully_restart_graph_layout();
+}
 
 void Canvas::setOptIdealEdgeLengthModifierFromSlider(int int_modifier)
 {
@@ -1407,7 +1453,7 @@ int Canvas::optConnectorRoundingDistance(void) const
 }
 
 
-int Canvas::optConnPenaltySegment(void) const
+int Canvas::optRoutingPenaltySegment(void) const
 {
     return (int) m_router->routingParameter(Avoid::segmentPenalty);
 }
@@ -1810,6 +1856,16 @@ void Canvas::setNudgeDistance(const double dist)
     m_connector_nudge_distance = dist;
 }
 
+void Canvas::updateConnectorsForLayout(void)
+{
+    if ((!m_opt_preserve_topology || (m_graphlayout->runLevel != 1)) &&
+            !m_gml_graph && !m_batch_diagram_layout)
+    {
+        // Don't reroute connectors in the case of topology preserving layout.
+        reroute_connectors(this);
+    }
+}
+
 void Canvas::processLayoutUpdateEvent(void)
 {
     m_layout_update_timer->stop();
@@ -1835,12 +1891,7 @@ void Canvas::processLayoutUpdateEvent(void)
     }
 
     m_graphlayout->processReturnPositions();
-    if ((!m_opt_preserve_topology || (m_graphlayout->runLevel != 1)) &&
-            !m_gml_graph && !m_batch_diagram_layout)
-    {
-        // Don't reroute connectors in the case of topology preserving layout.
-        reroute_connectors(this);
-    }
+    updateConnectorsForLayout();
 
     //qDebug("processLayoutUpdateEvent %7d", ++layoutUpdates);
 }
@@ -2851,11 +2902,16 @@ void Canvas::loadLayoutOptionsFromDomElement(const QDomElement& options)
     }
 
     optionalProp(options,x_EXPERIMENTAL_rect,m_rectangle_constraint_test);
-    optionalProp(options,x_avoidBuffer,avoidBuffer);
+    optionalProp(options,x_avoidBuffer,m_opt_shape_nonoverlap_padding);
 
-    if (!optionalProp(options,x_routingBuffer,routingBuffer))
+    double routingBuffer;
+    if (optionalProp(options,x_routingBuffer,routingBuffer))
     {
-        routingBuffer = avoidBuffer;
+        setOptRoutingShapePadding(routingBuffer);
+    }
+    else
+    {
+        setOptRoutingShapePadding(m_opt_shape_nonoverlap_padding);
     }
     optionalProp(options,x_flowSeparation,m_flow_separation_modifier);
     optionalProp(options,x_flowDirection,m_opt_flow_direction);
@@ -2903,11 +2959,8 @@ QDomElement Canvas::writeLayoutOptionsToDomElement(QDomDocument& doc) const
     newProp(dunOpts, x_layoutMode, (int)gl->mode);
     newProp(dunOpts, x_layoutBeautification, optPreserveTopology());
     newProp(dunOpts, x_preventOverlaps, optPreventOverlaps());
-    newProp(dunOpts, x_avoidBuffer, avoidBuffer);
-    if (routingBuffer != avoidBuffer)
-    {
-        newProp(dunOpts, x_routingBuffer, routingBuffer);
-    }
+    newProp(dunOpts, x_avoidBuffer, m_opt_shape_nonoverlap_padding);
+    newProp(dunOpts, x_routingBuffer, optRoutingShapePadding());
     newProp(dunOpts, x_flowSeparation, m_flow_separation_modifier);
     if (m_opt_flow_direction != FlowDown)
     {
