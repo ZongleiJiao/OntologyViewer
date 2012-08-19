@@ -74,9 +74,9 @@ void OntologyClassShape::mousePressEvent(QGraphicsSceneMouseEvent *event){
         else if (mx>=rx-20&&mx<=rx){
             cout<<"Click Right!!!"<<endl;
             if(hasChild){
-                if(isShowingChild)isShowingChild=false;
-                else isShowingChild = true;
-                this->updateShape();
+//                if(isShowingChild)isShowingChild=false;
+//                else isShowingChild = true;
+//                this->updateShape();
                 emit this->myclickright(this);
             }
         }

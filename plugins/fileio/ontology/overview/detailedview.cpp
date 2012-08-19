@@ -49,6 +49,7 @@ void DetailedView::addShapeWithExt(OwlClass *cls)
     }
     //add shape and connect signal for click class shape at right
     m_canvas->addItem(cls->shape);
+    cls->shape->setVisible(true);
 
     connect(cls->shape,SIGNAL(myclickright(OntologyClassShape*)),this,SLOT(shapeRight_Clicked(OntologyClassShape*)));
 
@@ -92,6 +93,8 @@ void DetailedView::addShapeWithExt(OwlClass *cls)
 
         subexts.append(es);
         dedges.append(conn);
+        cls->classesconnectors<<conn;
+
     }
 
     if(needsuperext){
@@ -115,6 +118,7 @@ void DetailedView::addShapeWithExt(OwlClass *cls)
 
         m_canvas->addItem(conn);
         es->edge = conn;
+        cls->classesconnectors<<conn;
 
         superexts.append(es);
         dedges.append(conn);
@@ -128,7 +132,7 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
 
     for(int i=0;i<dclasses.size();i++){
         m_canvas->removeItem(dclasses[i]->shape);
-
+        dclasses[i]->classesconnectors.clear();
     }
     for(int i=0;i<dedges.size();i++){
         m_canvas->removeItem(dedges[i]);
@@ -149,16 +153,21 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
     subexts.clear();
     superexts.clear();
 
+
+
     int n = limitEntityNum;
     dclasses.append(centerNode);
     m_entitynum=1;
     int totalclassnum = m_ontology->classes.size();
     if(n>totalclassnum)n=totalclassnum;
-
+cout<<"ssdsd"<<endl;
     while(dclasses.size()<n){
         QList<OwlClass *> nextClasses = getNextLevelClasses(dclasses);
         dclasses.append(nextClasses);
     }
+
+    cout<<"ssdsd1"<<endl;
+
 
     for(int i=0;i<dclasses.size();i++)
     {
@@ -195,7 +204,8 @@ QList<OwlClass *> DetailedView::getNextLevelClasses(QList<OwlClass *> cls)
                 conn->setDirected(true);
                 this->dedges.append(conn);
 
-                node->subclasses[j]->classesconnectors<<conn;
+                node->subclasses[j]->classesconnectors.append(conn);
+                node->classesconnectors.append(conn);
 
                 m_entitynum++;
                 if(m_entitynum >=limitEntityNum||m_entitynum>=m_ontology->classes.size())
@@ -216,6 +226,9 @@ QList<OwlClass *> DetailedView::getNextLevelClasses(QList<OwlClass *> cls)
                 conn->initWithConnection(node->shape,node->superclasses[j]->shape);
                 conn->setDirected(true);
                 this->dedges.append(conn);
+
+//                node->subclasses[j]->classesconnectors.append(conn);
+//                node->classesconnectors.append(conn);
 
                 m_entitynum++;
                 if(m_entitynum >=limitEntityNum||m_entitynum>=m_ontology->classes.size())
@@ -252,6 +265,9 @@ void DetailedView::extshape_Clicked(ExtensionShape *cs)
                 dclasses.append(tmp);
                 dedges.append(c);
 
+                tmp->classesconnectors<<c;
+                cs->linkedClass->classesconnectors<<c;
+
                 subexts.removeAll(cs);
             }
         }
@@ -272,6 +288,9 @@ void DetailedView::extshape_Clicked(ExtensionShape *cs)
                 dclasses.append(tmp);
                 dedges.append(c);
 
+                tmp->classesconnectors<<c;
+                cs->linkedClass->classesconnectors<<c;
+
                 superexts.removeAll(cs);
             }
         }
@@ -281,6 +300,7 @@ void DetailedView::extshape_Clicked(ExtensionShape *cs)
     m_canvas->removeItem(cs->edge);
     m_canvas->removeItem(cs);
     dedges.removeAll(cs->edge);
+    cs->linkedClass->classesconnectors.removeAll(cs->edge);
 
     cs->edge->~Connector();
     cs->~ShapeObj();
@@ -345,6 +365,12 @@ void DetailedView::removeIndividuals(){
 
 void DetailedView::shapeRight_Clicked(OntologyClassShape *shape)
 {
+    //unfinished!!!!
+    QMessageBox * m = new QMessageBox();
+    m->setText("Unfinished function!!");
+    m->show();
+    return;
+
     cout<<"--Click Right!!!"<<endl;
     if(shape->hasChild){
         cout<<shape->idString().toStdString()<<" has child : "<<shape->isShowingChild<<endl;
@@ -356,7 +382,12 @@ void DetailedView::shapeRight_Clicked(OntologyClassShape *shape)
             shape->updateShape();
             //remove all sub trees
             if(idx!=-1){
-
+                for(int i=0;i<dclasses[idx]->classesconnectors.size();i++){
+                    dclasses[idx]->classesconnectors[i]->setVisible(false);
+                }
+                for(int i=0;i<dclasses[idx]->subclasses.size();i++){
+                    this->removeClass(dclasses[idx]->subclasses[i]);
+                }
             }
 
         }
@@ -368,6 +399,7 @@ void DetailedView::shapeRight_Clicked(OntologyClassShape *shape)
             //add all sub classes
             if(idx!=-1){
                 for(int i=0;i<dclasses[idx]->subclasses.size();i++){
+
                     OwlClass * tmp = dclasses[idx]->subclasses[i];
                     if(!dclasses.contains(tmp)){
                         this->addShapeWithExt(tmp);
@@ -380,16 +412,24 @@ void DetailedView::shapeRight_Clicked(OntologyClassShape *shape)
                         dclasses.append(tmp);
                         dedges.append(c);
                     }
+                    else{
+                        tmp->shape->setVisible(true);
+                    }
                 }
 
                 for(int i=0;i<subexts.size();i++)
                 {
                     if(subexts[i]->linkedClass == dclasses[idx]){
+                        dclasses[idx]->classesconnectors.removeAll(subexts[i]->edge);
                         dedges.removeAll(subexts[i]->edge);
                         subexts[i]->edge->~Connector();
                         subexts[i]->~ShapeObj();
                         subexts.removeAt(i);
                     }
+                }
+
+                for(int i=0;i<dclasses[idx]->classesconnectors.size();i++){
+                    dclasses[idx]->classesconnectors[i]->setVisible(true);
                 }
             }
         }
@@ -398,10 +438,29 @@ void DetailedView::shapeRight_Clicked(OntologyClassShape *shape)
     }
 }
 
-//void DetailedView::removeNode(ShapeObj *s)
-//{
-//    for(int i=0;i<dedges.size();i++){
-//        QPair<ShapeObj *,ShapeObj *> spair = dedges[i]->getAttachedShapes();
-//        if(s)
-//    }
-//}
+void DetailedView::removeClass(OwlClass *c)
+{
+    c->shape->setVisible(false);
+
+    for(int i=0;i<c->classesconnectors.size();i++){
+        c->classesconnectors[i]->setVisible(false);
+    }
+
+//    for(int i=0;i<subexts.size();i++)
+//        if(subexts[i]->linkedClass == c){
+//            m_canvas->removeItem(subexts[i]);
+//            subexts.removeAt(i);
+//            break;
+//        }
+
+//    for(int i=0;i<superexts.size();i++)
+//        if(superexts[i]->linkedClass == c){
+//            m_canvas->removeItem(superexts[i]);
+//            superexts.removeAt(i);
+//            break;
+//        }
+
+    for(int i=0;i<c->subclasses.size();i++){
+        this->removeClass(c->subclasses[i]);
+    }
+}

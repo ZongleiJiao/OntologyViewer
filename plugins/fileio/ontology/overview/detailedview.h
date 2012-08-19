@@ -35,7 +35,7 @@ public:
     void drawIndividuals();
     void removeIndividuals();
 
-//    void removeNode(ShapeObj *s);
+    void removeClass(OwlClass *c);
 
     void addShapeWithExt(OwlClass *cls);
 private:
