@@ -33,19 +33,19 @@ QPainterPath OntologyClassShape::buildPainterPath(void)
     QPainterPath painter_path;
 
 
-    painter_path.addRect(-width() / 2, -height() / 2, 15, height());
-    painter_path.addRect(-width() / 2+15,-height() / 2, width()-30, height());
-    painter_path.addRect(width() / 2 -15, -height() / 2, 15, height());
+    painter_path.addRect(-width() / 2, -height() / 2, 20, height());
+    painter_path.addRect(-width() / 2+20,-height() / 2, width()-40, height());
+    painter_path.addRect(width() / 2 -20, -height() / 2, 20, height());
 
     QFont font;
     font.setPixelSize(12);
     font.setBold(true);
     font.setFamily("Calibri");
 
-    if(hasAnonymous) painter_path.addText(-width() / 2+3, 5,font,"*");
+    if(hasAnonymous) painter_path.addText(-width() / 2+5, 5,font,"*");
     if(hasChild){
-        if(isShowingChild)painter_path.addText(width() / 2-12, 5,font,"-");
-        else painter_path.addText(width() / 2-12, 5,font,"+");
+        if(isShowingChild)painter_path.addText(width() / 2-15, 5,font,"-");
+        else painter_path.addText(width() / 2-15, 5,font,"+");
     }
 
     painter_path.closeSubpath();
@@ -68,10 +68,10 @@ void OntologyClassShape::mousePressEvent(QGraphicsSceneMouseEvent *event){
         qreal lx = -width()/2;
         qreal rx = +width()/2;
         cout<<"lx, rx, mx -- "<<lx<<","<<rx<<","<<mx<<endl;
-        if(mx>=lx&&mx<=lx+15){
+        if(mx>=lx&&mx<=lx+20){
             cout<<"Click left!!!"<<endl;
         }
-        else if (mx>=rx-15&&mx<=rx){
+        else if (mx>=rx-20&&mx<=rx){
             cout<<"Click Right!!!"<<endl;
             if(hasChild){
                 if(isShowingChild)isShowingChild=false;

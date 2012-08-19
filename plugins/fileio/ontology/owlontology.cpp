@@ -84,7 +84,7 @@ int OwlOntology::getIndexOfIndividuals(QString shortname)
 {
     for(int i=0;i<individuals.length();i++)
     {
-        if(individuals[i]->shortname.toLower() == shortname.toLower()) return i;
+        if(individuals[i]->shortname == shortname) return i;
     }
     return -1;
 }
@@ -102,7 +102,7 @@ int OwlOntology::getIndexOfClasses(QString shortname)
 {
     for(int i=0;i<classes.length();i++)
     {
-        if(classes[i]->shortname.toLower() == shortname.toLower()) return i;
+        if(classes[i]->shortname == shortname) return i;
     }
     return -1;
 }
@@ -122,7 +122,7 @@ int OwlOntology::getIndexOfProperties(QString shortname)
 {
     for(int i=0;i<properties.length();i++)
     {
-        if(properties[i]->shortname.toLower() == shortname.toLower()) return i;
+        if(properties[i]->shortname == shortname) return i;
     }
     return -1;
 }
