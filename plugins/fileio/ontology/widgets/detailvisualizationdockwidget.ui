@@ -36,7 +36,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>97</width>
+      <width>61</width>
       <height>22</height>
      </rect>
     </property>
@@ -47,9 +47,9 @@
    <widget class="QCheckBox" name="checkBox_2">
     <property name="geometry">
      <rect>
-      <x>100</x>
+      <x>60</x>
       <y>0</y>
-      <width>97</width>
+      <width>71</width>
       <height>22</height>
      </rect>
     </property>
@@ -60,7 +60,7 @@
    <widget class="QCheckBox" name="checkBox_3">
     <property name="geometry">
      <rect>
-      <x>200</x>
+      <x>130</x>
       <y>0</y>
       <width>97</width>
       <height>22</height>
@@ -73,14 +73,27 @@
    <widget class="QCheckBox" name="checkBox_4">
     <property name="geometry">
      <rect>
-      <x>300</x>
+      <x>230</x>
+      <y>0</y>
+      <width>81</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Disjoint</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBox_5">
+    <property name="geometry">
+     <rect>
+      <x>310</x>
       <y>0</y>
       <width>97</width>
       <height>22</height>
      </rect>
     </property>
     <property name="text">
-     <string>Disjoint</string>
+     <string>Individual</string>
     </property>
    </widget>
   </widget>

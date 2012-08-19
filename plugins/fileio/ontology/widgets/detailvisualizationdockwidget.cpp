@@ -39,16 +39,22 @@ DetailVisualizationDockWidget::DetailVisualizationDockWidget(OwlOntology *onto, 
     }
     equs.append(cls->anonymousEqus);
 
+    for(int i=0;i<cls->individuals.size();i++){
+        indvs.append(cls->individuals[i]->shortname);
+    }
+
 
     //ui operation
     ui->checkBox->setChecked(true);
     ui->checkBox_2->setChecked(true);
     ui->checkBox_3->setChecked(true);
     ui->checkBox_4->setChecked(true);
+    ui->checkBox_5->setChecked(true);
     connect(ui->checkBox,SIGNAL(clicked()),this,SLOT(checkbox_Changed()));
     connect(ui->checkBox_2,SIGNAL(clicked()),this,SLOT(checkbox_Changed()));
     connect(ui->checkBox_3,SIGNAL(clicked()),this,SLOT(checkbox_Changed()));
     connect(ui->checkBox_4,SIGNAL(clicked()),this,SLOT(checkbox_Changed()));
+    connect(ui->checkBox_5,SIGNAL(clicked()),this,SLOT(checkbox_Changed()));
 
     this->checkbox_Changed();
 }
@@ -189,6 +195,29 @@ void DetailVisualizationDockWidget::checkbox_Changed()
             sy = ey+5;
         }
     }
+
+    if(ui->checkBox_5->checkState()==Qt::Checked){
+        QGraphicsTextItem * txt = new QGraphicsTextItem();
+        txt->setPos(sx+5,sy);
+        QFont font;
+        font.setPixelSize(10);
+        font.setBold(false);
+        font.setFamily("Calibri");
+        txt->setFont(font);
+        txt->setDefaultTextColor(QColor("black"));
+        txt->setPlainText("[Individual]");
+        m_scene->addItem(txt);
+        m_scene->addLine(sx,sy+15,w,sy+15,QPen(QColor("black")));
+        sy = sy+20;
+
+        for(int i=0;i<indvs.size();i++)
+        {
+            m_scene->addEllipse(3,sy+10,4,4,QPen(QColor("black")),QBrush(QColor("blue")));
+            qreal ey = this->drawExpression(Expression::getExpressionData(m_onto,indvs[i]),w,sx,sy);
+            sy = ey+5;
+        }
+    }
+
     m_scene->addRect(sx,sy+10,w,10,QPen(Qt::transparent),QBrush(Qt::NoBrush));
 }
 

@@ -30,9 +30,16 @@ OverviewDockWidget::OverviewDockWidget(QWidget *parent) :
     ui->comboBox_Direction->addItem("T->B");
     ui->comboBox_Direction->addItem("B->T");
 
+    ui->lineEdit_dvn->setText("40");
+    ui->lineEdit_ovn->setText("300");
+    ui->lineEdit_ovn->setValidator(new QIntValidator(0,99999));
+    ui->lineEdit_dvn->setValidator(new QIntValidator(0,99999));
+
     connect(ui->comboBox_LayoutMethod,SIGNAL(activated(QString)),this,SLOT(layoutMethodChanged(QString)));
     connect(ui->comboBox_Direction,SIGNAL(activated(QString)),this,SLOT(layoutDirectionChanged(QString)));
 //    connect(m_scene,SIGNAL(myclick(QPointF)),this,SLOT(sceneClicked(QPointF)));
+    connect(ui->lineEdit_ovn,SIGNAL(textEdited(QString)),this,SLOT(le_ovnChange(QString)));
+    connect(ui->lineEdit_dvn,SIGNAL(textEdited(QString)),this,SLOT(le_dvnChange(QString)));
 
     m_scene->setBackgroundBrush(QBrush(QColor(189, 189, 223)));
 
@@ -131,6 +138,21 @@ void OverviewDockWidget::clearall()
     }
     hideclasses.clear();
     this->highlightpolygon = NULL;
+}
+
+void OverviewDockWidget::clearallitems()
+{
+
+//    for(int i=0;i<gitems.size();i++)m_scene->removeItem(gitems[i]);
+    ani_group->clear();
+    oripos.clear();
+    oriabspos.clear();
+    gitems.clear();
+    gitem_status.clear();
+    lines.clear();
+    hideclasses.clear();
+    highlightpolygon=NULL;
+    this->m_scene->clear();
 }
 
 
@@ -360,7 +382,13 @@ void OverviewDockWidget::resizeEvent(QResizeEvent *event){
     if(posx<120)posx=120;
     ui->comboBox_LayoutMethod->setGeometry(QRect(0, 0, posx, 28));
     ui->comboBox_Direction->setGeometry(QRect(posx, 0, w-posx, 28));
-    ui->dockWidget->setGeometry(QRect(0, 10, w, h-35));
+
+    ui->label_ovn->setGeometry(0,28,w*0.2,25);
+    ui->lineEdit_ovn->setGeometry(w*0.2,28,w*0.3,25);
+    ui->label_dvn->setGeometry(w*0.5,28,w*0.2,25);
+    ui->lineEdit_dvn->setGeometry(w*0.7,28,w*0.3,25);
+
+    ui->dockWidget->setGeometry(QRect(0, 40, w, h-50));
 }
 
 void OverviewDockWidget::highlightItems(QList<OwlClass *> cls)
@@ -377,4 +405,16 @@ void OverviewDockWidget::highlightItems(QList<OwlClass *> cls)
 
     highlightpolygon = m_scene->addPolygon(polygon,QPen(Qt::transparent),QBrush(grey));
     lines.append(highlightpolygon);
+}
+
+void OverviewDockWidget::le_ovnChange(QString ovn)
+{
+    int n = ovn.toInt();
+    emit this->setOverviewNodeNumber(n);
+}
+
+void OverviewDockWidget::le_dvnChange(QString ovn)
+{
+    int n = ovn.toInt();
+    emit this->setDetailviewNodeNumber(n);
 }

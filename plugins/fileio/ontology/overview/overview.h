@@ -26,6 +26,7 @@ public:
     DetailedView *m_detailview;
     OwlOntology *m_ontology;
 
+    OwlClass * detailview_centrenode;
     bool isOrthogonalTreeLayout;
     ogdf::Orientation orientation;
     QString currentLayoutMethod;
@@ -115,6 +116,9 @@ public slots:
 
     void layoutmethodChanged(QString method);
     void directionChanged(QString dr);
+
+    void changeOverviewNodeLimit(int n);
+    void changeDetailviewNodeLimit(int n);
 };
 
 #endif // OVERVIEW_H

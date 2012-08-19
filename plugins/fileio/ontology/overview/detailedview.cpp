@@ -8,7 +8,7 @@ DetailedView::DetailedView(Canvas *canvas, OwlOntology *ontology, QObject *paren
 {
     m_canvas = canvas;
     m_ontology = ontology;
-    this->setViewLimit(30,30);
+    this->setViewLimit(40,40);
 }
 void DetailedView::setViewLimit(int entityNum, int relationNum)
 {
@@ -33,7 +33,6 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
     this->CNode = centerNode;
     this->Cclasses = overviewClasses;
 
-
     for(int i=0;i<dclasses.size();i++)m_canvas->removeItem(dclasses[i]->shape);
     for(int i=0;i<dedges.size();i++){
         m_canvas->removeItem(dedges[i]);
@@ -48,12 +47,10 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
     exts.clear();
 
     int n = limitEntityNum;
-
     dclasses.append(centerNode);
     m_entitynum=1;
     int totalclassnum = m_ontology->classes.size();
     if(n>totalclassnum)n=totalclassnum;
-    //cout<<"Classes in detailed view:"<<n<<endl;
 
     while(dclasses.size()<n){
         QList<OwlClass *> nextClasses = getNextLevelClasses(dclasses);

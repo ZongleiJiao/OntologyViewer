@@ -39,6 +39,7 @@ Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *
     this->isOrthogonalTreeLayout = false;
     this->orientation = ogdf::leftToRight;
     this->currentLayoutMethod = "Orthogonal Tree";
+    this->detailview_centrenode = NULL;
 
 }
 
@@ -1065,7 +1066,10 @@ void Overview::widSceneClicked(QPointF pos)
 
     QList<OwlClass *> rlst;
 
-    if(idx!=-1)rlst.append(this->m_detailview->drawClassView(m_ontology->classes[idx],classes));
+    if(idx!=-1){
+        this->detailview_centrenode = m_ontology->classes[idx];
+        rlst.append(this->m_detailview->drawClassView(m_ontology->classes[idx],classes));
+    }
 /** remove this part since the architecture of overview changes frequently.
     Remove it to keep stable. **/
 //    //remove all temp added classes
@@ -1136,7 +1140,6 @@ void Overview::detailView_ClickedClass(QString shortname)
 
 void Overview::detailView_ClassHoverEnter(QString shortname)
 {
-    cout<<"HI-->"<<shortname.toStdString()<<endl;
     int idx = getIndexByShortname(this->classes,shortname);
     if(idx!=-1){
 
@@ -1149,8 +1152,6 @@ void Overview::detailView_ClassHoverEnter(QString shortname)
 
 void Overview::detailView_ClassHoverLeave(QString shortname)
 {
-    cout<<"HO-->"<<shortname.toStdString()<<endl;
-
     this->m_wid->hoverCircle->setVisible(false);
 }
 
@@ -1248,6 +1249,8 @@ void Overview::connectWgt(OverviewDockWidget *wgt){
     connect(wgt->m_scene,SIGNAL(myclick(QPointF)),this,SLOT(widSceneClicked(QPointF)));
     connect(wgt,SIGNAL(layoutChanged(QString)),this,SLOT(layoutmethodChanged(QString)));
     connect(wgt,SIGNAL(directionChanged(QString)),this,SLOT(directionChanged(QString)));
+    connect(wgt,SIGNAL(setOverviewNodeNumber(int)),this,SLOT(changeOverviewNodeLimit(int)));
+    connect(wgt,SIGNAL(setDetailviewNodeNumber(int)),this,SLOT(changeDetailviewNodeLimit(int)));
 }
 
 void Overview::showlayout(Canvas *canvas)
@@ -1278,4 +1281,52 @@ void Overview::setOrthogonalConnectors(Canvas *canvas, bool isOrthogonal)
             else connector->setRoutingType(Connector::polyline);
         }
     }
+}
+
+void Overview::changeOverviewNodeLimit(int n)
+{
+    this->numOfClasses = n;
+    originalclasses.clear();
+    originalclasses.append(kcTool->getNKeyClasses(this->numOfClasses));
+    classes.clear();
+    classes.append(convertOverviewShapes(originalclasses));
+    numOfClasses=classes.size();
+
+    m_wid->clearallitems();
+    this->updatelayout();
+}
+
+void Overview::changeDetailviewNodeLimit(int n)
+{
+    this->m_detailview->setViewLimit(n,n);
+    QList<OwlClass *> rlst;
+
+    cout<<"11111"<<endl;
+    if(detailview_centrenode==NULL)return;
+    rlst<<this->m_detailview->drawClassView(this->detailview_centrenode,classes);
+
+    cout<<"22222"<<endl;
+
+//    int minidx = this->getIndexByShortname(classes,this->detailview_centrenode->shortname);
+//    indetailedCls.clear();
+//    for(int i=0;i<rlst.size();i++){
+//        int cid = this->getIndexByShortname(classes,rlst[i]->shortname);
+//        if(cid!=-1){
+//            indetailedCls.append(classes[cid]);
+//            if(cid == minidx)classes[minidx]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Focused);
+//            else if(classes[minidx]->subclasses.contains(classes[cid]))
+//            {
+//                classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SubFocused);
+//            }
+//            else if(classes[minidx]->superclasses.contains(classes[cid]))
+//            {
+//                classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SuperFocused);
+//            }
+//            else classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Default);
+//        }
+//    }
+
+//    m_ontology->ontoclass_clicked(this->detailview_centrenode->shape);
+
+    this->updatelayout();
 }

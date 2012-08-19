@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>200</width>
-    <height>252</height>
+    <height>282</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -18,6 +18,9 @@
     <width>200</width>
     <height>200</height>
    </size>
+  </property>
+  <property name="inputMethodHints">
+   <set>Qt::ImhNone</set>
   </property>
   <property name="windowTitle">
    <string>DockWidget</string>
@@ -47,7 +50,7 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>28</y>
+      <y>58</y>
       <width>200</width>
       <height>200</height>
      </rect>
@@ -63,9 +66,77 @@
     </property>
     <widget class="QWidget" name="dockWidgetContents_2"/>
    </widget>
+   <widget class="QLabel" name="label_ovn">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>28</y>
+      <width>40</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Ov N:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_ovn">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>28</y>
+      <width>60</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="inputMethodHints">
+     <set>Qt::ImhDigitsOnly</set>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_dvn">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>28</y>
+      <width>40</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Dv N:</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_dvn">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>28</y>
+      <width>60</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="inputMethodHints">
+     <set>Qt::ImhDigitsOnly</set>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+    </property>
+   </widget>
    <zorder>dockWidget</zorder>
    <zorder>comboBox_LayoutMethod</zorder>
    <zorder>comboBox_Direction</zorder>
+   <zorder>label_ovn</zorder>
+   <zorder>lineEdit_ovn</zorder>
+   <zorder>label_dvn</zorder>
+   <zorder>lineEdit_dvn</zorder>
   </widget>
  </widget>
  <resources/>

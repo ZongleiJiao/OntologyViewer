@@ -32,6 +32,7 @@ public:
     QList<QString> equs;
     QList<QString> disjoints;
     QList<QString> supers;
+    QList<QString> indvs;
 
     qreal drawExpression(Expression * e,qreal rectWidth,qreal sx=0, qreal sy=0);
 

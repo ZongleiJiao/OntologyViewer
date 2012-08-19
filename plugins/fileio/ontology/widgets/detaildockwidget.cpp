@@ -6,7 +6,7 @@ DetailDockWidget::DetailDockWidget(QWidget *parent) :
     ui(new Ui::DetailDockWidget)
 {
     ui->setupUi(this);
-    my_canvas = new Canvas();
+    my_canvas = new Canvas();    
     my_view = new CanvasView(my_canvas);
 //    my_canvas->setEditMode();
     my_view->scale(0.5,0.5);

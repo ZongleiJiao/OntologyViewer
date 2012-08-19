@@ -21,10 +21,14 @@ class OverviewDockWidget : public QDockWidget
 signals:
     void layoutChanged(QString);
     void directionChanged(QString);
+    void setOverviewNodeNumber(int);
+    void setDetailviewNodeNumber(int);
 public slots:
     void sceneClicked(QPointF pos);
     void layoutMethodChanged(QString method);
     void layoutDirectionChanged(QString dir);
+    void le_ovnChange(QString ovn);
+    void le_dvnChange(QString dvn);
 public:
     explicit OverviewDockWidget(QWidget *parent = 0);
     ~OverviewDockWidget();
@@ -51,6 +55,7 @@ public:
 //    CanvasView * my_view;
     void setOntology(OwlOntology * onto);
     void clearall();
+    void clearallitems();
 
     void addOverviewShape(OwlClass *shape);
     void addOverviewLine(OwlClass *start,OwlClass *end,QPen pen);
