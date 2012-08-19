@@ -32,15 +32,15 @@ OverviewDockWidget::OverviewDockWidget(QWidget *parent) :
 
     ui->lineEdit_dvn->setText("40");
     ui->lineEdit_ovn->setText("300");
-    ui->lineEdit_ovn->setValidator(new QIntValidator(0,99999));
-    ui->lineEdit_dvn->setValidator(new QIntValidator(0,99999));
+    ui->lineEdit_ovn->setValidator(new QIntValidator(1,99999));
+    ui->lineEdit_dvn->setValidator(new QIntValidator(1,99999));
 
     connect(ui->comboBox_LayoutMethod,SIGNAL(activated(QString)),this,SLOT(layoutMethodChanged(QString)));
     connect(ui->comboBox_Direction,SIGNAL(activated(QString)),this,SLOT(layoutDirectionChanged(QString)));
 //    connect(m_scene,SIGNAL(myclick(QPointF)),this,SLOT(sceneClicked(QPointF)));
-    connect(ui->lineEdit_ovn,SIGNAL(textEdited(QString)),this,SLOT(le_ovnChange(QString)));
-    connect(ui->lineEdit_dvn,SIGNAL(textEdited(QString)),this,SLOT(le_dvnChange(QString)));
-
+//    connect(ui->lineEdit_ovn,SIGNAL(textEdited(QString)),this,SLOT(le_ovnChange(QString)));
+//    connect(ui->lineEdit_dvn,SIGNAL(textEdited(QString)),this,SLOT(le_dvnChange(QString)));
+    connect(ui->btn_Go,SIGNAL(clicked()),this,SLOT(btnGo_Clicked()));
     m_scene->setBackgroundBrush(QBrush(QColor(189, 189, 223)));
 
     this->ontology = NULL;
@@ -384,9 +384,10 @@ void OverviewDockWidget::resizeEvent(QResizeEvent *event){
     ui->comboBox_Direction->setGeometry(QRect(posx, 0, w-posx, 28));
 
     ui->label_ovn->setGeometry(0,28,w*0.2,25);
-    ui->lineEdit_ovn->setGeometry(w*0.2,28,w*0.3,25);
-    ui->label_dvn->setGeometry(w*0.5,28,w*0.2,25);
-    ui->lineEdit_dvn->setGeometry(w*0.7,28,w*0.3,25);
+    ui->lineEdit_ovn->setGeometry(w*0.2,28,w*0.2,25);
+    ui->label_dvn->setGeometry(w*0.4,28,w*0.2,25);
+    ui->lineEdit_dvn->setGeometry(w*0.6,28,w*0.2,25);
+    ui->btn_Go->setGeometry(w*0.8,28,w*0.2,25);
 
     ui->dockWidget->setGeometry(QRect(0, 40, w, h-50));
 }
@@ -417,4 +418,15 @@ void OverviewDockWidget::le_dvnChange(QString ovn)
 {
     int n = ovn.toInt();
     emit this->setDetailviewNodeNumber(n);
+}
+
+void OverviewDockWidget::btnGo_Clicked()
+{
+    if(ui->lineEdit_ovn->text().trimmed() == "")return;
+    if(ui->lineEdit_dvn->text().trimmed() == "")return;
+    int ovn = ui->lineEdit_ovn->text().toInt();
+    int dvn = ui->lineEdit_dvn->text().toInt();
+    if(!ovn>0)ovn =1;
+    if(!dvn>0)dvn =1;
+    emit this->setNumber(ovn,dvn);
 }

@@ -16,17 +16,26 @@ class OntologyClassShape: public ShapeObj
     void myRightClick(OntologyClassShape *shape);
     void myMouseHoverEnter(QString shortname);
     void myMouseHoverLeave(QString shortname);
+    void myclickleft(OntologyClassShape *shape);
+    void myclickright(OntologyClassShape *shape);
 
     public:
         OntologyClassShape();
         virtual ~OntologyClassShape() { }
         virtual QPainterPath buildPainterPath(void);
 
+        bool hasAnonymous;
+        bool hasChild;
+        bool isShowingChild;
+
+        void updateShape();
+
         //mouse events sending singnals
         void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
         void mousePressEvent(QGraphicsSceneMouseEvent *event);
         void hoverEnterEvent(QGraphicsSceneHoverEvent *event);
         void hoverLeaveEvent(QGraphicsSceneHoverEvent *event);
+
 
         //shape expanding levels
         uint levelsOfDetail(void) const;

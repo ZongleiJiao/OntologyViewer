@@ -105,6 +105,15 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
         m_canvas->removeItem(dedges[i]);
         dedges[i]->~Connector();
     }
+    for(int i=0;i<subexts.size();i++){
+        m_canvas->removeItem(subexts[i]);
+        subexts[i]->~ShapeObj();
+    }
+    for(int i=0;i<superexts.size();i++){
+        m_canvas->removeItem(superexts[i]);
+        superexts[i]->~ShapeObj();
+    }
+//    m_canvas->clear();
 
     dclasses.clear();
     dedges.clear();

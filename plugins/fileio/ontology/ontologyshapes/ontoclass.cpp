@@ -15,16 +15,40 @@ OntologyClassShape::OntologyClassShape() : ShapeObj("ontoclass")
     levelLabels[4] = QString("");
     levelLabels[5] = QString("");
 
+
 //    setFlag(ItemIsFocusable, true);
+    this->hasAnonymous = false;
+    this->hasChild = true;
+    this->isShowingChild = true;
+}
+
+void OntologyClassShape::updateShape()
+{
+    this->setPainterPath(buildPainterPath());
+    this->update(this->boundingRect());
 }
 
 QPainterPath OntologyClassShape::buildPainterPath(void)
 {
     QPainterPath painter_path;
 
-    painter_path.addRect(-width() / 2, -height() / 2, width(), height());
 
+    painter_path.addRect(-width() / 2, -height() / 2, 15, height());
+    painter_path.addRect(-width() / 2+15,-height() / 2, width()-30, height());
+    painter_path.addRect(width() / 2 -15, -height() / 2, 15, height());
 
+    QFont font;
+    font.setPixelSize(12);
+    font.setBold(true);
+    font.setFamily("Calibri");
+
+    if(hasAnonymous) painter_path.addText(-width() / 2+3, 5,font,"*");
+    if(hasChild){
+        if(isShowingChild)painter_path.addText(width() / 2-12, 5,font,"-");
+        else painter_path.addText(width() / 2-12, 5,font,"+");
+    }
+
+    painter_path.closeSubpath();
     return painter_path;
 }
 
@@ -35,14 +59,32 @@ void OntologyClassShape::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
         emit myDoubleClick(this);
     }
     setFocus();
-//    QGraphicsScene *scene = new QGraphicsScene( this );
-//    scene->setFocusItem(this);
 }
 
 void OntologyClassShape::mousePressEvent(QGraphicsSceneMouseEvent *event){
 
     if (event->button() == Qt::LeftButton) {
-        emit myclick(this);
+        qreal mx = event->buttonDownPos(event->button()).rx();
+        qreal lx = -width()/2;
+        qreal rx = +width()/2;
+        cout<<"lx, rx, mx -- "<<lx<<","<<rx<<","<<mx<<endl;
+        if(mx>=lx&&mx<=lx+15){
+            cout<<"Click left!!!"<<endl;
+        }
+        else if (mx>=rx-15&&mx<=rx){
+            cout<<"Click Right!!!"<<endl;
+            if(hasChild){
+                if(isShowingChild)isShowingChild=false;
+                else isShowingChild = true;
+                this->updateShape();
+                emit this->myclickright(this);
+            }
+        }
+        else{
+            cout<<"Click Shape!!!"<<endl;
+
+            emit myclick(this);
+        }
     }else if(event->button() == Qt::RightButton){
         emit this->myRightClick(this);
     }
@@ -52,15 +94,12 @@ void OntologyClassShape::mousePressEvent(QGraphicsSceneMouseEvent *event){
 
 void OntologyClassShape::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    cout<<"class in"<<endl;
     emit this->myMouseHoverEnter(this->idString());
 }
 
 
 void OntologyClassShape::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
-    cout<<"class out"<<endl;
-
     emit this->myMouseHoverLeave(this->idString());
 }
 
@@ -82,7 +121,7 @@ uint OntologyClassShape::levelsOfDetail(void) const{
 QSizeF OntologyClassShape::sizeForDetailLevel(uint level){
     QString lbl="";
     QString tmpLbl = "";
-    int maxLength = 150;
+    int maxLength = 180;
     int temp = 0;
     int maxWidth = 20;
 
@@ -140,7 +179,7 @@ void OntologyClassShape::setLabelByLevels(int level, QString text){
 
 void OntologyClassShape::setMyLabel(QString label){
 
-    int maxLength = 150;
+    int maxLength = 180;
     int temp = 0;
     int maxWidth = 20;
 

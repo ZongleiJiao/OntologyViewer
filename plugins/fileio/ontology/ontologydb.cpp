@@ -73,7 +73,7 @@ QList<OwlIndividual *> OntologyDB::getAllIndividuals(int ontoID)
         tmp->shape->setIdString(tmp->shortname);
         tmp->shape->setLabel(tmp->shortname);
         tmp->shape->setToolTip(tmp->URI);
-        tmp->shape->setSize(QSizeF(150,20));
+        tmp->shape->setSize(QSizeF(180,20));
         tmp->shape->setFillColour(OwlIndividual::INDIVIDUAL_SHAPE_COLOR);
 
         idvs.append(tmp);

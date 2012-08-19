@@ -33,7 +33,7 @@ Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *
     originalclasses.append(kcTool->getNKeyClasses(this->numOfClasses));
     classes.clear();
     classes.append(convertOverviewShapes(originalclasses));
-    numOfClasses=classes.size();
+//    numOfClasses=classes.size();
     m_ontology = ontology;
     this->m_detailview = new DetailedView(canvas,ontology);
     this->isOrthogonalTreeLayout = false;
@@ -932,11 +932,16 @@ void Overview::treeLayout(QList<OwlClass *> graph)
 void Overview::compactTreeLayout(double maxW,double maxH)
 {
 
+    cout<<"CT layout----"<<endl;
     this->isOrthogonalTreeLayout = true;
+    cout<<"CT layout----000"<<endl;
     this->treeLayout(classes);
+    cout<<"CT layout----111"<<endl;
     this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
 
     this->drawOverview(m_wid);
+
+
 
     double w = m_wid->m_scene->sceneRect().width();
     double h = m_wid->m_scene->sceneRect().height();
@@ -1055,7 +1060,6 @@ void Overview::widSceneClicked(QPointF pos)
     for(int i = 0;i<this->classes.size();i++)
     {
         if(classes[i]->URI.left(9)!="[COMPACT]"){
-            classes[i]->overviewshape->setStatus(OverviewClassShape::STATUS_OutDetailview);
             double d = EuclideanDistance(pos,classes[i]->overviewshape->pos());
             if(d<mind){
                 mind = d;
@@ -1065,9 +1069,29 @@ void Overview::widSceneClicked(QPointF pos)
     }
 
     cout<<"Compute nearest node [Time]:"<<st.elapsed()<<endl;
+
+    this->widSceneClicked(classes[minidx]);
+
+
+}
+
+void Overview::widSceneClicked(OwlClass *cls)
+{
+    QTime st = QTime::currentTime();
+    st.start();
+
+    for(int i = 0;i<this->classes.size();i++)
+    {
+        if(classes[i]->URI.left(9)!="[COMPACT]"){
+            classes[i]->overviewshape->setStatus(OverviewClassShape::STATUS_OutDetailview);
+        }
+    }
+
+
     //sent to detailview
-//    m_detailview->setViewLimit(10,10);
-    int idx = m_ontology->getIndexOfClasses(classes[minidx]->shortname);
+    this->detailview_centrenode = cls;
+    int idx = m_ontology->getIndexOfClasses(cls->shortname);
+
 
     QList<OwlClass *> rlst;
 
@@ -1096,40 +1120,41 @@ void Overview::widSceneClicked(QPointF pos)
 //    classes.append(this->convertOverviewShapes(originalclasses));
 
 
-    cout<<"Highlight overview [Time]:"<<st.elapsed()<<endl;
+    st.start();
+
 
     //get back from detailed view ->ov
     indetailedCls.clear();
     for(int i=0;i<rlst.size();i++){
-        cout<<"rlst "<<i<<" [Time]:"<<st.elapsed()<<endl;
         int cid = this->getIndexByShortname(classes,rlst[i]->shortname);
         if(cid!=-1){
             indetailedCls.append(classes[cid]);
-            if(cid == minidx)classes[minidx]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Focused);
-            else if(classes[minidx]->subclasses.contains(classes[cid]))
+            if(classes[cid] == cls)cls->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Focused);
+            else if(cls->subclasses.contains(classes[cid]))
             {
                 classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SubFocused);
             }
-            else if(classes[minidx]->superclasses.contains(classes[cid]))
+            else if(cls->superclasses.contains(classes[cid]))
             {
                 classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SuperFocused);
             }
             else classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Default);
         }
     }
-    cout<<"Click event [Time]:"<<st.elapsed()<<endl;
+    cout<<"Highlight overview [Time]:"<<st.elapsed()<<endl;
+
+//    st.start();
+//    this->updatelayout();
+//    cout<<"Update layout [Time]:"<<st.elapsed()<<endl;
+
+    st.start();
     m_ontology->ontoclass_clicked(m_ontology->classes[idx]->shape);
-
-    cout<<"Update layout [Time]:"<<st.elapsed()<<endl;
-
-    this->updatelayout();
-
-    cout<<"End at [Time]:"<<st.elapsed()<<endl;
-
+    cout<<"Click event [Time]:"<<st.elapsed()<<endl;
 }
 
 void Overview::detailView_ClickedClass(QString shortname)
 {
+    cout<<"d11111"<<endl;
     for(int i = 0;i<classes.size();i++){
         if(classes[i]->overviewshape->getStatus()!=OverviewClassShape::STATUS_OutDetailview)
         {
@@ -1139,6 +1164,7 @@ void Overview::detailView_ClickedClass(QString shortname)
     int idx = getIndexByShortname(classes,shortname);
     if(idx!=-1)classes[idx]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Focused);
 
+    cout<<"d22222"<<endl;
     int oidx = m_ontology->getIndexOfClasses(shortname);
     OwlClass * c = m_ontology->classes[oidx];
     for(int i = 0;i<c->subclasses.size();i++)
@@ -1152,7 +1178,9 @@ void Overview::detailView_ClickedClass(QString shortname)
         if(ix!=-1)classes[ix]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SuperFocused);
     }
 
+    cout<<"d33333"<<endl;
     this->updatelayout();
+    cout<<"d44444"<<endl;
 }
 
 void Overview::detailView_ClassHoverEnter(QString shortname)
@@ -1174,6 +1202,7 @@ void Overview::detailView_ClassHoverLeave(QString shortname)
 
 void Overview::layoutmethodChanged(QString method)
 {
+    cout<<"layout ------>>>>>"<<method.toStdString()<<endl;
     this->currentLayoutMethod = method;
     this->isOrthogonalTreeLayout = false;
     this->setOrthogonalConnectors(this->m_detailview->m_canvas,false);
@@ -1186,11 +1215,14 @@ void Overview::layoutmethodChanged(QString method)
 //        this->isOrthogonalTreeLayout = true;
 //        this->treeLayout(classes);
 //        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+        cout<<"llll1111"<<endl;
         this->compactTreeLayout(200,200);
         this->m_detailview->m_canvas->setOptAutomaticGraphLayout(true);
         this->m_detailview->m_canvas->setOptPreventOverlaps(true);
         this->setOrthogonalConnectors(this->m_detailview->m_canvas,true);
+        cout<<"llll222"<<endl;
         this->m_detailview->m_canvas->fully_restart_graph_layout();
+        cout<<"llll333"<<endl;
         return;
     }
     if(method == "Radial Tree(90)"){
@@ -1268,6 +1300,7 @@ void Overview::connectWgt(OverviewDockWidget *wgt){
     connect(wgt,SIGNAL(directionChanged(QString)),this,SLOT(directionChanged(QString)));
     connect(wgt,SIGNAL(setOverviewNodeNumber(int)),this,SLOT(changeOverviewNodeLimit(int)));
     connect(wgt,SIGNAL(setDetailviewNodeNumber(int)),this,SLOT(changeDetailviewNodeLimit(int)));
+    connect(wgt,SIGNAL(setNumber(int,int)),this,SLOT(changeNodeLimit(int,int)));
 }
 
 void Overview::showlayout(Canvas *canvas)
@@ -1302,6 +1335,7 @@ void Overview::setOrthogonalConnectors(Canvas *canvas, bool isOrthogonal)
 
 void Overview::changeOverviewNodeLimit(int n)
 {
+    cout<<"Change overview nodes to "<<n<<endl;
     this->numOfClasses = n;
     originalclasses.clear();
     originalclasses.append(kcTool->getNKeyClasses(this->numOfClasses));
@@ -1310,40 +1344,33 @@ void Overview::changeOverviewNodeLimit(int n)
     numOfClasses=classes.size();
 
     m_wid->clearallitems();
-    this->updatelayout();
+    if(detailview_centrenode==NULL){
+        this->updatelayout();
+        return;
+    }
+    else{
+        cout<<this->detailview_centrenode->shortname.toStdString()<<endl;
+        this->widSceneClicked(this->detailview_centrenode);
+    }
+
 }
 
 void Overview::changeDetailviewNodeLimit(int n)
 {
     this->m_detailview->setViewLimit(n,n);
-    QList<OwlClass *> rlst;
 
-    cout<<"11111"<<endl;
-    if(detailview_centrenode==NULL)return;
-    rlst<<this->m_detailview->drawClassView(this->detailview_centrenode,classes);
+    if(detailview_centrenode==NULL){
+        return;
+    }
+    else{
+        this->widSceneClicked(this->detailview_centrenode);
+    }
+}
 
-    cout<<"22222"<<endl;
-
-//    int minidx = this->getIndexByShortname(classes,this->detailview_centrenode->shortname);
-//    indetailedCls.clear();
-//    for(int i=0;i<rlst.size();i++){
-//        int cid = this->getIndexByShortname(classes,rlst[i]->shortname);
-//        if(cid!=-1){
-//            indetailedCls.append(classes[cid]);
-//            if(cid == minidx)classes[minidx]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Focused);
-//            else if(classes[minidx]->subclasses.contains(classes[cid]))
-//            {
-//                classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SubFocused);
-//            }
-//            else if(classes[minidx]->superclasses.contains(classes[cid]))
-//            {
-//                classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SuperFocused);
-//            }
-//            else classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Default);
-//        }
-//    }
-
-//    m_ontology->ontoclass_clicked(this->detailview_centrenode->shape);
-
-    this->updatelayout();
+void Overview::changeNodeLimit(int overview_n, int detailview_n)
+{
+    if(this->numOfClasses!=overview_n)
+        this->changeOverviewNodeLimit(overview_n);
+    if(m_detailview->limitEntityNum!=detailview_n)
+        this->changeDetailviewNodeLimit(detailview_n);
 }

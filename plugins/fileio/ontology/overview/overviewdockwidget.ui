@@ -87,7 +87,7 @@
      <rect>
       <x>40</x>
       <y>28</y>
-      <width>60</width>
+      <width>50</width>
       <height>25</height>
      </rect>
     </property>
@@ -101,7 +101,7 @@
    <widget class="QLabel" name="label_dvn">
     <property name="geometry">
      <rect>
-      <x>100</x>
+      <x>90</x>
       <y>28</y>
       <width>40</width>
       <height>25</height>
@@ -117,9 +117,9 @@
    <widget class="QLineEdit" name="lineEdit_dvn">
     <property name="geometry">
      <rect>
-      <x>140</x>
+      <x>120</x>
       <y>28</y>
-      <width>60</width>
+      <width>50</width>
       <height>25</height>
      </rect>
     </property>
@@ -130,6 +130,19 @@
      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
+   <widget class="QPushButton" name="btn_Go">
+    <property name="geometry">
+     <rect>
+      <x>170</x>
+      <y>28</y>
+      <width>30</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Go</string>
+    </property>
+   </widget>
    <zorder>dockWidget</zorder>
    <zorder>comboBox_LayoutMethod</zorder>
    <zorder>comboBox_Direction</zorder>
@@ -137,6 +150,7 @@
    <zorder>lineEdit_ovn</zorder>
    <zorder>label_dvn</zorder>
    <zorder>lineEdit_dvn</zorder>
+   <zorder>btn_Go</zorder>
   </widget>
  </widget>
  <resources/>

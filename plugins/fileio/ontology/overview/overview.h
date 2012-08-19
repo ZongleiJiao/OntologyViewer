@@ -110,6 +110,7 @@ signals:
 
 public slots:
     void widSceneClicked(QPointF pos);
+    void widSceneClicked(OwlClass * cls);
     void detailView_ClickedClass(QString shortname);
     void detailView_ClassHoverEnter(QString shortname);
     void detailView_ClassHoverLeave(QString shortname);
@@ -119,6 +120,7 @@ public slots:
 
     void changeOverviewNodeLimit(int n);
     void changeDetailviewNodeLimit(int n);
+    void changeNodeLimit(int overview_n,int detailview_n);
 };
 
 #endif // OVERVIEW_H

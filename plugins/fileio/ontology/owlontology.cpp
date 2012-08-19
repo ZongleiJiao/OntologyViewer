@@ -347,17 +347,23 @@ void OwlOntology::loadontologyFromDB(const QFileInfo &fileInfo)
     }
 
     for(int i=0;i<classes.size();i++){
-        QString lstr = classes[i]->shape->getLabel();
-        lstr+=" ";
-        if(!classes[i]->individuals.isEmpty())
-            lstr+="+I ";
-        if(!classes[i]->disjointclasses.empty()||!classes[i]->anonymousDisjoints.empty())
-            lstr+="+D ";
-        if(!classes[i]->equivalentclasses.empty()||!classes[i]->anonymousEqus.empty())
-            lstr+="+E ";
-        lstr = lstr.trimmed();
-        classes[i]->shape->setMyLabel(lstr);
-        classes[i]->shape->levelLabels[0]=lstr;
+//        QString lstr = classes[i]->shape->getLabel();
+//        lstr+=" ";
+//        if(!classes[i]->individuals.isEmpty())
+//            lstr+="+I ";
+//        if(!classes[i]->disjointclasses.empty()||!classes[i]->anonymousDisjoints.empty())
+//            lstr+="+D ";
+//        if(!classes[i]->equivalentclasses.empty()||!classes[i]->anonymousEqus.empty())
+//            lstr+="+E ";
+//        lstr = lstr.trimmed();
+//        classes[i]->shape->setMyLabel(lstr);
+//        classes[i]->shape->levelLabels[0]=lstr;
+        OwlClass * c = classes[i];
+        if(!c->anonymousDisjoints.empty()||!c->anonymousEqus.empty()||!c->anonymousSubs.empty()||!c->anonymousSupers.empty())
+        {
+            c->shape->hasAnonymous = true;
+            c->shape->updateShape();
+        }
     }
 
     db->closeDB();
@@ -1503,29 +1509,52 @@ QString OwlOntology::getClassInfo(OwlClass *selectedClass){
 /** SLOTS to handle the shape signals **/
 void OwlOntology::ontoclass_clicked(OntologyClassShape *classshape)
 {
-    if(this->currentfocusedclassidx!=-1)this->ontoclass_doubleclicked(classes[currentfocusedclassidx]->shape);
+    if(this->currentfocusedclassidx!=-1){
+//        this->ontoclass_doubleclicked(classes[currentfocusedclassidx]->shape);
+        cout<<"ccc111"<<endl;
+        classes[currentfocusedclassidx]->hideIndividuals(this->maincanvas);
+        cout<<"ccc222"<<endl;
+        classes[currentfocusedclassidx]->setFocused(false,this->maincanvas);
+        cout<<"ccc333"<<endl;
+    }
+
     int idx = this->getIndexOfClasses(classshape->idString());
-    OwlClass *selectedClass = classes[idx];
     if(idx!=-1){
         classes[idx]->showIndividuals(this->maincanvas);
+        cout<<"ccc444"<<endl;
         classes[idx]->setFocused(true,this->maincanvas);
-        this->maincanvas->fully_restart_graph_layout();
+        cout<<"ccc555"<<endl;
         this->currentfocusedclassidx = idx;
+        cout<<"ccc666"<<endl;
+
+        OwlClass *selectedClass = classes[idx];
+        cout << this->getClassInfo(selectedClass).toStdString();
+        emit(this->loading(classshape->idString()));
+    //    emit(this->savingInterests(classshape->idString()));
     }
+    cout<<"ccc777"<<endl;
     emit clickedClass(classes[idx]->shortname);
-    cout << this->getClassInfo(selectedClass).toStdString();
-    emit(this->loading(classshape->idString()));
-//    emit(this->savingInterests(classshape->idString()));
+    cout<<"ccc888"<<endl;
+    this->maincanvas->fully_restart_graph_layout();
+
 }
 
 void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
 {
+    cout<<"ccc111"<<endl;
+
     int idx = this->getIndexOfClasses(classshape->idString());
     if(idx!=-1){
+
         classes[idx]->hideIndividuals(this->maincanvas);
+        cout<<"ccc222"<<endl;
         classes[idx]->setFocused(false,this->maincanvas);
+        cout<<"ccc333"<<endl;
         this->maincanvas->fully_restart_graph_layout();
+        cout<<"ccc444"<<endl;
     }
+
+
     this->currentfocusedclassidx = -1;
     emit(this->loading("OntologyInfor"));
 }
@@ -1578,13 +1607,10 @@ void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
 }
 
 void OwlOntology::ontoclass_hoverEnter(QString shortname){
-    cout<<"onto class hover enter"<<endl;
     emit this->hoverEnterClass(shortname);
 }
 
 void OwlOntology::ontoclass_hoverLeave(QString shortname){
-    cout<<"onto class hover leave"<<endl;
-
     emit this->hoverLeaveClass(shortname);
 }
 

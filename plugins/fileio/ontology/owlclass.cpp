@@ -72,9 +72,9 @@ void OwlClass::setFocused(bool focus, Canvas *canvas)
         for(int i=0;i<superclasses.size();i++){
             superclasses[i]->shape->setFillColour(SUPERCLASS_SHAPE_FOCUSED_COLOR);
         }
-        for(int i=0;i<classesconnectors.size();i++){
-            classesconnectors[i]->setColour(CLASS_CONNECTOR_FOCUSED_COLOR);
-        }
+//        for(int i=0;i<classesconnectors.size();i++){
+//            classesconnectors[i]->setColour(CLASS_CONNECTOR_FOCUSED_COLOR);
+//        }
         isFocused = true;
         canvas->setFocusItem(shape,Qt::OtherFocusReason);
     }
@@ -87,9 +87,9 @@ void OwlClass::setFocused(bool focus, Canvas *canvas)
         for(int i=0;i<superclasses.size();i++){
             superclasses[i]->shape->setFillColour(CLASS_SHAPE_COLOR);
         }
-        for(int i=0;i<classesconnectors.size();i++){
-            classesconnectors[i]->setColour(CLASS_CONNECTOR_COLOR);
-        }
+//        for(int i=0;i<classesconnectors.size();i++){
+//            classesconnectors[i]->setColour(CLASS_CONNECTOR_COLOR);
+//        }
 
         isFocused = false;
     }

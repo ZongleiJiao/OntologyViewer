@@ -23,12 +23,14 @@ signals:
     void directionChanged(QString);
     void setOverviewNodeNumber(int);
     void setDetailviewNodeNumber(int);
+    void setNumber(int,int);
 public slots:
     void sceneClicked(QPointF pos);
     void layoutMethodChanged(QString method);
     void layoutDirectionChanged(QString dir);
     void le_ovnChange(QString ovn);
     void le_dvnChange(QString dvn);
+    void btnGo_Clicked();
 public:
     explicit OverviewDockWidget(QWidget *parent = 0);
     ~OverviewDockWidget();
