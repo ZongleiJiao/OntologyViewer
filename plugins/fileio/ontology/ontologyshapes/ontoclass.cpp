@@ -24,6 +24,7 @@ QPainterPath OntologyClassShape::buildPainterPath(void)
 
     painter_path.addRect(-width() / 2, -height() / 2, width(), height());
 
+
     return painter_path;
 }
 

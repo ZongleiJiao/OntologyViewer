@@ -21,7 +21,8 @@ public:
 
     QList<OwlClass *> dclasses;
     QList<Connector *> dedges;
-    QList<ExtensionShape *> exts;
+    QList<ExtensionShape *> subexts;
+    QList<ExtensionShape *> superexts;
 
     void setCanvas(Canvas *canvas);
     void setOntology(OwlOntology * ontology);
@@ -34,6 +35,7 @@ public:
     void drawIndividuals();
     void removeIndividuals();
 
+    void addextshape(OwlClass *cls);
 private:
     int m_entitynum;
     QList<OwlClass *> getNextLevelClasses(QList<OwlClass *> cls);

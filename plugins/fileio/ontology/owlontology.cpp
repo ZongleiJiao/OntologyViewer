@@ -1515,7 +1515,7 @@ void OwlOntology::ontoclass_clicked(OntologyClassShape *classshape)
     emit clickedClass(classes[idx]->shortname);
     cout << this->getClassInfo(selectedClass).toStdString();
     emit(this->loading(classshape->idString()));
-    emit(this->savingInterests(classshape->idString()));
+//    emit(this->savingInterests(classshape->idString()));
 }
 
 void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)

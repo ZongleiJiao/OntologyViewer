@@ -1046,6 +1046,9 @@ void Overview::ogdfLayout(QList<OwlClass *> graph)
 
 void Overview::widSceneClicked(QPointF pos)
 {
+    QTime st = QTime::currentTime();
+    st.start();
+
     //compute Euclidean distance with current mouse pos
     double mind = numeric_limits<double>::max();
     int minidx = -1;
@@ -1060,6 +1063,8 @@ void Overview::widSceneClicked(QPointF pos)
             }
         }
     }
+
+    cout<<"Compute nearest node [Time]:"<<st.elapsed()<<endl;
     //sent to detailview
 //    m_detailview->setViewLimit(10,10);
     int idx = m_ontology->getIndexOfClasses(classes[minidx]->shortname);
@@ -1070,6 +1075,9 @@ void Overview::widSceneClicked(QPointF pos)
         this->detailview_centrenode = m_ontology->classes[idx];
         rlst.append(this->m_detailview->drawClassView(m_ontology->classes[idx],classes));
     }
+
+    cout<<"Draw detail view [Time]:"<<st.elapsed()<<endl;
+
 /** remove this part since the architecture of overview changes frequently.
     Remove it to keep stable. **/
 //    //remove all temp added classes
@@ -1087,9 +1095,13 @@ void Overview::widSceneClicked(QPointF pos)
 //    classes.clear();
 //    classes.append(this->convertOverviewShapes(originalclasses));
 
+
+    cout<<"Highlight overview [Time]:"<<st.elapsed()<<endl;
+
     //get back from detailed view ->ov
     indetailedCls.clear();
     for(int i=0;i<rlst.size();i++){
+        cout<<"rlst "<<i<<" [Time]:"<<st.elapsed()<<endl;
         int cid = this->getIndexByShortname(classes,rlst[i]->shortname);
         if(cid!=-1){
             indetailedCls.append(classes[cid]);
@@ -1105,10 +1117,15 @@ void Overview::widSceneClicked(QPointF pos)
             else classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Default);
         }
     }
-
+    cout<<"Click event [Time]:"<<st.elapsed()<<endl;
     m_ontology->ontoclass_clicked(m_ontology->classes[idx]->shape);
 
+    cout<<"Update layout [Time]:"<<st.elapsed()<<endl;
+
     this->updatelayout();
+
+    cout<<"End at [Time]:"<<st.elapsed()<<endl;
+
 }
 
 void Overview::detailView_ClickedClass(QString shortname)
