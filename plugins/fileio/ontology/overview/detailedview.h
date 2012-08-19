@@ -35,7 +35,9 @@ public:
     void drawIndividuals();
     void removeIndividuals();
 
-    void addextshape(OwlClass *cls);
+//    void removeNode(ShapeObj *s);
+
+    void addShapeWithExt(OwlClass *cls);
 private:
     int m_entitynum;
     QList<OwlClass *> getNextLevelClasses(QList<OwlClass *> cls);
@@ -44,6 +46,7 @@ signals:
 public slots:
     void extshape_Clicked(ExtensionShape *cs);
     void extshape_DoubleClicked(ExtensionShape *cs);
+    void shapeRight_Clicked(OntologyClassShape *shape);
 
 
 };

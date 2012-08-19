@@ -18,7 +18,7 @@ OntologyClassShape::OntologyClassShape() : ShapeObj("ontoclass")
 
 //    setFlag(ItemIsFocusable, true);
     this->hasAnonymous = false;
-    this->hasChild = true;
+    this->hasChild = false;
     this->isShowingChild = true;
 }
 

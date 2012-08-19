@@ -24,6 +24,7 @@ class ExtensionShape : public ShapeObj
         OwlClass * linkedClass;
         Connector * edge;
         bool isExtended;
+        int node_type; //1 parent 2 child
 
         //mouse events sending singnals
         void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event);
