@@ -126,6 +126,7 @@ void OverviewDockWidget::animationStart(){
     for(int i=0;i<this->hideclasses.size();i++){
         this->hideclasses[i]->setVisible(false);
     }
+    this->fixSceneRect();
     this->scaling();
 }
 
@@ -173,7 +174,7 @@ void OverviewDockWidget::addOverviewShape(OwlClass *cls)
     if(gid!=-1){
         if(stat==gitem_status[gid]){
             QPropertyAnimation * ani = new QPropertyAnimation(gitems[gid], "pos");
-            ani->setDuration(1000);
+            ani->setDuration(600);
             ani->setStartValue(oripos[gid]);
             qreal ex = oripos[gid].rx() + (x - oriabspos[gid].rx());
             qreal ey = oripos[gid].ry() + (y - oriabspos[gid].ry());
@@ -445,6 +446,19 @@ void OverviewDockWidget::highlightItems(QList<OwlClass *> cls)
 
     highlightpolygon = m_scene->addPolygon(polygon,QPen(Qt::transparent),QBrush(grey));
     lines.append(highlightpolygon);
+}
+
+void OverviewDockWidget::circleItem(QString shortname)
+{
+    for(int i = 0;i<gitems.size();i++){
+        if(gitems[i]->toolTip()==shortname){
+            QPointF p = oriabspos[i];
+            cout<<p.rx()<<",,,"<<p.ry()<<endl;
+            this->hoverCircle->setPos(p.rx()-6,p.ry()-6);
+            this->hoverCircle->setVisible(true);
+            break;
+        }
+    }
 }
 
 void OverviewDockWidget::le_ovnChange(QString ovn)

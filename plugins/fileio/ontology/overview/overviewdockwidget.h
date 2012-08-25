@@ -71,6 +71,8 @@ public:
     QGraphicsItem * highlightpolygon;
     void highlightItems(QList<OwlClass *> cls);
 
+    void circleItem(QString shortname);
+
     //event
     void resizeEvent(QResizeEvent *event);
 

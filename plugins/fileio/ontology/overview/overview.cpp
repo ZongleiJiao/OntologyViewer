@@ -117,7 +117,7 @@ int Overview::getIndexByShortname(QList<OwlClass *> lst, QString shortname)
     int rs=-1;
     for(int i=0;i<lst.size();i++)
     {
-        if(lst[i]->shortname.toLower()==shortname.toLower())
+        if(lst[i]->shortname==shortname)
         {
             rs=i;
             break;
@@ -934,17 +934,31 @@ void Overview::compactTreeLayout(double maxW,double maxH)
 
     cout<<"CT layout----"<<endl;
     this->isOrthogonalTreeLayout = true;
-    cout<<"CT layout----000"<<endl;
     this->treeLayout(classes);
-    cout<<"CT layout----111"<<endl;
     this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
 
-    this->drawOverview(m_wid);
+//    this->drawOverview(m_wid);
+//    double w = m_wid->m_scene->sceneRect().width();
+//    double h = m_wid->m_scene->sceneRect().height();
 
+    double minx = 0.0;
+    double maxx = 0.0;
+    double miny = 0.0;
+    double maxy = 0.0;
+    for(int i=0;i<classes.size();i++){
+        double px = classes[i]->overviewshape->pos().rx();
+        double py = classes[i]->overviewshape->pos().ry();
+        minx = std::min(px,minx);
+        miny = std::min(py,miny);
+        maxx = std::max(px,maxx);
+        maxy = std::max(py,maxy);
+    }
 
+    double w = maxx - minx;
+    double h = maxy - miny;
 
-    double w = m_wid->m_scene->sceneRect().width();
-    double h = m_wid->m_scene->sceneRect().height();
+    cout<<" minx:"<<minx<<" maxx:"<<maxx<<" miny:"<<miny<<" maxy:"<<maxy<<endl;
+    cout<<"w = "<<w<<" h = "<<h<<endl;
 
     if(w>maxW||h>maxH){
 
@@ -1002,6 +1016,9 @@ void Overview::compactTreeLayout(double maxW,double maxH)
             classes.append(addedClasses[i]->subclasses);
             classes.removeAll(addedClasses[i]);
         }
+    }
+    else{
+        this->drawOverview(m_wid);
     }
 }
 
@@ -1185,13 +1202,17 @@ void Overview::detailView_ClickedClass(QString shortname)
 
 void Overview::detailView_ClassHoverEnter(QString shortname)
 {
-    int idx = getIndexByShortname(this->classes,shortname);
-    if(idx!=-1){
-        qreal x = classes[idx]->overviewshape->pos().x() - 6;
-        qreal y = classes[idx]->overviewshape->pos().y() - 6;
-        this->m_wid->hoverCircle->setPos(x,y);
-        this->m_wid->hoverCircle->setVisible(true);
-    }
+//    int idx = getIndexByShortname(this->classes,shortname);
+//    if(idx!=-1){
+//        qreal x = classes[idx]->overviewshape->pos().x() - 6;
+//        qreal y = classes[idx]->overviewshape->pos().y() - 6;
+
+//        this->m_wid->hoverCircle->setPos(x,y);
+//        this->m_wid->hoverCircle->setVisible(true);
+
+//        cout<<"hover in "<<shortname.toStdString()<<" ["<<idx<<"] POS:"<<x<<","<<y<<endl;
+//    }
+    m_wid->circleItem(shortname);
 }
 
 void Overview::detailView_ClassHoverLeave(QString shortname)
@@ -1211,17 +1232,11 @@ void Overview::layoutmethodChanged(QString method)
         this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
     }
     if(method == "Orthogonal Tree"){
-//        this->isOrthogonalTreeLayout = true;
-//        this->treeLayout(classes);
-//        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
-        cout<<"llll1111"<<endl;
         this->compactTreeLayout(200,200);
         this->m_detailview->m_canvas->setOptAutomaticGraphLayout(true);
         this->m_detailview->m_canvas->setOptPreventOverlaps(true);
         this->setOrthogonalConnectors(this->m_detailview->m_canvas,true);
-        cout<<"llll222"<<endl;
         this->m_detailview->m_canvas->fully_restart_graph_layout();
-        cout<<"llll333"<<endl;
         return;
     }
     if(method == "Radial Tree(90)"){
