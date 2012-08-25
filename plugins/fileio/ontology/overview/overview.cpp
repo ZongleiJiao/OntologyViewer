@@ -1187,7 +1187,6 @@ void Overview::detailView_ClassHoverEnter(QString shortname)
 {
     int idx = getIndexByShortname(this->classes,shortname);
     if(idx!=-1){
-
         qreal x = classes[idx]->overviewshape->pos().x() - 6;
         qreal y = classes[idx]->overviewshape->pos().y() - 6;
         this->m_wid->hoverCircle->setPos(x,y);
@@ -1312,6 +1311,7 @@ void Overview::showlayout(Canvas *canvas)
 void Overview::showlayout(OverviewDockWidget *wid)
 {
     this->connectWgt(wid);
+    m_wid->clearallitems();
     this->directionChanged("L->R");
 }
 void Overview::updatelayout(){

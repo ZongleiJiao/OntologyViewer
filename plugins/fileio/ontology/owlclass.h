@@ -44,6 +44,8 @@ public:
 
     QList<Connector *> individualconnectors;
     QList<Connector *> classesconnectors;
+//    QList<Connector *> subconnectors;
+//    QList<Connector *> superconnectors;
 
     //different status showing
     bool isIndividualsShowed;

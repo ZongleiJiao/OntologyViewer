@@ -26,6 +26,7 @@ signals:
     void setNumber(int,int);
 public slots:
     void sceneClicked(QPointF pos);
+    void sceneResized(QRectF r);
     void layoutMethodChanged(QString method);
     void layoutDirectionChanged(QString dir);
     void le_ovnChange(QString ovn);
@@ -64,7 +65,8 @@ public:
     void addLine(qreal sx, qreal sy, qreal ex, qreal ey, QPen pen);
     void addTreeConnector(DPolyline pl,QPen pen);
 
-    void fixSceneRect();
+    QRectF fixSceneRect();
+    void scaling();
 
     QGraphicsItem * highlightpolygon;
     void highlightItems(QList<OwlClass *> cls);

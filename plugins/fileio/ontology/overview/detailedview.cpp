@@ -160,14 +160,11 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
     m_entitynum=1;
     int totalclassnum = m_ontology->classes.size();
     if(n>totalclassnum)n=totalclassnum;
-cout<<"ssdsd"<<endl;
+
     while(dclasses.size()<n){
         QList<OwlClass *> nextClasses = getNextLevelClasses(dclasses);
         dclasses.append(nextClasses);
     }
-
-    cout<<"ssdsd1"<<endl;
-
 
     for(int i=0;i<dclasses.size();i++)
     {
@@ -227,8 +224,8 @@ QList<OwlClass *> DetailedView::getNextLevelClasses(QList<OwlClass *> cls)
                 conn->setDirected(true);
                 this->dedges.append(conn);
 
-//                node->subclasses[j]->classesconnectors.append(conn);
-//                node->classesconnectors.append(conn);
+                node->superclasses[j]->classesconnectors.append(conn);
+                node->classesconnectors.append(conn);
 
                 m_entitynum++;
                 if(m_entitynum >=limitEntityNum||m_entitynum>=m_ontology->classes.size())
@@ -366,10 +363,10 @@ void DetailedView::removeIndividuals(){
 void DetailedView::shapeRight_Clicked(OntologyClassShape *shape)
 {
     //unfinished!!!!
-    QMessageBox * m = new QMessageBox();
-    m->setText("Unfinished function!!");
-    m->show();
-    return;
+//    QMessageBox * m = new QMessageBox();
+//    m->setText("Unfinished function!!");
+//    m->show();
+//    return;
 
     cout<<"--Click Right!!!"<<endl;
     if(shape->hasChild){
@@ -382,9 +379,6 @@ void DetailedView::shapeRight_Clicked(OntologyClassShape *shape)
             shape->updateShape();
             //remove all sub trees
             if(idx!=-1){
-                for(int i=0;i<dclasses[idx]->classesconnectors.size();i++){
-                    dclasses[idx]->classesconnectors[i]->setVisible(false);
-                }
                 for(int i=0;i<dclasses[idx]->subclasses.size();i++){
                     this->removeClass(dclasses[idx]->subclasses[i]);
                 }
@@ -411,6 +405,12 @@ void DetailedView::shapeRight_Clicked(OntologyClassShape *shape)
 
                         dclasses.append(tmp);
                         dedges.append(c);
+
+                        tmp->classesconnectors.append(c);
+                        dclasses[idx]->classesconnectors.append(c);
+
+//                        if(tmp->superclasses.size()>1)
+
                     }
                     else{
                         tmp->shape->setVisible(true);
@@ -445,20 +445,34 @@ void DetailedView::removeClass(OwlClass *c)
     for(int i=0;i<c->classesconnectors.size();i++){
         c->classesconnectors[i]->setVisible(false);
     }
+    for(int i=0;i<subexts.size();i++)
+        if(subexts[i]->linkedClass == c){
+            ExtensionShape *cs = subexts[i];
+            m_canvas->removeItem(cs->edge);
+            m_canvas->removeItem(cs);
+            dedges.removeAll(cs->edge);
+            cs->linkedClass->classesconnectors.removeAll(cs->edge);
 
-//    for(int i=0;i<subexts.size();i++)
-//        if(subexts[i]->linkedClass == c){
-//            m_canvas->removeItem(subexts[i]);
-//            subexts.removeAt(i);
-//            break;
-//        }
+            cs->edge->~Connector();
+            cs->~ShapeObj();
 
-//    for(int i=0;i<superexts.size();i++)
-//        if(superexts[i]->linkedClass == c){
-//            m_canvas->removeItem(superexts[i]);
-//            superexts.removeAt(i);
-//            break;
-//        }
+            subexts.removeAt(i);
+            break;
+        }
+
+    for(int i=0;i<superexts.size();i++)
+        if(superexts[i]->linkedClass == c){
+            ExtensionShape *cs = superexts[i];
+            m_canvas->removeItem(cs->edge);
+            m_canvas->removeItem(cs);
+            dedges.removeAll(cs->edge);
+            cs->linkedClass->classesconnectors.removeAll(cs->edge);
+
+            cs->edge->~Connector();
+            cs->~ShapeObj();
+            superexts.removeAt(i);
+            break;
+        }
 
     for(int i=0;i<c->subclasses.size();i++){
         this->removeClass(c->subclasses[i]);

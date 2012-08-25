@@ -41,6 +41,7 @@ OverviewDockWidget::OverviewDockWidget(QWidget *parent) :
 //    connect(ui->lineEdit_ovn,SIGNAL(textEdited(QString)),this,SLOT(le_ovnChange(QString)));
 //    connect(ui->lineEdit_dvn,SIGNAL(textEdited(QString)),this,SLOT(le_dvnChange(QString)));
     connect(ui->btn_Go,SIGNAL(clicked()),this,SLOT(btnGo_Clicked()));
+    connect(m_scene,SIGNAL(sceneRectChanged(QRectF)),this,SLOT(sceneResized(QRectF)));
     m_scene->setBackgroundBrush(QBrush(QColor(189, 189, 223)));
 
     this->ontology = NULL;
@@ -96,7 +97,7 @@ void OverviewDockWidget::addTreeConnector(DPolyline pl,QPen pen)
     }
 }
 
-void OverviewDockWidget::fixSceneRect(){
+QRectF OverviewDockWidget::fixSceneRect(){
     QRectF rect;
     for(int i=0;i<m_scene->items().size();i++){
         if(m_scene->items()[i]!=this->highlightpolygon)
@@ -104,6 +105,7 @@ void OverviewDockWidget::fixSceneRect(){
     }
     rect = rect.adjusted(-20,-20,20,20);
     this->m_scene->setSceneRect(rect);
+    return rect;
 }
 
 int OverviewDockWidget::getGItemID(QString shortname)
@@ -124,6 +126,7 @@ void OverviewDockWidget::animationStart(){
     for(int i=0;i<this->hideclasses.size();i++){
         this->hideclasses[i]->setVisible(false);
     }
+    this->scaling();
 }
 
 void OverviewDockWidget::clearall()
@@ -141,8 +144,7 @@ void OverviewDockWidget::clearall()
 }
 
 void OverviewDockWidget::clearallitems()
-{
-
+{    
 //    for(int i=0;i<gitems.size();i++)m_scene->removeItem(gitems[i]);
     ani_group->clear();
     oripos.clear();
@@ -153,6 +155,11 @@ void OverviewDockWidget::clearallitems()
     hideclasses.clear();
     highlightpolygon=NULL;
     this->m_scene->clear();
+
+    QPen p = QPen(QColor("brown"));
+    p.setWidth(2);
+    hoverCircle = m_scene->addEllipse(0,0,12,12,p,QBrush(Qt::NoBrush));
+    hoverCircle->setVisible(false);
 }
 
 
@@ -361,6 +368,11 @@ void OverviewDockWidget::sceneClicked(QPointF pos)
     lines.append(it);
 }
 
+void OverviewDockWidget::sceneResized(QRectF r)
+{
+    this->scaling();
+}
+
 void OverviewDockWidget::layoutMethodChanged(QString method)
 {
 //    if(method.left(11)=="Radial Tree"||method=="FMS"){
@@ -390,6 +402,33 @@ void OverviewDockWidget::resizeEvent(QResizeEvent *event){
     ui->btn_Go->setGeometry(w*0.8,28,w*0.2,25);
 
     ui->dockWidget->setGeometry(QRect(0, 40, w, h-50));
+
+    this->scaling();
+
+}
+
+void OverviewDockWidget::scaling()
+{
+    //drawing Rect is the window size for the overview.
+    //diagramBounds is the rectangle that encloses the entire network.
+    QRectF drawingRect = QRectF(m_view->rect());
+    QRectF diagramBounds = m_scene->sceneRect();
+    // Compute the scale to with the drawing into the overview rect.
+    qreal xscale = drawingRect.width() / diagramBounds.width();
+    qreal yscale = drawingRect.height() /  diagramBounds.height();
+
+    // Choose the smallest of the two scale values.
+    qreal scale = std::min(xscale, yscale);
+    cout<<scale<<endl;
+    // Scale uniformly, and transform to center in the overview.
+    QTransform scaleTransform = QTransform::fromScale(scale, scale);
+    QRectF targetRect = scaleTransform.mapRect(diagramBounds);
+    QPointF diff = drawingRect.center() - targetRect.center();
+    QTransform m_transform = QTransform();
+    m_transform.translate(diff.x(), diff.y());
+    m_transform.scale(scale, scale);
+
+    m_view->setTransform(m_transform);
 }
 
 void OverviewDockWidget::highlightItems(QList<OwlClass *> cls)
