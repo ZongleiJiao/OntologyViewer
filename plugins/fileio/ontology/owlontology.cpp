@@ -147,16 +147,10 @@ void OwlOntology::loadontologyFromDB(const QFileInfo &fileInfo)
 
     db = new OntologyDB();
     db->openDB();
-
-    cout<<filename.toStdString()<<endl;
     //get ontology ID
     this->ontologyID = db->getOntologyID(filename);
-    cout << "OntologyID----------------" << this->ontologyID<< endl;
-
-
     //get namespace for the URI
     this->owlnamespace = db->getOntologyNamespace(ontologyID);
-
     //get all individuals
     this->individuals.clear();
     this->individuals.append(db->getAllIndividuals(ontologyID));
@@ -164,6 +158,7 @@ void OwlOntology::loadontologyFromDB(const QFileInfo &fileInfo)
     for(int i=0;i<individuals.size();i++)
         dbid_inds.append(individuals[i]->db_entityID);
 
+    cout<<"Get "<<individuals.size()<<" Individuals from database."<<endl;
 
     //get all named classes
     this->classes.clear();
@@ -172,7 +167,12 @@ void OwlOntology::loadontologyFromDB(const QFileInfo &fileInfo)
     for(int i=0;i<classes.size();i++)
         dbid_classes.append(classes[i]->db_entityID);
 
+    cout<<"Get "<<classes.size()<<" Classes from database."<<endl;
+
+
     for(int i=0;i<classes.size();i++){
+        cout<<"Get sub/super/dis/equ from DB for Classes: "<<i<<" - "<<classes[i]->shortname.toStdString()<<endl;
+
         //connect signal
         connect(classes[i]->shape,SIGNAL(myclick(OntologyClassShape*)),this,SLOT(ontoclass_clicked(OntologyClassShape*)));
         connect(classes[i]->shape,SIGNAL(myDoubleClick(OntologyClassShape*)),this,SLOT(ontoclass_doubleclicked(OntologyClassShape*)));
@@ -347,17 +347,6 @@ void OwlOntology::loadontologyFromDB(const QFileInfo &fileInfo)
     }
 
     for(int i=0;i<classes.size();i++){
-//        QString lstr = classes[i]->shape->getLabel();
-//        lstr+=" ";
-//        if(!classes[i]->individuals.isEmpty())
-//            lstr+="+I ";
-//        if(!classes[i]->disjointclasses.empty()||!classes[i]->anonymousDisjoints.empty())
-//            lstr+="+D ";
-//        if(!classes[i]->equivalentclasses.empty()||!classes[i]->anonymousEqus.empty())
-//            lstr+="+E ";
-//        lstr = lstr.trimmed();
-//        classes[i]->shape->setMyLabel(lstr);
-//        classes[i]->shape->levelLabels[0]=lstr;
         OwlClass * c = classes[i];
         if(!c->anonymousDisjoints.empty()||!c->anonymousEqus.empty()||!c->anonymousSubs.empty()||!c->anonymousSupers.empty())
         {
@@ -369,7 +358,6 @@ void OwlOntology::loadontologyFromDB(const QFileInfo &fileInfo)
     db->closeDB();
 //    cout<<"///////////get information of this ontology/////////////////"<<endl;
     this->getOntoInfo();
-
 //    emit this->loadHistory();
 }
 

@@ -158,7 +158,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                 double ep;
                 double cp;
                 QList<OwlClass *> rsub;
-                if(classes[i]->subclasses.size()>1){
+                if(!classes[i]->subclasses.empty()){
                     for(int j=0;j<classes[i]->subclasses.size();j++){
                         if(classes[i]->subclasses[j]->superclasses[0]==classes[i])
                             rsub.append(classes[i]->subclasses[j]);
@@ -172,7 +172,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                     sx += classes[i]->overviewshape->width()/2;
                     ex = cp;
                     ey = sy;
-                    if(rsub.size()>1){                        
+                    if(!rsub.empty()){
                         sp = ep = rsub[0]->overviewshape->pos().ry();
                         for(int j=1;j<rsub.size();j++){
                             double py = rsub[j]->overviewshape->pos().ry();
@@ -190,7 +190,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                     ex = cp;
                     ey = sy;
 
-                    if(rsub.size()>1){
+                    if(!rsub.empty()){
                         sp = ep = rsub[0]->overviewshape->pos().ry();
                         for(int j=1;j<rsub.size();j++){
                             double py = rsub[j]->overviewshape->pos().ry();
@@ -207,7 +207,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                     ex = sx;
                     ey = cp;
                     sy += classes[i]->overviewshape->height()/2;
-                    if(rsub.size()>1){                        
+                    if(!rsub.empty()){
                         sp = ep = rsub[0]->overviewshape->pos().rx();
                         for(int j=1;j<rsub.size();j++){
                             double px = rsub[j]->overviewshape->pos().rx();
@@ -223,7 +223,7 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                     ex = sx;
                     ey = cp;
                     sy -= classes[i]->overviewshape->height()/2;
-                    if(rsub.size()>1){
+                    if(!rsub.empty()){
                         sp = ep = rsub[0]->overviewshape->pos().rx();
                         for(int j=1;j<rsub.size();j++){
                             double px = rsub[j]->overviewshape->pos().rx();
@@ -830,16 +830,9 @@ void Overview::quadrantRadialTree(QList<OwlClass *> graph,double rangeAngle)
     }
 
 }
-void Overview::sortSubclassesByAscending(QList<OwlClass *> graph)
+QList<OwlClass *> Overview::sortSubclassesByAscending(QList<OwlClass *> graph)
 {
-    for(int i=0;i<graph.size()-1;i++){
-        int min=i;
-        for(int j=i+1;j<graph.size();j++){
-            if(QString::compare(graph[j]->shortname,graph[min]->shortname)<0)
-                min=j;
-        }
-        if(min!=i)graph.swap(i,min);
-    }
+    cout<<"START size:"<<graph.size()<<endl;
     for(int i=0;i<graph.size();i++){
         QList<OwlClass *> subs = graph[i]->subclasses;
         if(subs.size()>1){
@@ -852,6 +845,36 @@ void Overview::sortSubclassesByAscending(QList<OwlClass *> graph)
             }
         }
     }
+    //get root node
+    OwlClass * root;
+    for(int i=0;i<graph.size();i++){
+        if(graph[i]->superclasses.empty())
+        {
+            root = graph[i];
+            break;
+        }
+    }
+
+    QList<OwlClass *> rg;
+    stack<OwlClass *> st;
+    rg.append(root);
+    st.push(root);
+
+    while(!st.empty()){
+        OwlClass * t = st.top();
+        st.pop();
+
+        for(int i =0;i<t->subclasses.size();i++){
+            OwlClass * tmp = t->subclasses[i];
+            if(!rg.contains(tmp)){
+                st.push(tmp);
+                rg.append(tmp);
+            }
+        }
+    }
+
+    cout<<"END size:"<<rg.size()<<endl;
+    return rg;
 }
 
 void Overview::treeLayout(QList<OwlClass *> graph)
@@ -860,47 +883,39 @@ void Overview::treeLayout(QList<OwlClass *> graph)
     Graph g;
     GraphAttributes ga(g,GraphAttributes::nodeGraphics|GraphAttributes::edgeGraphics );
 
-    this->sortSubclassesByAscending(graph);
-//    int n=graph.size();
-//    for(int i=0;i<n;i++)
-//    {
-//        OwlClass * c = graph[i];
-//        graph.removeOne(c);
-//        if(c->subclasses.empty()&&c->superclasses.size()==1){
-//            graph.append(c);
-//        }
-//        else graph.insert(0,c);
-//    }
+//    QList<OwlClass *> newgraph = this->sortSubclassesByAscending(graph);
+
+    QList<OwlClass *> newgraph = graph;
 
     QList<node> nodes;
     QList<edge> edges;
-    for(int i=0;i<graph.size();i++)
+
+    for(int i=0;i<newgraph.size();i++)
     {
         node nd = g.newNode();
-        ga.x(nd) = graph[i]->overviewshape->pos().rx();
-        ga.y(nd) = graph[i]->overviewshape->pos().ry();
-        ga.width(nd) = graph[i]->overviewshape->width();
-        ga.height(nd) = graph[i]->overviewshape->height();
+        ga.x(nd) = newgraph[i]->overviewshape->pos().rx();
+        ga.y(nd) = newgraph[i]->overviewshape->pos().ry();
+        ga.width(nd) = newgraph[i]->overviewshape->width();
+        ga.height(nd) = newgraph[i]->overviewshape->height();
         nodes.append(nd);
     }
-    for(int i=0;i<graph.size();i++)
+    for(int i=0;i<newgraph.size();i++)
     {
-        if(!graph[i]->superclasses.empty()){
-            OwlClass * sup = graph[i]->superclasses[0];
-            int idx = getIndexByShortname(graph,sup->shortname);
+        if(!newgraph[i]->superclasses.empty()){
+            OwlClass * sup = newgraph[i]->superclasses[0];
+            int idx = getIndexByShortname(newgraph,sup->shortname);
             if(idx!=-1){
                 edge e =g.newEdge(nodes[idx],nodes[i]);
                 edges.append(e);
             }
         }
-//        for(int j=0;j<graph[i]->subclasses.size();j++){
-//            OwlClass * sub = graph[i]->subclasses[j];
-//            if(sub->superclasses[0]==graph[i]){
-//                int idx = getIndexByShortname(graph,sub->shortname);
-//                if(idx!=-1){
-//                    edge e =g.newEdge(nodes[i],nodes[idx]);
-//                    edges.append(e);
-//                }
+
+//        for(int j=0;j<newgraph[i]->subclasses.size();j++){
+//            OwlClass * sub = newgraph[i]->subclasses[j];
+//            int idx = getIndexByShortname(newgraph,sub->shortname);
+//            if(idx!=-1){
+//                edge e =g.newEdge(nodes[i],nodes[idx]);
+//                edges.append(e);
 //            }
 //        }
     }
@@ -918,7 +933,7 @@ void Overview::treeLayout(QList<OwlClass *> graph)
 
 
     for(int i=0;i<nodes.size();i++){
-        graph[i]->overviewshape->setCentrePos(QPointF(ga.x(nodes[i]),ga.y(nodes[i])));
+        newgraph[i]->overviewshape->setCentrePos(QPointF(ga.x(nodes[i]),ga.y(nodes[i])));
     }
     treeconnectors.clear();
     for(int i=0;i<edges.size();i++){

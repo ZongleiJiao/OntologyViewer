@@ -554,8 +554,8 @@ void KeyConceptClass::computeOverallScore()
     for(int i=0;i<num;i++){
         if(measures[i].visitTimes>maxvt) maxvt = measures[i].visitTimes;
     }
-    //sort by lastVisitedTime
-    this->sortMeasuresByLastVisitedTime();
+//    //sort by lastVisitedTime
+//    this->sortMeasuresByLastVisitedTime();
 
     //compute overallscore
     for(int i=0;i<num;i++)

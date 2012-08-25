@@ -94,13 +94,13 @@ private:
 
     const static double TREE_siblingDistance = 2;
     const static double TREE_levelDistance = 15;
-    const static double TREE_subtreeDistance = 8;
+    const static double TREE_subtreeDistance = 4;
     const static double TREE_treeDistance = 10;
 
 
     QList<DPolyline> treeconnectors;
     void treeLayout(QList<OwlClass *> graph);
-    void sortSubclassesByAscending(QList<OwlClass *> graph);
+    QList<OwlClass *> sortSubclassesByAscending(QList<OwlClass *> graph);
     void compactTreeLayout(double maxW,double maxH);
     void ogdfLayout(QList<OwlClass *> graph);
 
