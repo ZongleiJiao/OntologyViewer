@@ -19,6 +19,7 @@ public:
 
     int getOntologyID(QString filepath);
     QString getOntologyNamespace(int ontoID);
+
     QList<OwlIndividual *> getAllIndividuals(int ontoID);       
     QList<int> getIndividualURIsByClass(int class_entityid);
 
@@ -41,6 +42,15 @@ public:
     QList<QString> getAnonymousSuperProperties(int Property_entityid);
     QList<QString> getAnonymousDisjointProperties(int Property_entityid);
     QList<QString> getAnonymousEquivalentProperties(int Property_entityid);
+
+    QList<QPair<int,int> > getAllIndividualRelations(int ontoID);
+    QList<QPair<int,int> > getAllSubClasses(int ontoID);
+    QList<QPair<int,int> > getAllDisjointClasses(int ontoID);
+    QList<QPair<int,int> > getAllEquivalentClasses(int ontoID);
+    QList<QPair<int,QString> > getAllAnonymousSubClasses(int ontoID);
+    QList<QPair<int,QString> > getAllAnonymousSuperClasses(int ontoID);
+    QList<QPair<int,QString> > getAllAnonymousDisjointClasses(int ontoID);
+    QList<QPair<int,QString> > getAllAnonymousEquivalentClasses(int ontoID);
 
     void saveInterests(int ontoID, int entityID, int entityType);
     void clearHistoryByOntology(int ontoID);

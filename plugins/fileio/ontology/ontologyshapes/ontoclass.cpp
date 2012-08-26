@@ -9,11 +9,11 @@ using namespace std;
 OntologyClassShape::OntologyClassShape() : ShapeObj("ontoclass")
 {
     levelLabels[0] = QString("");
-    levelLabels[1] = QString("");
-    levelLabels[2] = QString("");
-    levelLabels[3] = QString("");
-    levelLabels[4] = QString("");
-    levelLabels[5] = QString("");
+    levelLabels[1] = QString("[IND]:");
+    levelLabels[2] = QString("[SUB]:");
+    levelLabels[3] = QString("[SUP]:");
+    levelLabels[4] = QString("[DIS]:");
+    levelLabels[5] = QString("[EQU]:");
 
 
 //    setFlag(ItemIsFocusable, true);

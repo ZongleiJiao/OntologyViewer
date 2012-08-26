@@ -361,6 +361,261 @@ void OwlOntology::loadontologyFromDB(const QFileInfo &fileInfo)
 //    emit this->loadHistory();
 }
 
+void OwlOntology::loadontologyFromDBOptimized(const QFileInfo &fileInfo)
+{
+    //    connect(this,SIGNAL(loadHistory()), qApp, SLOT(aboutQt()));
+    QString filename = fileInfo.absoluteFilePath();
+    this->ontologyname = fileInfo.absoluteFilePath();
+    this->ontologyfile = &fileInfo;
+
+    db = new OntologyDB();
+    db->openDB();
+    //get ontology ID
+    this->ontologyID = db->getOntologyID(filename);
+    //get namespace for the URI
+    this->owlnamespace = db->getOntologyNamespace(ontologyID);
+    //get all individuals
+    this->individuals.clear();
+    this->individuals.append(db->getAllIndividuals(ontologyID));
+    QList<int> dbid_inds;
+    for(int i=0;i<individuals.size();i++)
+        dbid_inds.append(individuals[i]->db_entityID);
+
+    cout<<"Get "<<individuals.size()<<" Individuals from database."<<endl;
+
+    //get all named classes
+    this->classes.clear();
+    this->classes.append(db->getAllNamedClasses(ontologyID));
+    QList<int> dbid_classes;
+    for(int i=0;i<classes.size();i++){
+        dbid_classes.append(classes[i]->db_entityID);
+
+        //connect signal
+        connect(classes[i]->shape,SIGNAL(myclick(OntologyClassShape*)),this,SLOT(ontoclass_clicked(OntologyClassShape*)));
+        connect(classes[i]->shape,SIGNAL(myDoubleClick(OntologyClassShape*)),this,SLOT(ontoclass_doubleclicked(OntologyClassShape*)));
+        connect(classes[i]->shape,SIGNAL(myRightClick(OntologyClassShape*)),this,SLOT(ontoclass_rightclicked(OntologyClassShape*)));
+        connect(classes[i]->shape,SIGNAL(myMouseHoverEnter(QString)),this,SLOT(ontoclass_hoverEnter(QString)));
+        connect(classes[i]->shape,SIGNAL(myMouseHoverLeave(QString)),this,SLOT(ontoclass_hoverLeave(QString)));
+    }
+    cout<<"Get "<<classes.size()<<" Classes from database."<<endl;
+
+    //get individual relations
+    QList<QPair<int, int> > individual_relations = db->getAllIndividualRelations(this->ontologyID);
+    cout<<"Get "<<individual_relations.size()<<" Individual relations from database."<<endl;
+    for(int i=0;i<individual_relations.size();i++){
+        int class_id = individual_relations[i].first;
+        int individual_id = individual_relations[i].second;
+        int idx_cls = dbid_classes.indexOf(class_id);
+        int idx_idv = dbid_inds.indexOf(individual_id);
+        if(idx_cls!=-1&&idx_idv!=-1){
+            //add this class to individual's owner classes list
+            this->individuals[idx_idv]->ownerclasses.append(classes[idx_cls]->shortname);
+            //add individuals to class individuals list
+            classes[idx_cls]->individuals<<this->individuals[idx_idv];
+            //create connectors
+            Connector * conn = new Connector();
+            conn->initWithConnection(individuals[idx_idv]->shape, classes[idx_cls]->shape);
+            conn->setDirected(true);
+            conn->setColour(this->INDIVIDUAL_CONNECTOR_COLOR);
+
+            classes[idx_cls]->individualconnectors<<conn;
+            individuals[idx_idv]->classesconnectors<<conn;
+
+            //set class label
+            classes[idx_cls]->shape->levelLabels[1] += this->individuals[idx_idv]->shortname + " ";
+        }
+    }
+
+    //get sub/super relations
+    QList<QPair<int,int> > sub_relations = db->getAllSubClasses(this->ontologyID);
+    cout<<"Get "<<sub_relations.size()<<" sub/super relations from database."<<endl;
+
+    for(int i=0;i<sub_relations.size();i++){
+        int p_id = sub_relations[i].first;
+        int c_id = sub_relations[i].second;
+        int idx_p = dbid_classes.indexOf(p_id);
+        int idx_c = dbid_classes.indexOf(c_id);
+        if(idx_p!=-1&&idx_c!=-1){
+            classes[idx_p]->subclasses<<classes[idx_c];
+            classes[idx_c]->superclasses<<classes[idx_p];
+            //set class level labels (sub,superclasses)
+            classes[idx_p]->shape->levelLabels[2]+=classes[idx_c]->shortname+" ";
+            classes[idx_c]->shape->levelLabels[3]+=classes[idx_p]->shortname+" ";
+        }
+    }
+    //get disjoint relations
+    QList<QPair<int,int> > dis_relations = db->getAllDisjointClasses(this->ontologyID);
+    cout<<"Get "<<dis_relations.size()<<" disjoint relations from database."<<endl;
+    for(int i=0;i<dis_relations.size();i++){
+        int c_id = dis_relations[i].first;
+        int d_id = dis_relations[i].second;
+        int idx_c = dbid_classes.indexOf(c_id);
+        int idx_d = dbid_classes.indexOf(d_id);
+        if(idx_c!=-1&&idx_d!=-1){
+            classes[idx_c]->disjointclasses<<classes[idx_d];
+            //set level label
+            classes[idx_c]->shape->levelLabels[4] += classes[idx_d]->shortname + " ";
+        }
+    }
+    //get equ relations
+    QList<QPair<int,int> > equ_relations = db->getAllEquivalentClasses(this->ontologyID);
+    cout<<"Get "<<equ_relations.size()<<" disjoint relations from database."<<endl;
+    for(int i=0;i<equ_relations.size();i++){
+        int c_id = equ_relations[i].first;
+        int e_id = equ_relations[i].second;
+        int idx_c = dbid_classes.indexOf(c_id);
+        int idx_e = dbid_classes.indexOf(e_id);
+        if(idx_c!=-1&&idx_e!=-1){
+            classes[idx_c]->equivalentclasses<<classes[idx_e];
+            //set level label
+            classes[idx_c]->shape->levelLabels[5] += classes[idx_e]->shortname + " ";
+        }
+    }
+    //get anonymous sub classes
+    QList<QPair<int,QString> > asubs = db->getAllAnonymousSubClasses(this->ontologyID);
+    cout<<"Get "<<asubs.size()<<" anonymous sub classes from database."<<endl;
+    for(int i=0; i<asubs.size();i++){
+        int c_id = asubs[i].first;
+        QString str = asubs[i].second;
+        int idx_c = dbid_classes.indexOf(c_id);
+        if(idx_c!=-1){
+            classes[idx_c]->anonymousSubs.append(str);
+            //set level label
+            classes[idx_c]->shape->levelLabels[2] += "*" + str + " ";
+        }
+    }
+    //get anonymous super classes
+    QList<QPair<int,QString> > asups = db->getAllAnonymousSuperClasses(this->ontologyID);
+    cout<<"Get "<<asups.size()<<" anonymous super classes from database."<<endl;
+    for(int i=0; i<asups.size();i++){
+        int c_id = asups[i].first;
+        QString str = asups[i].second;
+        int idx_c = dbid_classes.indexOf(c_id);
+        if(idx_c!=-1){
+            classes[idx_c]->anonymousSupers.append(str);
+            //set level label
+            classes[idx_c]->shape->levelLabels[3] += "*" + str + " ";
+        }
+    }
+    //get anonymous disjoint classes
+    QList<QPair<int,QString> > adiss = db->getAllAnonymousDisjointClasses(this->ontologyID);
+    cout<<"Get "<<adiss.size()<<" anonymous disjoint classes from database."<<endl;
+    for(int i=0; i<adiss.size();i++){
+        int c_id = adiss[i].first;
+        QString str = adiss[i].second;
+        int idx_c = dbid_classes.indexOf(c_id);
+        if(idx_c!=-1){
+            classes[idx_c]->anonymousDisjoints.append(str);
+            //set level label
+            classes[idx_c]->shape->levelLabels[4] += "*" + str + " ";
+        }
+    }
+
+    //get anonymous equ classes
+    QList<QPair<int,QString> > aequs = db->getAllAnonymousEquivalentClasses(this->ontologyID);
+    cout<<"Get "<<aequs.size()<<" anonymous disjoint classes from database."<<endl;
+    for(int i=0; i<aequs.size();i++){
+        int c_id = aequs[i].first;
+        QString str = aequs[i].second;
+        int idx_c = dbid_classes.indexOf(c_id);
+        if(idx_c!=-1){
+            classes[idx_c]->anonymousEqus.append(str);
+            //set level label
+            classes[idx_c]->shape->levelLabels[5] += "*" + str + " ";
+        }
+    }
+
+    /**
+      Check "Thing" Class, if it does not exist, create one and link it.
+      Then set the superclass of classes without superclasses to "Thing".
+      **/
+    int idxThing = this->getIndexOfClasses("Thing");
+    if(idxThing==-1)
+    {
+        cout<<"Thing not found! Creating..."<<endl;
+        OwlClass * thingClass = new OwlClass();
+        thingClass->shortname = "Thing";
+        thingClass->URI ="owl:Thing";
+        thingClass->shape = new OntologyClassShape();
+        thingClass->shape->setIdString(thingClass->shortname);
+        thingClass->shape->setToolTip(thingClass->URI);
+        thingClass->shape->setPosAndSize(QPointF(200,0),QSizeF(150,20));
+        thingClass->shape->setMyLabel(thingClass->shortname);
+        thingClass->shape->setLabelByLevels(1,thingClass->shortname); //set level 1 label
+        thingClass->shape->setFillColour(this->CLASS_SHAPE_COLOR);
+        classes.append(thingClass);
+        idxThing = classes.size()-1;
+    }
+    for(int i=0;i<classes.size();i++)
+    {
+        if(i!=idxThing&&classes[i]->superclasses.size()==0){
+            classes[i]->superclasses.append(classes[idxThing]);
+            classes[i]->shape->setLabelByLevels(4,"[SUP]:Thing");
+            classes[idxThing]->subclasses.append(classes[i]);
+        }
+    }
+    QString thingsub = "[SUB]:";
+    for(int i=0;i<classes[idxThing]->subclasses.size();i++){
+        thingsub +=classes[idxThing]->subclasses[i]->shortname+" ";
+    }
+    classes[idxThing]->shape->setLabelByLevels(3,thingsub);
+
+    /** dealwith unmatched super/sub relation**/
+    for(int i=0;i<classes.size();i++)
+    {
+        //classes[i]'s superclass does not has subclass(classes[i])
+        //Warn:This needs to add the sub relation connector
+        //Moreover, if the superclass is "Thing", do not create the connector
+        for(int j=0;j<classes[i]->superclasses.size();j++)
+        {
+            if(!classes[i]->superclasses[j]->subclasses.contains(classes[i]))
+            {
+                classes[i]->superclasses[j]->subclasses.append(classes[i]);
+                //set level label, add this subclass
+                classes[i]->superclasses[j]->shape->levelLabels[2] += classes[i]->shortname+" ";
+                //create connectors
+                if(classes[i]->superclasses[j]->shortname.toLower()!="thing")
+                {
+                    Connector * conn = new Connector();
+                    conn->initWithConnection(classes[i]->shape,classes[i]->superclasses[j]->shape);
+                    conn->setDirected(true);
+                    conn->setColour(CLASS_CONNECTOR_COLOR);
+
+                    classes[i]->classesconnectors<<conn;
+                    classes[i]->superclasses[j]->classesconnectors<<conn;
+                }
+            }
+        }
+
+        //classes[i]'s subclass does not has superclass(classes[i])
+        //Since we only use the subclasses to draw the classview, so this does not need add connector
+        for(int j=0;j<classes[i]->subclasses.size();j++)
+        {
+            if(!classes[i]->subclasses[j]->superclasses.contains(classes[i]))
+            {
+                classes[i]->subclasses[j]->superclasses.append(classes[i]);
+                //set level label, add this superclass
+                classes[i]->subclasses[j]->shape->levelLabels[3] += classes[i]->shortname+" ";
+            }
+        }
+    }
+
+    for(int i=0;i<classes.size();i++){
+        OwlClass * c = classes[i];
+        if(!c->anonymousDisjoints.empty()||!c->anonymousEqus.empty()||!c->anonymousSubs.empty()||!c->anonymousSupers.empty())
+        {
+            c->shape->hasAnonymous = true;
+            c->shape->updateShape();
+        }
+    }
+
+    db->closeDB();
+//    cout<<"///////////get information of this ontology/////////////////"<<endl;
+    this->getOntoInfo();
+//    emit this->loadHistory();
+
+}
+
 //load ontology using owlapi via OWLAPIWrapper
 void OwlOntology::loadontology(const QFileInfo& fileInfo)
 {

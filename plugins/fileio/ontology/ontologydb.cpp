@@ -433,3 +433,163 @@ QList<KeyConcept_DBFormat *> OntologyDB::getKeyconcept_classes(int ontoID)
 
     return rs;
 }
+
+QList<QPair<int,int> > OntologyDB::getAllIndividualRelations(int ontoID)
+{
+    QList<QPair<int,int> > idvs;
+    if(!db.isOpen())return idvs;
+    QSqlQuery sq;
+    sq.prepare("select classID, individualID from individualrelations join individuals on individualrelations.individualid = individuals.EntityID where OntologyID = :oid");
+    sq.bindValue(":oid",ontoID);
+    sq.exec();
+    while(sq.next())
+    {
+        int class_id = sq.value(0).toInt();
+        int ind_id = sq.value(1).toInt();
+        idvs.append(QPair<int,int> (class_id,ind_id));
+    }
+    return idvs;
+}
+
+QList<QPair<int,int> > OntologyDB::getAllSubClasses(int ontoID)
+{
+    QList<QPair<int,int> > subs;
+    if(!db.isOpen())return subs;
+
+    QSqlQuery sq;
+
+    /**
+      Consider about when parent and child
+      belong to different ontology??
+      */
+    sq.prepare("select parentid,childid from subSumption join classes on subsumption.childid = classes.entityID where ontologyID= :oid");
+    sq.bindValue(":oid",ontoID);
+    sq.exec();
+    while(sq.next())
+    {
+        int p_id = sq.value(0).toInt();
+        int c_id = sq.value(1).toInt();
+        subs.append(QPair<int,int> (p_id,c_id));
+    }
+    return subs;
+}
+
+QList<QPair<int,int> > OntologyDB::getAllDisjointClasses(int ontoID)
+{
+    QList<QPair<int,int> > disjoints;
+    if(!db.isOpen())return disjoints;
+
+    QSqlQuery sq;
+    sq.prepare("select classID,disjointClassID from disjointClasses join classes on disjointClasses.disjointClassID = classes.entityID  where ontologyID = :oid");
+    sq.bindValue(":oid",ontoID);
+    sq.exec();
+
+    while(sq.next())
+    {
+        int c_id = sq.value(0).toInt();
+        int d_id = sq.value(1).toInt();
+        disjoints.append(QPair<int,int> (c_id,d_id));
+    }
+    return disjoints;
+}
+
+QList<QPair<int,int> > OntologyDB::getAllEquivalentClasses(int ontoID)
+{
+    QList<QPair<int,int> > equs;
+    if(!db.isOpen())return equs;
+
+    QSqlQuery sq;
+    sq.prepare("select classID,equivalentClassID from equivalentClasses join classes on equivalentClasses.equivalentClassID = classes.entityID  where ontologyID = :oid");
+    sq.bindValue(":oid",ontoID);
+    sq.exec();
+
+    while(sq.next())
+    {
+        int c_id = sq.value(0).toInt();
+        int e_id = sq.value(1).toInt();
+        equs.append(QPair<int,int> (c_id,e_id));
+    }
+
+    return equs;
+}
+
+QList<QPair<int,QString> > OntologyDB::getAllAnonymousSubClasses(int ontoID)
+{
+    QList<QPair<int,QString> > subs;
+    if(!db.isOpen())return subs;
+
+    QSqlQuery sq;
+    sq.prepare("select parentID,anonymousExpression from subsumption join anonymousclasses, entities  on subsumption.childid = anonymousclasses.entityID  and entities.entityid = anonymousclasses.entityID where ontologyID = :oid");
+    sq.bindValue(":oid",ontoID);
+    sq.exec();
+
+    while(sq.next())
+    {
+        int c_id = sq.value(0).toInt();
+        QString str = sq.value(1).toString();
+        subs.append(QPair<int,QString> (c_id,str));
+    }
+
+    return subs;
+}
+
+QList<QPair<int,QString> > OntologyDB::getAllAnonymousSuperClasses(int ontoID)
+{
+    QList<QPair<int,QString> > supers;
+    if(!db.isOpen())return supers;
+
+    QSqlQuery sq;
+    sq.prepare("select childID,anonymousExpression from subsumption join anonymousclasses, entities  on subsumption.parentid = anonymousclasses.entityID  and entities.entityid = anonymousclasses.entityID where ontologyID = :oid");
+    sq.bindValue(":oid",ontoID);
+    sq.exec();
+
+    while(sq.next())
+    {
+        int c_id = sq.value(0).toInt();
+        QString str = sq.value(1).toString();
+        supers.append(QPair<int,QString> (c_id,str));
+    }
+
+    return supers;
+}
+
+QList<QPair<int,QString> > OntologyDB::getAllAnonymousDisjointClasses(int ontoID)
+{
+    QList<QPair<int,QString> > ds;
+    if(!db.isOpen())return ds;
+
+    QSqlQuery sq;
+    sq.prepare("select classID,anonymousExpression from disjointClasses join anonymousclasses, entities  on disjointClasses.disjointClassID = anonymousclasses.entityID  and entities.entityid = anonymousclasses.entityID where ontologyID = :oid");
+    sq.bindValue(":oid",ontoID);
+    sq.exec();
+
+    while(sq.next())
+    {
+        int c_id = sq.value(0).toInt();
+        QString str = sq.value(1).toString();
+        ds.append(QPair<int,QString> (c_id,str));
+    }
+
+    return ds;
+}
+
+QList<QPair<int,QString> > OntologyDB::getAllAnonymousEquivalentClasses(int ontoID)
+{
+    QList<QPair<int,QString> > equs;
+    if(!db.isOpen())return equs;
+
+    QSqlQuery sq;
+
+    sq.prepare("select classID,anonymousExpression from equivalentClasses join anonymousclasses, entities  on equivalentClasses.equivalentClassID = anonymousclasses.entityID  and entities.entityid = anonymousclasses.entityID where ontologyID = :oid");
+    sq.bindValue(":oid",ontoID);
+    sq.exec();
+
+    while(sq.next())
+    {
+        int c_id = sq.value(0).toInt();
+        QString str = sq.value(1).toString();
+        equs.append(QPair<int,QString> (c_id,str));
+    }
+
+    return equs;
+}

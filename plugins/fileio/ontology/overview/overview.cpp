@@ -27,7 +27,7 @@ Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *
     QObject(parent)
 {
     this->numOfClasses = numOfNode;
-    this->sortSubclassesByAscending(ontology->classes);
+//    this->sortSubclassesByAscending(ontology->classes);
     kcTool=new KeyConceptClass(ontology);
     originalclasses.clear();
     originalclasses.append(kcTool->getNKeyClasses(this->numOfClasses));
@@ -173,6 +173,8 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                     ex = cp;
                     ey = sy;
                     if(!rsub.empty()){
+                        cp = ( classes[i]->overviewshape->pos().rx()
+                               + rsub[0]->overviewshape->pos().rx())/2;
                         sp = ep = rsub[0]->overviewshape->pos().ry();
                         for(int j=1;j<rsub.size();j++){
                             double py = rsub[j]->overviewshape->pos().ry();
@@ -191,6 +193,8 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                     ey = sy;
 
                     if(!rsub.empty()){
+                        cp = ( classes[i]->overviewshape->pos().rx()
+                               + rsub[0]->overviewshape->pos().rx())/2;
                         sp = ep = rsub[0]->overviewshape->pos().ry();
                         for(int j=1;j<rsub.size();j++){
                             double py = rsub[j]->overviewshape->pos().ry();
@@ -208,6 +212,8 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                     ey = cp;
                     sy += classes[i]->overviewshape->height()/2;
                     if(!rsub.empty()){
+                        cp = ( classes[i]->overviewshape->pos().ry()
+                               + rsub[0]->overviewshape->pos().ry())/2;
                         sp = ep = rsub[0]->overviewshape->pos().rx();
                         for(int j=1;j<rsub.size();j++){
                             double px = rsub[j]->overviewshape->pos().rx();
@@ -224,6 +230,8 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                     ey = cp;
                     sy -= classes[i]->overviewshape->height()/2;
                     if(!rsub.empty()){
+                        cp = ( classes[i]->overviewshape->pos().ry()
+                               + rsub[0]->overviewshape->pos().ry())/2;
                         sp = ep = rsub[0]->overviewshape->pos().rx();
                         for(int j=1;j<rsub.size();j++){
                             double px = rsub[j]->overviewshape->pos().rx();
@@ -1016,7 +1024,7 @@ void Overview::compactTreeLayout(double maxW,double maxH)
         }
         classes.append(addedClasses);
 
-        this->sortSubclassesByAscending(classes);
+//        this->sortSubclassesByAscending(classes);
 
         this->treeLayout(classes);
         this->drawOverview(m_wid);

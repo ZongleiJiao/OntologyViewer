@@ -232,7 +232,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    onto->loadontology(fileInfo);
 
     connect(onto,SIGNAL(loadHistory(int)),historydwgt,SLOT(loadInterests(int)));
-    onto->loadontologyFromDB(fileInfo);
+    onto->loadontologyFromDBOptimized(fileInfo);
     cout << "ontologyID---plugin---"<<onto->ontologyID<<endl;
 
 
@@ -258,9 +258,8 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
       **/
 
     this->overviewwid->setOntology(onto);
-
-    Overview * ov = new Overview(300,onto,canvas);
-    cout<<"Getting "<<ov->numOfClasses<<" overview keyconcept classes..."<<endl;
+    cout<<"Getting overview keyconcept classes..."<<endl;
+    Overview * ov = new Overview(300,onto,canvas);    
     cout<<"T:"<<st.elapsed()<<endl;
     cout<<"drawing overview..."<<endl;
     ov->showlayout(this->overviewwid);

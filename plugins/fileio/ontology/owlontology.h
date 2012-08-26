@@ -92,6 +92,7 @@ public:
 
     void loadontology(const QFileInfo& fileInfo);
     void loadontologyFromDB(const QFileInfo& fileInfo);
+    void loadontologyFromDBOptimized(const QFileInfo& fileInfo);
 
     void drawClassView(Canvas *canvas);
     void drawIndividualView(Canvas *canvas);
