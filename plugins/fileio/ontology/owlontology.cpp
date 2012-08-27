@@ -459,7 +459,7 @@ void OwlOntology::loadontologyFromDBOptimized(const QFileInfo &fileInfo)
     }
     //get equ relations
     QList<QPair<int,int> > equ_relations = db->getAllEquivalentClasses(this->ontologyID);
-    cout<<"Get "<<equ_relations.size()<<" disjoint relations from database."<<endl;
+    cout<<"Get "<<equ_relations.size()<<" equivalent relations from database."<<endl;
     for(int i=0;i<equ_relations.size();i++){
         int c_id = equ_relations[i].first;
         int e_id = equ_relations[i].second;
@@ -513,7 +513,7 @@ void OwlOntology::loadontologyFromDBOptimized(const QFileInfo &fileInfo)
 
     //get anonymous equ classes
     QList<QPair<int,QString> > aequs = db->getAllAnonymousEquivalentClasses(this->ontologyID);
-    cout<<"Get "<<aequs.size()<<" anonymous disjoint classes from database."<<endl;
+    cout<<"Get "<<aequs.size()<<" anonymous equivalent classes from database."<<endl;
     for(int i=0; i<aequs.size();i++){
         int c_id = aequs[i].first;
         QString str = aequs[i].second;

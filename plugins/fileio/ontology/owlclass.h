@@ -55,6 +55,8 @@ public:
     bool isFocused;
     void setFocused(bool focus, Canvas * canvas);
 
+    int tree_level;
+
     OwlClass();
     QString toQString();
 };

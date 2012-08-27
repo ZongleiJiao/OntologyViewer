@@ -15,6 +15,7 @@
 #include <ogdf/tree/RadialTreeLayout.h>
 #include <ogdf/energybased/FastMultipoleEmbedder.h>
 #include <ogdf/energybased/SpringEmbedderFR.h>
+#include <ogdf/basic/Graph_d.h>
 
 
 #define PI 3.14159265
@@ -885,6 +886,15 @@ QList<OwlClass *> Overview::sortSubclassesByAscending(QList<OwlClass *> graph)
     return rg;
 }
 
+void Overview::computeTreeLevel(int curlevel, OwlClass *node)
+{
+    node->tree_level=std::max(curlevel,node->tree_level);
+
+    for(int i=0;i<node->subclasses.size();i++){
+        computeTreeLevel(curlevel+1,node->subclasses[i]);
+    }
+}
+
 void Overview::treeLayout(QList<OwlClass *> graph)
 {
     //init graph
@@ -895,12 +905,26 @@ void Overview::treeLayout(QList<OwlClass *> graph)
 
     QList<OwlClass *> newgraph = graph;
 
+    //avoid sub > super (level) !!! consider circle!!
+    OwlClass * root;
+    for(int i=0;i<newgraph.size();i++){
+        newgraph[i]->tree_level = -1;
+        if(newgraph[i]->superclasses.empty())root = newgraph[i];
+    }
+    this->computeTreeLevel(0,root);
+    for(int i=0;i<newgraph.size();i++){
+        for(int j=0;j<newgraph[i]->superclasses.size();j++){
+            if(newgraph[i]->superclasses[0]->tree_level<newgraph[i]->superclasses[j]->tree_level)
+                newgraph[i]->superclasses.swap(0,j);
+        }
+    }
+
     QList<node> nodes;
     QList<edge> edges;
 
     for(int i=0;i<newgraph.size();i++)
     {
-        node nd = g.newNode();
+        node nd = g.newNode(i);
         ga.x(nd) = newgraph[i]->overviewshape->pos().rx();
         ga.y(nd) = newgraph[i]->overviewshape->pos().ry();
         ga.width(nd) = newgraph[i]->overviewshape->width();

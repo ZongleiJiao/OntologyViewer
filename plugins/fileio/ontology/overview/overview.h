@@ -97,6 +97,9 @@ private:
     const static double TREE_subtreeDistance = 4;
     const static double TREE_treeDistance = 10;
 
+    //compute tree level for each node
+    void computeTreeLevel(int curlevel, OwlClass * node);
+
 
     QList<DPolyline> treeconnectors;
     void treeLayout(QList<OwlClass *> graph);

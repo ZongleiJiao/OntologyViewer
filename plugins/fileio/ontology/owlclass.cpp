@@ -6,6 +6,8 @@ OwlClass::OwlClass()
     this->isIndividualsShowed=false;
     this->isFocused=false;
     this->db_entity_type = 1;
+
+    this->tree_level = -1;
 }
 QString OwlClass::toQString(){
     QString res;
