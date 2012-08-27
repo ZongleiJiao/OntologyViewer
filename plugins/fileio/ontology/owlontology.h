@@ -81,7 +81,7 @@ public:
 
     //methods
 //    OwlOntology(Canvas * canvas,QMainWindow *mainwin);
-    OwlOntology(Canvas * canvas,QMainWindow *mainwin,DetailDockWidget * equwid);
+    OwlOntology(Canvas * canvas,QMainWindow *mainwin);
 
     int getIndexOfIndividuals(QString shortname);
     int getIndexOfIndividualsByURI(QString URI);

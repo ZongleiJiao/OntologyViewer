@@ -23,12 +23,13 @@ using namespace dunnart;
 using namespace std;
 
 //OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
-OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin, DetailDockWidget *equwid)
+OwlOntology::OwlOntology(Canvas *canvas, QMainWindow *mainwin)
 {
     this->maincanvas = canvas;
     this->currentfocusedclassidx = -1;
     this->appmainwindow = mainwin;
-    this->equclasswid = equwid;
+
+//    this->equclasswid = equwid;
 
 //    wid = new DetailDockWidget();
 //    this->appmainwindow->addDockWidget(Qt::LeftDockWidgetArea,wid);
@@ -979,7 +980,6 @@ QString OwlOntology::getOntoInfo(){
 //draw the ontology classes
 void OwlOntology::drawClassView(Canvas *canvas)
 {
-    cout<<"Start drawing classes..."<<endl;
     //draw classes, check whether thing is a subclass of them
     bool issubthing=false;
     int idxthing=getIndexOfClasses("Thing");
@@ -987,7 +987,6 @@ void OwlOntology::drawClassView(Canvas *canvas)
     if(idxthing!=-1)thingclass=classes[idxthing];
     for(int i=0;i<classes.length();i++)
     {
-        cout<<"Node "<<i<<". ";
         //check if "Thing" is one subclass
         if(classes[i]->subclasses.contains(thingclass))issubthing=true;
         //**** do not draw thing ****
@@ -997,18 +996,14 @@ void OwlOntology::drawClassView(Canvas *canvas)
     //if "Thing" is a subclass, draw it
     if(issubthing)canvas->addItem(thingclass->shape);
 
-    cout<<"\nStart drawing edges..."<<endl;
     //draw subclasses connections
     for(int i=0;i<classes.length();i++)
     {
-        cout<<"\nedges of class["<<i<<"]("
-            <<classes[i]->shortname.toStdString()<<"):"
-            <<"total connectors="<<classes[i]->classesconnectors.size()<<endl;
         //**** do not draw thing's connectors ****
         if(i!=idxthing)
         {           
             for(int j=0;j<classes[i]->classesconnectors.size();j++)
-            {   cout<<"<"<<j<<">";
+            {
                 canvas->addItem(classes[i]->classesconnectors[j]);
             }
         }
@@ -1754,47 +1749,33 @@ void OwlOntology::ontoclass_clicked(OntologyClassShape *classshape)
 {
     if(this->currentfocusedclassidx!=-1){
 //        this->ontoclass_doubleclicked(classes[currentfocusedclassidx]->shape);
-        cout<<"ccc111"<<endl;
         classes[currentfocusedclassidx]->hideIndividuals(this->maincanvas);
-        cout<<"ccc222"<<endl;
         classes[currentfocusedclassidx]->setFocused(false,this->maincanvas);
-        cout<<"ccc333"<<endl;
     }
 
     int idx = this->getIndexOfClasses(classshape->idString());
     if(idx!=-1){
         classes[idx]->showIndividuals(this->maincanvas);
-        cout<<"ccc444"<<endl;
         classes[idx]->setFocused(true,this->maincanvas);
-        cout<<"ccc555"<<endl;
         this->currentfocusedclassidx = idx;
-        cout<<"ccc666"<<endl;
 
         OwlClass *selectedClass = classes[idx];
         cout << this->getClassInfo(selectedClass).toStdString();
         emit(this->loading(classshape->idString()));
     //    emit(this->savingInterests(classshape->idString()));
     }
-    cout<<"ccc777"<<endl;
     emit clickedClass(classes[idx]->shortname);
-    cout<<"ccc888"<<endl;
     this->maincanvas->fully_restart_graph_layout();
-
 }
 
 void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
 {
-    cout<<"ccc111"<<endl;
-
     int idx = this->getIndexOfClasses(classshape->idString());
     if(idx!=-1){
 
         classes[idx]->hideIndividuals(this->maincanvas);
-        cout<<"ccc222"<<endl;
         classes[idx]->setFocused(false,this->maincanvas);
-        cout<<"ccc333"<<endl;
         this->maincanvas->fully_restart_graph_layout();
-        cout<<"ccc444"<<endl;
     }
 
 
@@ -1806,6 +1787,7 @@ void OwlOntology::ontoclass_rightclicked(OntologyClassShape *classshape)
 {
     int idx = this->getIndexOfClasses(classshape->idString());
 
+    //show axiom view
     if(idx!=-1){
         //show details
         DetailVisualizationDockWidget * detailwgt = new DetailVisualizationDockWidget(this,classes[idx]);
@@ -1939,13 +1921,6 @@ QList<OwlClass *> OwlOntology::getOwlClassByName(QString name){
             classList.append(classes[i]);
         }
     }
-//    for(int i=0;i<dClasses.length();i++)
-//    {
-//        if(!dClasses[i]->shortname.contains(name,Qt::CaseInsensitive)){
-//            classList.append(dClasses[i]);
-//        }
-//    }
-//    cout << "------------------------>" << name.toStdString() << classList.size() << endl;
     return classList;
 }
 
@@ -1960,7 +1935,6 @@ QList<OwlClass *> OwlOntology::getCurrentOwlClassByName(QString name){
             classList.append(dClasses[i]);
         }
     }
-//    cout << "------------------------>" << name.toStdString() << classList.size() << endl;
     return classList;
 }
 

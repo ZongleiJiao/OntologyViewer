@@ -29,12 +29,15 @@ Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *
 {
     this->numOfClasses = numOfNode;
 //    this->sortSubclassesByAscending(ontology->classes);
+    cout<<"Init key concept..."<<endl;
     kcTool=new KeyConceptClass(ontology);
     originalclasses.clear();
+    cout<<"Get key concept classes..."<<endl;
     originalclasses.append(kcTool->getNKeyClasses(this->numOfClasses));
     classes.clear();
+    cout<<"Convert to overview shapes..."<<endl;
     classes.append(convertOverviewShapes(originalclasses));
-//    numOfClasses=classes.size();
+
     m_ontology = ontology;
     this->m_detailview = new DetailedView(canvas,ontology);
     this->isOrthogonalTreeLayout = false;
@@ -147,7 +150,6 @@ void Overview::drawOverview(OverviewDockWidget *wid)
     wid->animationPre();
     //draw shape
     for(int i=0;i<classes.size();i++){
-        //cout<<classes[i]->shortname.toStdString()<<endl;
         wid->addOverviewShape(classes[i]);
     }
     wid->animationStart();
@@ -186,11 +188,14 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                     cp = ( classes[i]->overviewshape->pos().rx()
                            + classes[i]->subclasses[0]->overviewshape->pos().rx())/2;
                     sx += classes[i]->overviewshape->width()/2;
-                    ex = cp;
+
+                    ex = sx;
                     ey = sy;
+
                     if(!rsub.empty()){
                         cp = ( classes[i]->overviewshape->pos().rx()
                                + rsub[0]->overviewshape->pos().rx())/2;
+                        ex=cp;
                         sp = ep = rsub[0]->overviewshape->pos().ry();
                         for(int j=1;j<rsub.size();j++){
                             double py = rsub[j]->overviewshape->pos().ry();
@@ -205,12 +210,14 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                     cp = ( classes[i]->overviewshape->pos().rx()
                            + classes[i]->subclasses[0]->overviewshape->pos().rx())/2;
                     sx-= classes[i]->overviewshape->width()/2;
-                    ex = cp;
+
+                    ex = sx;
                     ey = sy;
 
                     if(!rsub.empty()){
                         cp = ( classes[i]->overviewshape->pos().rx()
                                + rsub[0]->overviewshape->pos().rx())/2;
+                        ex=cp;
                         sp = ep = rsub[0]->overviewshape->pos().ry();
                         for(int j=1;j<rsub.size();j++){
                             double py = rsub[j]->overviewshape->pos().ry();
@@ -224,12 +231,15 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                 {
                     cp = ( classes[i]->overviewshape->pos().ry()
                            + classes[i]->subclasses[0]->overviewshape->pos().ry())/2;
-                    ex = sx;
-                    ey = cp;
+                    ex = sx;                    
+
                     sy += classes[i]->overviewshape->height()/2;
+                    ey = sy;
+
                     if(!rsub.empty()){
                         cp = ( classes[i]->overviewshape->pos().ry()
                                + rsub[0]->overviewshape->pos().ry())/2;
+                        ey = cp;
                         sp = ep = rsub[0]->overviewshape->pos().rx();
                         for(int j=1;j<rsub.size();j++){
                             double px = rsub[j]->overviewshape->pos().rx();
@@ -243,11 +253,14 @@ void Overview::drawOverview(OverviewDockWidget *wid)
                     cp = ( classes[i]->overviewshape->pos().ry()
                            + classes[i]->subclasses[0]->overviewshape->pos().ry())/2;
                     ex = sx;
-                    ey = cp;
+
                     sy -= classes[i]->overviewshape->height()/2;
+                    ey = sy;
+
                     if(!rsub.empty()){
                         cp = ( classes[i]->overviewshape->pos().ry()
                                + rsub[0]->overviewshape->pos().ry())/2;
+                        ey = cp;
                         sp = ep = rsub[0]->overviewshape->pos().rx();
                         for(int j=1;j<rsub.size();j++){
                             double px = rsub[j]->overviewshape->pos().rx();
@@ -1234,7 +1247,6 @@ void Overview::widSceneClicked(OwlClass *cls)
 
 void Overview::detailView_ClickedClass(QString shortname)
 {
-    cout<<"d11111"<<endl;
     for(int i = 0;i<classes.size();i++){
         if(classes[i]->overviewshape->getStatus()!=OverviewClassShape::STATUS_OutDetailview)
         {
@@ -1244,7 +1256,6 @@ void Overview::detailView_ClickedClass(QString shortname)
     int idx = getIndexByShortname(classes,shortname);
     if(idx!=-1)classes[idx]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Focused);
 
-    cout<<"d22222"<<endl;
     int oidx = m_ontology->getIndexOfClasses(shortname);
     OwlClass * c = m_ontology->classes[oidx];
     for(int i = 0;i<c->subclasses.size();i++)
@@ -1258,9 +1269,7 @@ void Overview::detailView_ClickedClass(QString shortname)
         if(ix!=-1)classes[ix]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SuperFocused);
     }
 
-    cout<<"d33333"<<endl;
     this->updatelayout();
-    cout<<"d44444"<<endl;
 }
 
 void Overview::detailView_ClassHoverEnter(QString shortname)

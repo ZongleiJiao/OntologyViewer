@@ -15,10 +15,8 @@ DetailDockWidget::DetailDockWidget(QWidget *parent) :
 
 void DetailDockWidget::clearall()
 {
-//    my_canvas->~Canvas();
-//    my_canvas = new Canvas();
     my_canvas->clear();
-    my_view->~CanvasView();
+    delete my_view;
     my_view = new CanvasView(my_canvas);
     my_view->scale(0.5,0.5);
     this->setWidget(my_view);

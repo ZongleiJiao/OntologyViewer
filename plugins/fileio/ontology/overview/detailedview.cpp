@@ -136,15 +136,15 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
     }
     for(int i=0;i<dedges.size();i++){
         m_canvas->removeItem(dedges[i]);
-        dedges[i]->~Connector();
+        delete dedges[i];
     }
     for(int i=0;i<subexts.size();i++){
         m_canvas->removeItem(subexts[i]);
-        subexts[i]->~ShapeObj();
+        delete subexts[i];
     }
     for(int i=0;i<superexts.size();i++){
         m_canvas->removeItem(superexts[i]);
-        superexts[i]->~ShapeObj();
+        delete superexts[i];
     }
 
     disconnect(this,SLOT(shapeRight_Clicked(OntologyClassShape*)));
@@ -299,8 +299,8 @@ void DetailedView::extshape_Clicked(ExtensionShape *cs)
     dedges.removeAll(cs->edge);
     cs->linkedClass->classesconnectors.removeAll(cs->edge);
 
-    cs->edge->~Connector();
-    cs->~ShapeObj();
+    delete cs->edge;
+    delete cs;
 
     this->m_canvas->fully_restart_graph_layout();
 
@@ -362,19 +362,17 @@ void DetailedView::removeIndividuals(){
 
 void DetailedView::shapeRight_Clicked(OntologyClassShape *shape)
 {
-    //unfinished!!!!
 //    QMessageBox * m = new QMessageBox();
 //    m->setText("Unfinished function!!");
 //    m->show();
 //    return;
 
-    cout<<"--Click Right!!!"<<endl;
     if(shape->hasChild){
-        cout<<shape->idString().toStdString()<<" has child : "<<shape->isShowingChild<<endl;
+//        cout<<shape->idString().toStdString()<<" has child : "<<shape->isShowingChild<<endl;
         int idx = getIndexByShortname(dclasses,shape->idString());
 
         if(shape->isShowingChild){
-            cout<<"hide all children!"<<endl;
+//            cout<<"hide all children!"<<endl;
             shape->isShowingChild = false;
             shape->updateShape();
             //remove all sub trees
@@ -386,7 +384,7 @@ void DetailedView::shapeRight_Clicked(OntologyClassShape *shape)
 
         }
         else{
-            cout<<"show all children!"<<endl;
+//            cout<<"show all children!"<<endl;
 
             shape->isShowingChild = true;
             shape->updateShape();
@@ -409,8 +407,6 @@ void DetailedView::shapeRight_Clicked(OntologyClassShape *shape)
                         tmp->classesconnectors.append(c);
                         dclasses[idx]->classesconnectors.append(c);
 
-//                        if(tmp->superclasses.size()>1)
-
                     }
                     else{
                         tmp->shape->setVisible(true);
@@ -422,8 +418,8 @@ void DetailedView::shapeRight_Clicked(OntologyClassShape *shape)
                     if(subexts[i]->linkedClass == dclasses[idx]){
                         dclasses[idx]->classesconnectors.removeAll(subexts[i]->edge);
                         dedges.removeAll(subexts[i]->edge);
-                        subexts[i]->edge->~Connector();
-                        subexts[i]->~ShapeObj();
+                        delete subexts[i]->edge;
+                        delete subexts[i];
                         subexts.removeAt(i);
                     }
                 }
@@ -453,8 +449,8 @@ void DetailedView::removeClass(OwlClass *c)
             dedges.removeAll(cs->edge);
             cs->linkedClass->classesconnectors.removeAll(cs->edge);
 
-            cs->edge->~Connector();
-            cs->~ShapeObj();
+            delete cs->edge;
+            delete cs;
 
             subexts.removeAt(i);
             break;
@@ -468,8 +464,8 @@ void DetailedView::removeClass(OwlClass *c)
             dedges.removeAll(cs->edge);
             cs->linkedClass->classesconnectors.removeAll(cs->edge);
 
-            cs->edge->~Connector();
-            cs->~ShapeObj();
+            delete cs->edge;
+            delete cs;
             superexts.removeAt(i);
             break;
         }

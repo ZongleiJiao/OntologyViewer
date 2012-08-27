@@ -58,7 +58,7 @@ void HistoryDockWidget::selectedItem(QListWidgetItem *item){
 }
 
 void HistoryDockWidget::loadInterests(int ontoID){
-cout << "+++++++++++++++>>>>>11111---"<<ontoID<<endl;
+//cout << "+++++++++++++++>>>>>11111---"<<ontoID<<endl;
 
 //    QList<QString> his = this->detailedview->m_ontology->db->loadHistory(ontoID);
 

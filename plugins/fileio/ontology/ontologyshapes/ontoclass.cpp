@@ -67,29 +67,19 @@ void OntologyClassShape::mousePressEvent(QGraphicsSceneMouseEvent *event){
         qreal mx = event->buttonDownPos(event->button()).rx();
         qreal lx = -width()/2;
         qreal rx = +width()/2;
-        cout<<"lx, rx, mx -- "<<lx<<","<<rx<<","<<mx<<endl;
         if(mx>=lx&&mx<=lx+20){
-            cout<<"Click left!!!"<<endl;
         }
         else if (mx>=rx-20&&mx<=rx){
-            cout<<"Click Right!!!"<<endl;
             if(hasChild){
-//                if(isShowingChild)isShowingChild=false;
-//                else isShowingChild = true;
-//                this->updateShape();
                 emit this->myclickright(this);
             }
         }
         else{
-            cout<<"Click Shape!!!"<<endl;
-
             emit myclick(this);
         }
     }else if(event->button() == Qt::RightButton){
         emit this->myRightClick(this);
     }
-//    QGraphicsScene *scene = new QGraphicsScene( this );
-
 }
 
 void OntologyClassShape::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -102,17 +92,6 @@ void OntologyClassShape::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
     emit this->myMouseHoverLeave(this->idString());
 }
-
-
-//TODO focusin event
-//void OntologyClassShape::focusInEvent(QFocusEvent *event){
-////    std::cout << "1111111--" << event->type()<<endl;
-//}
-
-////TODO focusout event
-//void OntologyClassShape::focusOutEvent(QFocusEvent *event){
-////    std::cout << "22222--" << event->type()<<endl;
-//}
 
 uint OntologyClassShape::levelsOfDetail(void) const{
     return 7;

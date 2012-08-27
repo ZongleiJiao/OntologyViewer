@@ -182,9 +182,10 @@ class OntologyFileIOPlugin :
             this->appmainwin->addDockWidget(Qt::LeftDockWidgetArea,overviewwid);
 
 
-            this->equclasswid= new DetailDockWidget();
-            this->appmainwin->addDockWidget(Qt::LeftDockWidgetArea,equclasswid);
-            this->equclasswid->setWindowTitle("Equivalent Class");
+//            this->equclasswid= new DetailDockWidget();
+//            this->appmainwin->addDockWidget(Qt::LeftDockWidgetArea,equclasswid);
+//            this->equclasswid->setWindowTitle("Equivalent Class");
+//            this->equclasswid->setVisible(false);
 
             searchdwgt = new SearchDockWidget();
             this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,searchdwgt);
@@ -217,7 +218,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
         const QFileInfo& fileInfo, QString& errorMessage)
 {
     this->overviewwid->show();
-    this->equclasswid->show();
+//    this->equclasswid->show();
     searchdwgt->show();
     infoboxdwgt->show();
     typedwgt->show();
@@ -228,7 +229,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     QTime st = QTime::currentTime();
     st.start();
     //OwlOntology * onto = new OwlOntology(canvas,this->appmainwin);
-    OwlOntology * onto = new OwlOntology(canvas,this->appmainwin,this->equclasswid);
+    OwlOntology * onto = new OwlOntology(canvas,this->appmainwin);
 //    onto->loadontology(fileInfo);
 
     connect(onto,SIGNAL(loadHistory(int)),historydwgt,SLOT(loadInterests(int)));
@@ -251,16 +252,13 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     /** text output **/
 //    cout<<onto->toQString().toStdString();
 
-    /** Overview of classes (not finished) **/
-    /**
-      1. get N keyclasses from allclasses & reset sub/sup relations
-      2. draw overview
-      **/
+    /** Overview of classes **/
 
     this->overviewwid->setOntology(onto);
-    cout<<"Getting overview keyconcept classes..."<<endl;
+    cout<<"Prepare overview..."<<endl;
     Overview * ov = new Overview(300,onto,canvas);    
     cout<<"T:"<<st.elapsed()<<endl;
+
     cout<<"drawing overview..."<<endl;
     ov->showlayout(this->overviewwid);
     cout<<"T:"<<st.elapsed()<<endl;
@@ -279,44 +277,6 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    onto->drawIndividualView(canvas);
     //propertyview
 //    onto->drawPropertyView(canvas);
-
-    //set automatic layout
-//    canvas->setOptAutomaticGraphLayout(true);
-//    canvas->setOptLayoutMode(canvas->LayeredLayout);
-//    canvas->setOptPreventOverlaps(true);
-//    canvas->setOptFlowDirection(Canvas::FlowUp);
-//    canvas->fully_restart_graph_layout();
-
-    /** the getFormula() and logicalview() display
-      * the anonymous class strings into formula
-      *  and graphs.
-    **/
-//    onto->drawLogicalView(canvas);
-
-
-    //set automatic layout
-//    canvas->setOptAutomaticGraphLayout(true);
-//    canvas->setOptLayoutMode(canvas->FlowLayout);
-//    canvas->setOptPreventOverlaps(true);
-//    canvas->setOptFlowDirection(Canvas::FlowUp);
-//    canvas->fully_restart_graph_layout();
-
-
-
-//    cout<<onto->ontologyname.toStdString()<<endl;
-
-
-//    DetailVisualizationDockWidget * dvDW = new DetailVisualizationDockWidget(onto,onto->classes[0]);
-    //this->appmainwin->addDockWidget(Qt::LeftDockWidgetArea,dvDW);
-//    dvDW->show();
-//    QString x = "ObjectIntersectionOf(<Student> ObjectAllValuesFrom(<hasChildren> <Female>) ObjectHasValue(<hasGender> <male>) ObjectExactCardinality(3 <hasChildren> Thing))";
-//    QString x1 = "<Student>";
-//    QString x2 ="ObjectIntersectionOf(<Person> ObjectSomeValuesFrom(<hasHabitat> <University>) DataHasValue(<isHardWorking> \"true\"^^xsd:boolean))";
-//    Expression * e = new Expression();
-//    e = e->getExpressionData(onto,x2);
-//    dvDW->drawExpression(e,370);
-//    cout<<e->getHeight()<<endl;
-//    cout<<e->subExpressions.size()<<endl;
 
     return true;
 }

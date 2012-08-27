@@ -87,7 +87,6 @@ void OverviewDockWidget::addTreeConnector(DPolyline pl,QPen pen)
     for (iter = pl.begin(); iter.valid(); ++iter) {
         qreal x = (*iter).m_x;
         qreal y = (*iter).m_y;
-//        std::cout<<"P: x="<<x<<", y="<<y<<endl;
         if(x0!=-167&&y0!=-167){
             QGraphicsItem *it = m_scene->addLine(x0,y0,x,y,pen);
             lines.append(it);
@@ -420,7 +419,6 @@ void OverviewDockWidget::scaling()
 
     // Choose the smallest of the two scale values.
     qreal scale = std::min(xscale, yscale);
-    cout<<scale<<endl;
     // Scale uniformly, and transform to center in the overview.
     QTransform scaleTransform = QTransform::fromScale(scale, scale);
     QRectF targetRect = scaleTransform.mapRect(diagramBounds);
@@ -453,7 +451,6 @@ void OverviewDockWidget::circleItem(QString shortname)
     for(int i = 0;i<gitems.size();i++){
         if(gitems[i]->toolTip()==shortname){
             QPointF p = oriabspos[i];
-            cout<<p.rx()<<",,,"<<p.ry()<<endl;
             this->hoverCircle->setPos(p.rx()-6,p.ry()-6);
             this->hoverCircle->setVisible(true);
             break;

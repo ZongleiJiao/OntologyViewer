@@ -49,7 +49,6 @@ QString OntologyDB::getOntologyNamespace(int ontoID)
     while(sq.next()){
         ns = sq.value(0).toString();
     }
-    cout<<"DB get NS: " <<ns.toStdString()<<endl;
     return ns;
 }
 
@@ -78,7 +77,6 @@ QList<OwlIndividual *> OntologyDB::getAllIndividuals(int ontoID)
 
         idvs.append(tmp);
     }
-    cout<<"DB individuals: "<<idvs.size()<<endl;
     return idvs;
 }
 
@@ -120,7 +118,6 @@ QList<OwlClass *> OntologyDB::getAllNamedClasses(int ontoID)
 
 QList<int> OntologyDB::getIndividualURIsByClass(int class_entityid)
 {
-//    cout<<"get IND..."<<endl;
     QList<int> idvs;
     if(!db.isOpen())return idvs;
     QSqlQuery sq;
@@ -136,7 +133,6 @@ QList<int> OntologyDB::getIndividualURIsByClass(int class_entityid)
 
 QList<int> OntologyDB::getSubClasses(int class_entityid)
 {
-//    cout<<"get subs..."<<endl;
     QList<int> subs;
     if(!db.isOpen())return subs;
 
@@ -155,7 +151,6 @@ QList<int> OntologyDB::getSubClasses(int class_entityid)
 
 QList<int> OntologyDB::getSuperClasses(int class_entityid){
 
-//    cout<<"get sups..."<<endl;
     QList<int> sups;
     if(!db.isOpen())return sups;
 
@@ -173,7 +168,6 @@ QList<int> OntologyDB::getSuperClasses(int class_entityid){
 
 QList<int> OntologyDB::getDisjointClasses(int class_entityid){
 
-//    cout<<"get diss..."<<endl;
     QList<int> disjoints;
     if(!db.isOpen())return disjoints;
 
@@ -192,7 +186,6 @@ QList<int> OntologyDB::getDisjointClasses(int class_entityid){
 
 QList<int> OntologyDB::getEquivalentClasses(int class_entityid){
 
-//    cout<<"get equs..."<<endl;
     QList<int> equs;
     if(!db.isOpen())return equs;
 
@@ -213,12 +206,10 @@ QList<int> OntologyDB::getEquivalentClasses(int class_entityid){
 QList<QString> OntologyDB::getAnonymousSubClasses(int class_entityid)
 {
 
-//    cout<<"get asubs..."<<endl;
     QList<QString> asubs;
     if(!db.isOpen())return asubs;
 
     QSqlQuery sq;
-//    sq.prepare("select anonymousclasses.anonymousexpression from (select * from subSumption where parentID = :clsid) as t1 join anonymousclasses on t1.childid = anonymousclasses.entityID;");
     sq.prepare("select anonymousclasses.anonymousexpression from subSumption join anonymousclasses on childid = entityID where parentID = :clsid;");
     sq.bindValue(":clsid",class_entityid);
     sq.exec();
@@ -234,12 +225,10 @@ QList<QString> OntologyDB::getAnonymousSubClasses(int class_entityid)
 QList<QString> OntologyDB::getAnonymousSuperClasses(int class_entityid)
 {
 
-//    cout<<"get asups..."<<endl;
     QList<QString> asups;
     if(!db.isOpen())return asups;
 
     QSqlQuery sq;
-//    sq.prepare("select anonymousclasses.anonymousexpression from (select * from subSumption where childID = :clsid) as t1 join anonymousclasses on t1.parentID = anonymousclasses.entityID;");
     sq.prepare("select anonymousclasses.anonymousexpression from subSumption join anonymousclasses on parentID = entityID where childID = :clsid;");
     sq.bindValue(":clsid",class_entityid);
     sq.exec();
@@ -255,12 +244,10 @@ QList<QString> OntologyDB::getAnonymousSuperClasses(int class_entityid)
 QList<QString> OntologyDB::getAnonymousDisjointClasses(int class_entityid)
 {
 
-//    cout<<"get adiss..."<<endl;
     QList<QString> adisjoint;
     if(!db.isOpen())return adisjoint;
 
     QSqlQuery sq;
-//    sq.prepare("select anonymousclasses.anonymousexpression from (select * from disjointClasses where classID = :clsid) as t1 join anonymousclasses on t1.disjointClassID = anonymousclasses.entityID;");
     sq.prepare("select anonymousclasses.anonymousexpression from disjointClasses join anonymousclasses on disjointClassID = entityID where classID = :clsid;");
     sq.bindValue(":clsid",class_entityid);
     sq.exec();
@@ -275,13 +262,10 @@ QList<QString> OntologyDB::getAnonymousDisjointClasses(int class_entityid)
 
 QList<QString> OntologyDB::getAnonymousEquivalentClasses(int class_entityid)
 {
-
-//    cout<<"get aequs..."<<endl;
     QList<QString> aequs;
     if(!db.isOpen())return aequs;
 
     QSqlQuery sq;
-//    sq.prepare("select anonymousclasses.anonymousexpression from (select * from EquivalentClasses where classID = :clsid) as t1 join anonymousclasses on t1.EquivalentClassID = anonymousclasses.entityID;");
     sq.prepare("select anonymousclasses.anonymousexpression from EquivalentClasses join anonymousclasses on EquivalentClassID = entityID where classid = :clsid;");
     sq.bindValue(":clsid",class_entityid);
     sq.exec();
@@ -333,19 +317,16 @@ QList<QString> OntologyDB::getAnonymousEquivalentProperties(int Property_entityi
 void OntologyDB::saveInterests(int ontoID, int entityID, int entityType){
 
     if(!db.isOpen()){
-        cout <<"============->"<<ontoID<<" "<<entityID <<" "<<entityType <<" " <<endl;
         db.open();
     }
     QSqlQuery sq;
 
-//    sq.prepare("insert into historyRecord(ontologyID,entityID,entityType) values(?,?,?)");
     sq.prepare("insert into historyRecord values(?,?,?, datetime('now'))");
     sq.addBindValue(ontoID);
     sq.addBindValue(entityID);
     sq.addBindValue(entityType);
 
     sq.exec();
-//    cout <<"----------->"<<ontoID<<" "<<entityID <<" "<<entityType <<" " << sq.exec()<<endl;
 }
 
 void OntologyDB::clearHistoryByOntology(int ontoID){
@@ -360,13 +341,10 @@ void OntologyDB::clearHistoryByOntology(int ontoID){
 
 QList<QString> OntologyDB::loadHistory(int ontoID){
 
-cout <<"ontologyID1:"+ontoID<<endl;
     if(!db.isOpen()){
         db.open();
     }
-    cout <<"ontologyID2:"+ontoID<<endl;
     QSqlQuery sq;
-    cout <<"ontologyID3:"+ontoID<<endl;
     sq.prepare("select shortname from Classes c, historyRecord h where h.OntologyID = ? and c.entityid = h.entityid");
     sq.addBindValue(ontoID);
 
@@ -419,6 +397,7 @@ QList<KeyConcept_DBFormat *> OntologyDB::getKeyconcept_classes(int ontoID)
 //6    [NumberOfVisits]	integer,
 //7    [LandMark]		integer
     QList<KeyConcept_DBFormat *> rs;
+    cout<<"Assign KC score records..."<<endl;
     while(sq.next()){
         KeyConcept_DBFormat * r = new KeyConcept_DBFormat();
         r->ontoID = sq.value(1).toInt();

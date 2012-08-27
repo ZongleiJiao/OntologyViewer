@@ -39,7 +39,6 @@ int initJavaWrapper(int argc,char **argv)
         vm_args.options = options;
         vm_args.nOptions = 3;
         vm_args.ignoreUnrecognized = JNI_TRUE;
-        //cout<<"Init JVM..."<<endl;
 
         int res = JNI_CreateJavaVM(&jvm, (void**)&javaEnv, &vm_args);
         return res;

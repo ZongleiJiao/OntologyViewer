@@ -122,8 +122,6 @@ int KeyConceptClass::computeNumberOfPath(OwlClass *node)
         }
     }
 
-//    cout<<"Leaves of <"<<node->shortname.toStdString()<<">:"<<nleaves<<endl;
-
     //find roots
     int nroots=0;
     for(int i=0;i<node->superclasses.size();i++)
@@ -147,8 +145,6 @@ int KeyConceptClass::computeNumberOfPath(OwlClass *node)
         }
     }
 
-//    cout<<"Roots of <"<<node->shortname.toStdString()<<">:"<<nroots<<endl;
-//    cout<<"Paths of <"<<node->shortname.toStdString()<<">:"<<nroots*nleaves<<endl;
     return nleaves*nroots;
 }
 
@@ -326,15 +322,15 @@ void KeyConceptClass::computeLocalPopularities()
 void KeyConceptClass::computePopularities()
 {
     /** P=wLP*LP + wGP*GP **/
-    cout<<"Computing GlobalPopularities..."<<endl;
-//    computeGlobalPopularities();
-    cout<<"Computing LocalPopularities..."<<endl;
-//    computeLocalPopularities();
+    cout<<"Computing global popularities..."<<endl;
+    computeGlobalPopularities();
+    cout<<"Computing local popularities..."<<endl;
+    computeLocalPopularities();
     for(int i=0;i<classnum;i++)
     {
-//        measures[i].popularity = popularity_wLP * measures[i].localpopularity
-//                + popularity_wGP * measures[i].globalpopularity;
-        measures[i].popularity = measures[i].globalpopularity;
+        measures[i].popularity = popularity_wLP * measures[i].localpopularity
+                + popularity_wGP * measures[i].globalpopularity;
+//        measures[i].popularity = measures[i].globalpopularity;
     }
 }
 
@@ -388,21 +384,11 @@ QList<OwlClass *> KeyConceptClass::getNKeyClasses(int n)
 {
     QList<OwlClass *> result;
 
-//    int f= checkfile();
-//    if(f==1)
-//    {
-//        cout<<"Reading score file..."<<endl;
-//        this->readScoreFile();
-//    }
-//    else
-//    {
-//        cout<<"Calculate scores..."<<endl;
-//        computeScore();
-//        this->writeScoreFile();
-//    }
+    cout<<"Read KC score from DB..."<<endl;
+
     int f = readScore_DB();
     if(f==-1){
-        cout<<"Calculate scores..."<<endl;
+        cout<<"Not found! Calculate scores..."<<endl;
         computeScore();
         writeScore_DB();
     }
@@ -410,8 +396,24 @@ QList<OwlClass *> KeyConceptClass::getNKeyClasses(int n)
     cout<<"KC computing overall scores"<<endl;
     this->computeOverallScore();
     //top n overall score classes
-    if(n>classnum)n=classnum;
-    for(int i=0;i<n;i++)result<<classes[measures[i].idx];
+    if(n>=classnum){
+        n=classnum;
+        result<<classes;
+    }
+    else{
+        for(int i=0;i<n;i++){
+            int max=i;
+            for(int j=i+1;j<classnum;j++){
+                if(measures[j].overallscore>measures[max].overallscore)max=j;
+            }
+            if(max!=i)measures.swap(i,max);
+            result<<classes[measures[i].idx];
+        }
+    }
+//    this->sortMeasuresByOverallScore();
+
+//    for(int i=0;i<n;i++)result<<classes[measures[i].idx];
+
     cout<<"KC return "<<n<<" classes."<<endl;
     return result;
 }
@@ -534,10 +536,6 @@ void KeyConceptClass::readScoreFile()
             measures[idx].visitTimes = vt.toInt();
             measures[idx].lastvisitedTime = QDateTime::fromString(lv);
         }
-//        cout<<"--R--: "<<measures[idx].classname.toStdString()
-//           <<" -score "<<measures[idx].score
-//           <<" -vt "   <<measures[idx].visitTimes
-//           <<" -lv "   <<measures[idx].lastvisitedTime.toString().toStdString()<<endl;
     }
     scorefile.close();
 }
@@ -554,8 +552,6 @@ void KeyConceptClass::computeOverallScore()
     for(int i=0;i<num;i++){
         if(measures[i].visitTimes>maxvt) maxvt = measures[i].visitTimes;
     }
-//    //sort by lastVisitedTime
-//    this->sortMeasuresByLastVisitedTime();
 
     //compute overallscore
     for(int i=0;i<num;i++)
@@ -566,7 +562,7 @@ void KeyConceptClass::computeOverallScore()
                 + overallscore_wLV * (1 - i/num);
     }
 
-    this->sortMeasuresByOverallScore();
+//    this->sortMeasuresByOverallScore();
 }
 
 void KeyConceptClass::sortMeasuresByScore()
@@ -664,18 +660,33 @@ int KeyConceptClass::readScore_DB()
     QList<KeyConcept_DBFormat *> rs = db->getKeyconcept_classes(this->m_ontology->ontologyID);
     if(rs.size()!=measures.size()) return -1;
 
+    cout<<"Assign scores to measures..."<<endl;
+
+//    for(int i = 0;i<rs.size();i++){
+//        for(int j=0;j<measures.size();j++){
+//            if(measures[j].classname == rs[i]->classname){
+//                measures[j].score = rs[i]->score;
+//                measures[j].landmark = rs[i]->landmark;
+//                measures[j].lastvisitedTime = rs[i]->lastVisitedTime;
+//                measures[j].visitTimes = rs[i]->numberOfVisits;
+//                break;
+//            }
+//        }
+//    }
+
+    QList<QString> cnames;
+    for(int i=0;i<measures.size();i++)cnames<<measures[i].classname;
     for(int i = 0;i<rs.size();i++){
-        for(int j=0;j<measures.size();j++){
-            if(measures[j].classname == rs[i]->classname){
-                measures[j].score = rs[i]->score;
-                measures[j].landmark = rs[i]->landmark;
-                measures[j].lastvisitedTime = rs[i]->lastVisitedTime;
-                measures[j].visitTimes = rs[i]->numberOfVisits;
-                break;
-            }
+        int idx = cnames.indexOf(rs[i]->classname);
+        if(idx!=-1){
+            measures[idx].score = rs[i]->score;
+            measures[idx].landmark = rs[i]->landmark;
+            measures[idx].lastvisitedTime = rs[i]->lastVisitedTime;
+            measures[idx].visitTimes = rs[i]->numberOfVisits;
         }
     }
 
+    db->closeDB();
     return 1;
 }
 
