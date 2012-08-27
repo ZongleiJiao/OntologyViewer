@@ -42,6 +42,21 @@ Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *
     this->currentLayoutMethod = "Orthogonal Tree";
     this->detailview_centrenode = NULL;
 
+    //set tree levels for each node & swap super[0] as the deepest node
+    //avoid sub > super (level) !!! consider circle!!
+    OwlClass * root;
+    for(int i=0;i<classes.size();i++){
+        classes[i]->tree_level = -1;
+        if(classes[i]->superclasses.empty())root = classes[i];
+    }
+    this->computeTreeLevel(0,root);
+    for(int i=0;i<classes.size();i++){
+        for(int j=0;j<classes[i]->superclasses.size();j++){
+            if(classes[i]->superclasses[0]->tree_level<classes[i]->superclasses[j]->tree_level)
+                classes[i]->superclasses.swap(0,j);
+        }
+    }
+
 }
 
 QList<OwlClass *> Overview::convertOverviewShapes(QList<OwlClass *> classes)
@@ -905,19 +920,20 @@ void Overview::treeLayout(QList<OwlClass *> graph)
 
     QList<OwlClass *> newgraph = graph;
 
-    //avoid sub > super (level) !!! consider circle!!
-    OwlClass * root;
-    for(int i=0;i<newgraph.size();i++){
-        newgraph[i]->tree_level = -1;
-        if(newgraph[i]->superclasses.empty())root = newgraph[i];
-    }
-    this->computeTreeLevel(0,root);
-    for(int i=0;i<newgraph.size();i++){
-        for(int j=0;j<newgraph[i]->superclasses.size();j++){
-            if(newgraph[i]->superclasses[0]->tree_level<newgraph[i]->superclasses[j]->tree_level)
-                newgraph[i]->superclasses.swap(0,j);
-        }
-    }
+//    //set tree levels for each node & swap super[0] as the deepest node
+//    //avoid sub > super (level) !!! consider circle!!
+//    OwlClass * root;
+//    for(int i=0;i<newgraph.size();i++){
+//        newgraph[i]->tree_level = -1;
+//        if(newgraph[i]->superclasses.empty())root = newgraph[i];
+//    }
+//    this->computeTreeLevel(0,root);
+//    for(int i=0;i<newgraph.size();i++){
+//        for(int j=0;j<newgraph[i]->superclasses.size();j++){
+//            if(newgraph[i]->superclasses[0]->tree_level<newgraph[i]->superclasses[j]->tree_level)
+//                newgraph[i]->superclasses.swap(0,j);
+//        }
+//    }
 
     QList<node> nodes;
     QList<edge> edges;
@@ -1374,6 +1390,7 @@ void Overview::showlayout(OverviewDockWidget *wid)
 {
     this->connectWgt(wid);
     m_wid->clearallitems();
+
     this->directionChanged("L->R");
 }
 void Overview::updatelayout(){
