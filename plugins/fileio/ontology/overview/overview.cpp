@@ -45,21 +45,7 @@ Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *
     this->currentLayoutMethod = "Orthogonal Tree";
     this->detailview_centrenode = NULL;
 
-    //set tree levels for each node & swap super[0] as the deepest node
-    //avoid sub > super (level) !!! consider circle!!
-    OwlClass * root;
-    for(int i=0;i<classes.size();i++){
-        classes[i]->tree_level = -1;
-        if(classes[i]->superclasses.empty())root = classes[i];
-    }
-    this->computeTreeLevel(0,root);
-    for(int i=0;i<classes.size();i++){
-        for(int j=0;j<classes[i]->superclasses.size();j++){
-            if(classes[i]->superclasses[0]->tree_level<classes[i]->superclasses[j]->tree_level)
-                classes[i]->superclasses.swap(0,j);
-        }
-    }
-
+    this->setTreeLevels();
 }
 
 QList<OwlClass *> Overview::convertOverviewShapes(QList<OwlClass *> classes)
@@ -923,6 +909,24 @@ void Overview::computeTreeLevel(int curlevel, OwlClass *node)
     }
 }
 
+void Overview::setTreeLevels()
+{
+    //set tree levels for each node & swap super[0] as the deepest node
+    //avoid sub > super (level) !!! consider circle!!
+    OwlClass * root;
+    for(int i=0;i<classes.size();i++){
+        classes[i]->tree_level = -1;
+        if(classes[i]->superclasses.empty())root = classes[i];
+    }
+    this->computeTreeLevel(0,root);
+    for(int i=0;i<classes.size();i++){
+        for(int j=0;j<classes[i]->superclasses.size();j++){
+            if(classes[i]->superclasses[0]->tree_level<classes[i]->superclasses[j]->tree_level)
+                classes[i]->superclasses.swap(0,j);
+        }
+    }
+}
+
 void Overview::treeLayout(QList<OwlClass *> graph)
 {
     //init graph
@@ -1424,12 +1428,16 @@ void Overview::setOrthogonalConnectors(Canvas *canvas, bool isOrthogonal)
 void Overview::changeOverviewNodeLimit(int n)
 {
     cout<<"Change overview nodes to "<<n<<endl;
+
+
     this->numOfClasses = n;
     originalclasses.clear();
     originalclasses.append(kcTool->getNKeyClasses(this->numOfClasses));
     classes.clear();
     classes.append(convertOverviewShapes(originalclasses));
     numOfClasses=classes.size();
+
+    this->setTreeLevels();
 
     m_wid->clearallitems();
     if(detailview_centrenode==NULL){

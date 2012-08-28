@@ -106,6 +106,7 @@ private:
     QList<OwlClass *> sortSubclassesByAscending(QList<OwlClass *> graph);
     void compactTreeLayout(double maxW,double maxH);
     void ogdfLayout(QList<OwlClass *> graph);
+    void setTreeLevels();
 
     void connectWgt(OverviewDockWidget *wgt);
 
