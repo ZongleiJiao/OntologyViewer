@@ -1765,7 +1765,7 @@ void OwlOntology::ontoclass_clicked(OntologyClassShape *classshape)
     //    emit(this->savingInterests(classshape->idString()));
     }
     emit clickedClass(classes[idx]->shortname);
-    this->maincanvas->fully_restart_graph_layout();
+//    this->maincanvas->fully_restart_graph_layout();
 }
 
 void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)

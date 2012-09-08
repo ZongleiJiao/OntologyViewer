@@ -22,6 +22,8 @@ public:
     explicit SearchDockWidget(QWidget *parent = 0);
     ~SearchDockWidget();
     void setOntology(OwlOntology * onto);
+signals:
+    void searchResultClicked(OwlClass *);
 public slots:
     void searchOntology();
     void selectedEntity(QListWidgetItem* item);

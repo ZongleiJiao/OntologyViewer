@@ -930,6 +930,7 @@ void Overview::setTreeLevels()
 void Overview::treeLayout(QList<OwlClass *> graph)
 {
     //init graph
+    cout<<"Tree layout..."<<endl;
     Graph g;
     GraphAttributes ga(g,GraphAttributes::nodeGraphics|GraphAttributes::edgeGraphics );
 
@@ -1006,7 +1007,7 @@ void Overview::treeLayout(QList<OwlClass *> graph)
         treeconnectors.append(pl);
     }
 
-
+    cout<<"Tree layout end."<<endl;
 }
 
 void Overview::compactTreeLayout(double maxW,double maxH)
@@ -1015,7 +1016,7 @@ void Overview::compactTreeLayout(double maxW,double maxH)
     cout<<"CT layout----"<<endl;
     this->isOrthogonalTreeLayout = true;
     this->treeLayout(classes);
-    this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+//    this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
 
 //    this->drawOverview(m_wid);
 //    double w = m_wid->m_scene->sceneRect().width();
@@ -1076,6 +1077,7 @@ void Overview::compactTreeLayout(double maxW,double maxH)
                 cls.clear();
             }
         }
+        cout<<"CT 1..."<<endl;
         for(int i=0;i<removedClasses.size();i++){
             classes.removeAll(removedClasses[i]);
         }
@@ -1100,6 +1102,8 @@ void Overview::compactTreeLayout(double maxW,double maxH)
     else{
         this->drawOverview(m_wid);
     }
+
+    cout<<"CT layout end."<<endl;
 }
 
 void Overview::ogdfLayout(QList<OwlClass *> graph)
@@ -1145,6 +1149,27 @@ void Overview::ogdfLayout(QList<OwlClass *> graph)
         treeconnectors.append(pl);
     }
 }
+OwlClass * Overview::getNearestOvClass(OwlClass *oriClass)
+{
+    QList<OwlClass *> tmps;
+    tmps.append(oriClass);
+    while(!tmps.empty())
+    {
+        OwlClass * t = tmps.first();
+        tmps.removeFirst();
+        for(int i=0;i<t->subclasses.size();i++){
+            int idx = this->getIndexByShortname(classes,t->subclasses[i]->shortname);
+            if(idx!=-1) return classes[idx];
+            else tmps.append(t->subclasses[i]);
+        }
+        for(int i=0;i<t->superclasses.size();i++){
+            int idx = this->getIndexByShortname(classes,t->superclasses[i]->shortname);
+            if(idx!=-1) return classes[idx];
+            else tmps.append(t->superclasses[i]);
+        }
+    }
+    return NULL;
+}
 
 void Overview::widSceneClicked(QPointF pos)
 {
@@ -1184,6 +1209,7 @@ void Overview::widSceneClicked(OwlClass *cls)
         }
     }
 
+    cout<<"Clicked overview class : "<<cls->shortname.toStdString()<<endl;
 
     //sent to detailview
     this->detailview_centrenode = cls;
@@ -1249,6 +1275,39 @@ void Overview::widSceneClicked(OwlClass *cls)
     cout<<"Click event [Time]:"<<st.elapsed()<<endl;
 }
 
+void Overview::searchWgtResultClicked(OwlClass *c)
+{
+    cout<<"SR:Clicked ---- "<<c->shortname.toStdString()<<endl;
+    int idx = getIndexByShortname(classes,c->shortname);
+    if(idx!=-1){
+        this->widSceneClicked(classes[idx]);
+    }
+    else{
+        this->detailview_centrenode = c;
+        QList<OwlClass *> rlst;
+        rlst.append(this->m_detailview->drawClassView(c,classes));
+        //get back from detailed view ->ov
+        indetailedCls.clear();
+        for(int i=0;i<rlst.size();i++){
+            int cid = this->getIndexByShortname(classes,rlst[i]->shortname);
+            if(cid!=-1){
+                indetailedCls.append(classes[cid]);
+                if(classes[cid] == c)c->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Focused);
+                else if(c->subclasses.contains(classes[cid]))
+                {
+                    classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SubFocused);
+                }
+                else if(c->superclasses.contains(classes[cid]))
+                {
+                    classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_SuperFocused);
+                }
+                else classes[cid]->overviewshape->setStatus(OverviewClassShape::STATUS_InDetailview_Default);
+            }
+        }
+        m_ontology->ontoclass_clicked(m_ontology->classes[idx]->shape);
+    }
+}
+
 void Overview::detailView_ClickedClass(QString shortname)
 {
     for(int i = 0;i<classes.size();i++){
@@ -1309,9 +1368,12 @@ void Overview::layoutmethodChanged(QString method)
     }
     if(method == "Orthogonal Tree"){
         this->compactTreeLayout(200,200);
+
         this->m_detailview->m_canvas->setOptAutomaticGraphLayout(true);
         this->m_detailview->m_canvas->setOptPreventOverlaps(true);
         this->setOrthogonalConnectors(this->m_detailview->m_canvas,true);
+        this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
+
         this->m_detailview->m_canvas->fully_restart_graph_layout();
         return;
     }

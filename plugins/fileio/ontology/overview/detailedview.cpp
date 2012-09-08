@@ -127,6 +127,7 @@ void DetailedView::addShapeWithExt(OwlClass *cls)
 
 QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlClass *> overviewClasses)
 {
+    cout<<"Draw detailview by centre class : "<<centerNode->shortname.toStdString()<<endl;
     this->CNode = centerNode;
     this->Cclasses = overviewClasses;
 
@@ -182,6 +183,7 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
         m_canvas->addItem(dedges[i]);
     }
     this->m_ontology->dClasses = dclasses;
+    cout<<"ddd ok"<<endl;
     return dclasses;
 }
 
@@ -199,6 +201,7 @@ QList<OwlClass *> DetailedView::getNextLevelClasses(QList<OwlClass *> cls)
                 Connector * conn= new Connector();
                 conn->initWithConnection(node->subclasses[j]->shape,node->shape);
                 conn->setDirected(true);
+                conn->setRoutingType(Connector::orthogonal);
                 this->dedges.append(conn);
 
                 node->subclasses[j]->classesconnectors.append(conn);
@@ -222,6 +225,7 @@ QList<OwlClass *> DetailedView::getNextLevelClasses(QList<OwlClass *> cls)
                 Connector * conn= new Connector();
                 conn->initWithConnection(node->shape,node->superclasses[j]->shape);
                 conn->setDirected(true);
+                conn->setRoutingType(Connector::orthogonal);
                 this->dedges.append(conn);
 
                 node->superclasses[j]->classesconnectors.append(conn);

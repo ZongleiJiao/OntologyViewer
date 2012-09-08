@@ -109,6 +109,7 @@ private:
     void setTreeLevels();
 
     void connectWgt(OverviewDockWidget *wgt);
+    OwlClass * getNearestOvClass(OwlClass *oriClass);
 
 signals:
 
@@ -125,6 +126,8 @@ public slots:
     void changeOverviewNodeLimit(int n);
     void changeDetailviewNodeLimit(int n);
     void changeNodeLimit(int overview_n,int detailview_n);
+
+    void searchWgtResultClicked(OwlClass *c);
 };
 
 #endif // OVERVIEW_H

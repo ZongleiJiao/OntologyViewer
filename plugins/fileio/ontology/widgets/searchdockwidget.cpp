@@ -17,6 +17,7 @@ SearchDockWidget::SearchDockWidget(QWidget *parent) :
     connect(ui->input,SIGNAL(returnPressed()),this,SLOT(searchOntology()));
     connect(ui->sorting,SIGNAL(activated(QString)),this,SLOT(sortingList()));
     connect(ui->clearBtn,SIGNAL(clicked()),this,SLOT(clearSearch()));
+//    connect(ui->resultList,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(doubleClickedListItem(QModelIndex)));
 }
 
 SearchDockWidget::~SearchDockWidget()
@@ -35,7 +36,8 @@ void SearchDockWidget::selectedEntity(QListWidgetItem *item){
     int idx1 = this->ontology->getIndexOfClasses(name);
 //    int idx2 = this->ontology->getIndexOfIndividuals(name);
     if(idx1 > -1){
-        this->ontology->ontoclass_clicked(this->ontology->classes[idx1]->shape);
+//        this->ontology->ontoclass_clicked(this->ontology->classes[idx1]->shape);
+        emit this->searchResultClicked(this->ontology->classes[idx1]);
     }
 
 }
@@ -156,3 +158,4 @@ void SearchDockWidget::clearSearch(){
     ui->dPropertyCB->setChecked(false);
     ui->oPropertyCB->setChecked(false);
 }
+

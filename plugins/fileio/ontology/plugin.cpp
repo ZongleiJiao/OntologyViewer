@@ -240,10 +240,8 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     cout<<endl<<"T:"<<st.elapsed()<<endl;
     cout<<"Finish loading. Total " <<onto->classes.size()<<" class notes."<<endl;
 
-    this->searchdwgt->setOntology(onto);
+    this->searchdwgt->setOntology(onto);    
     this->infoboxdwgt->setOntology(onto);
-
-
     this->infoboxdwgt->displayInfo("OntologyInfor");
 
 //    Util * util = new Util(onto);
@@ -267,6 +265,8 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     filterdwgt->setOntology(onto);
     historydwgt->setOntology(ov->m_detailview);
     onto->emitLoadhistory(onto->ontologyID);
+
+    connect(searchdwgt,SIGNAL(searchResultClicked(OwlClass*)),ov,SLOT(searchWgtResultClicked(OwlClass*)));
 
     /** classview, individualview, propertyview can
       * be displayed together or individually.

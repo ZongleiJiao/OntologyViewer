@@ -47,8 +47,6 @@ public slots:
     void extshape_Clicked(ExtensionShape *cs);
     void extshape_DoubleClicked(ExtensionShape *cs);
     void shapeRight_Clicked(OntologyClassShape *shape);
-
-
 };
 
 #endif // DETAILEDVIEW_H
