@@ -210,6 +210,7 @@ Canvas::Canvas()
     m_opt_connector_rounding_distance = 5;
     m_opt_stuctural_editing_disabled = false;
     m_opt_flow_direction = FlowDown;
+    m_opt_layered_alignment_position = ShapeMiddle;
 
     // Default list of connector colors. Use only dark colors (and full
     // opacity) since connectors are drawn as thin lines so light
@@ -846,21 +847,21 @@ void Canvas::customEvent(QEvent *event)
 }
 
 
-void Canvas::lockSelectedShapes(void)
+void Canvas::toggleSelectedShapePinning(void)
 {
     QList<CanvasItem *> selected_items = selectedItems();
     for (int i = 0; i < selected_items.size(); ++i)
     {
         if (ShapeObj *shape = isShapeForLayout(selected_items.at(i)))
         {
-            // Toggle position lock setting.
-            if (shape->hasLockedPosition())
+            // Toggle pinned position setting.
+            if (shape->isPinned())
             {
-                shape->setLockedPosition(false);
+                shape->setPinned(false);
             }
             else
             {
-                shape->setLockedPosition(true);
+                shape->setPinned(true);
             }
         }
     }
@@ -1385,6 +1386,38 @@ void Canvas::setOptIdealEdgeLengthModifier(double modifier)
     interrupt_graph_layout();
 }
 
+void Canvas::setOptLayeredAlignmentPosition(const LayeredAlignment pos)
+{
+    m_opt_layered_alignment_position = pos;
+    emit optChangedLayeredAlignmentPosition(pos);
+    interrupt_graph_layout();
+}
+
+void Canvas::setOptFlowSeparationModifier(const double value)
+{
+    m_flow_separation_modifier = value;
+    emit optChangedDirectedEdgeSeparationModifier(value);
+    interrupt_graph_layout();
+}
+
+void Canvas::setOptFlowSeparationModifierFromSlider(const int intValue)
+{
+    double doubleValue = intValue / 100.0;
+    setOptFlowSeparationModifier(doubleValue);
+}
+
+void Canvas::setOptFlowDirection(const FlowDirection value)
+{
+    m_opt_flow_direction = value;
+    emit optChangedFlowDirection(value);
+    interrupt_graph_layout();
+}
+
+void Canvas::setOptFlowDirectionFromDial(const int value)
+{
+    setOptFlowDirection((FlowDirection) value);
+}
+
 bool Canvas::hasVisibleOverlays(void) const
 {
     return m_overlay_router_obstacles || m_overlay_router_visgraph ||
@@ -1463,29 +1496,9 @@ double Canvas::optFlowSeparationModifier(void) const
     return m_flow_separation_modifier;
 }
 
-void Canvas::setOptFlowSeparationModifier(const double value)
+Canvas::LayeredAlignment Canvas::optLayeredAlignmentPosition(void) const
 {
-    m_flow_separation_modifier = value;
-    emit optChangedDirectedEdgeSeparationModifier(value);
-    interrupt_graph_layout();
-}
-
-void Canvas::setOptFlowSeparationModifierFromSlider(const int intValue)
-{
-    double doubleValue = intValue / 100.0;
-    setOptFlowSeparationModifier(doubleValue);
-}
-
-void Canvas::setOptFlowDirection(const FlowDirection value)
-{
-    m_opt_flow_direction = value;
-    emit optChangedFlowDirection(value);
-    interrupt_graph_layout();
-}
-
-void Canvas::setOptFlowDirectionFromDial(const int value)
-{
-    setOptFlowDirection((FlowDirection) value);
+    return (LayeredAlignment) m_opt_layered_alignment_position;
 }
 
 void Canvas::bringToFront(void)
@@ -1664,6 +1677,12 @@ void Canvas::deleteSelection(void)
         return;
     }
 
+    // Finish dragging if we were in the middle of that.
+    if (m_dragged_item)
+    {
+        m_dragged_item->dragReleaseEvent(NULL);
+    }
+
     Actions& actions = getActions();
     actions.clear();
 
@@ -1676,6 +1695,7 @@ void Canvas::deleteSelection(void)
     QList<CanvasItem *> sel_copy = this->selectedItems();
     QList<ShapeObj *> sel_shapes;
 
+    stop_graph_layout();
     if (m_opt_stuctural_editing_disabled)
     {
         // If structural editing is disabled then we should only allow
@@ -1746,7 +1766,6 @@ void Canvas::deleteSelection(void)
         QUndoCommand *cmd = new CmdCanvasSceneRemoveItem(this, *sh);
         undoMacro->addCommand(cmd);
     }
-    interrupt_graph_layout();
     restart_graph_layout();
 }
 
@@ -2818,6 +2837,7 @@ static const char *x_avoidBuffer = "avoidBuffer";
 static const char *x_routingBuffer = "routingBuffer";
 static const char *x_flowSeparation = "flowSeparation";
 static const char *x_flowDirection = "flowDirection";
+static const char *x_layeredAlignment = "layeredAlignment";
 static const char *x_defaultIdealConnectorLength =
         "defaultIdealConnectorLength";
 static const char *x_pageBoundaryConstraints =
@@ -2915,6 +2935,7 @@ void Canvas::loadLayoutOptionsFromDomElement(const QDomElement& options)
     }
     optionalProp(options,x_flowSeparation,m_flow_separation_modifier);
     optionalProp(options,x_flowDirection,m_opt_flow_direction);
+    optionalProp(options,x_layeredAlignment,m_opt_layered_alignment_position);
 
     double ideal_connector_length_modifier;
     if (optionalProp(options,x_defaultIdealConnectorLength,
@@ -2965,6 +2986,10 @@ QDomElement Canvas::writeLayoutOptionsToDomElement(QDomDocument& doc) const
     if (m_opt_flow_direction != FlowDown)
     {
         newProp(dunOpts, x_flowDirection, m_opt_flow_direction);
+    }
+    if (m_opt_layered_alignment_position != ShapeMiddle)
+    {
+        newProp(dunOpts, x_layeredAlignment, m_opt_layered_alignment_position);
     }
     newProp(dunOpts, x_pageBoundaryConstraints, optFitWithinPage());
     newProp(dunOpts, x_defaultIdealConnectorLength,

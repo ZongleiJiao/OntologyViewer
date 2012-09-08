@@ -69,16 +69,15 @@ struct NodeLevelInfo
             : isRoot(true),
               sighted(false),
               level(0),
-              parentCount(0),
               parentVisits(0)
         {
         }
 
     std::set<unsigned> children;
+    std::set<unsigned> parents;
     bool isRoot;
     bool sighted;
     unsigned level;
-    unsigned parentCount;
     unsigned parentVisits;
 };
 
@@ -96,7 +95,7 @@ static void levelAssignmentTraverse(unsigned ind, unsigned newLevel,
     maxLevel = std::max(maxLevel, nodeInfo[ind].level);
     nodeInfo[ind].parentVisits++;
 
-    if (nodeInfo[ind].parentVisits < nodeInfo[ind].parentCount)
+    if (nodeInfo[ind].parentVisits < nodeInfo[ind].parents.size())
     {
         // Stop until we've reached this from every parent.
         return;
@@ -122,6 +121,9 @@ GraphData::GraphData(Canvas *canvas, bool ignoreEdges,
     pageBoundary = QRectF();
     // Note that in Dunnart the coordinates of shapes are their top-left corners
     // while in constrained_majorization_layout we use the centres.
+
+    Canvas::LayeredAlignment layeredAlignment =
+            canvas_->optLayeredAlignmentPosition();
 
     // create nodes
     QList<CanvasItem *> canvasObjects = canvas->items();
@@ -301,8 +303,10 @@ GraphData::GraphData(Canvas *canvas, bool ignoreEdges,
                     }
                     else if (mode == GraphLayout::LAYERED)
                     {
+                        // Save the hierarchy information so we can align the
+                        // layers together.
                         nodeInfo[firstIndex].children.insert(secondIndex);
-                        nodeInfo[secondIndex].parentCount++;
+                        nodeInfo[secondIndex].parents.insert(firstIndex);
                         nodeInfo[firstIndex].sighted = true;
                         nodeInfo[secondIndex].sighted = true;
                         nodeInfo[secondIndex].isRoot = false;
@@ -329,18 +333,27 @@ GraphData::GraphData(Canvas *canvas, bool ignoreEdges,
                     }
                 }
 
-                // Create list of nodes in each level.
+                // Create list of nodes in each level and remember the size
+                // of the largest
                 std::vector<std::set<unsigned> > levelLists(maxLevel);
-                std::vector<double> levelShapePadding(maxLevel, 0.0);
+                std::vector<double> levelShapeLength(maxLevel, 0.0);
                 for (size_t ind = 0; ind < shape_vec.size(); ++ind)
                 {
+                    // Clear the layer channel padding information.
+                    shape_vec[ind]->setProperty("layeredStartChannelPadding",
+                            QVariant());
+                    shape_vec[ind]->setProperty("layeredEndChannelPadding",
+                            QVariant());
+                    shape_vec[ind]->setProperty("layeredEndConnectorGroup",
+                            QVariant());
+                    // Store level information.
                     if (nodeInfo[ind].level > 0)
                     {
                         size_t level = nodeInfo[ind].level - 1;
                         levelLists[level].insert(ind);
-                        levelShapePadding[level] = std::max(
-                                levelShapePadding[level],
-                                (rs[ind]->length(dimension) / 2.0));
+                        levelShapeLength[level] = std::max(
+                                levelShapeLength[level],
+                                rs[ind]->length(dimension));
                     }
                 }
 
@@ -348,26 +361,181 @@ GraphData::GraphData(Canvas *canvas, bool ignoreEdges,
                 cola::AlignmentConstraint *prevLevelAlignment = NULL;
                 for (size_t level = 0; level < maxLevel; ++level)
                 {
+                    // Set of nodes in this level.
                     std::set<unsigned>& nodes = levelLists[level];
 
+                    int prevSources = 0;
+                    int currSources = 0;
+                    if (level > 0)
+                    {
+                        // Find the number of connector sources on each side
+                        // of the channel between levels.  The nodes if the
+                        // previous level are in "prevNodes" and the nodes of
+                        // this level are in "nodes".
+                        for (std::set<unsigned>::const_iterator it = nodes.begin();
+                                it != nodes.end(); ++it)
+                        {
+                            if (nodeInfo[*it].parents.size() > 0)
+                            {
+                                currSources++;
+                            }
+                        }
+                        std::set<unsigned>& prevNodes = levelLists[level - 1];
+                        for (std::set<unsigned>::const_iterator it = prevNodes.begin();
+                                it != prevNodes.end(); ++it)
+                        {
+                            if (nodeInfo[*it].children.size() > 0)
+                            {
+                                prevSources++;
+                            }
+                        }
+
+                        // Based on the numer of sources on the smaller side,
+                        // give an ordering to the nodes where these
+                        // connectors terminate.  For example in a directed
+                        // tree flowing to th left, three nodes on one level
+                        // might point to seven nodes, so each of the seven
+                        // nodes would be given a group based on the three
+                        // sources [0-2].  This is not the best solution, but
+                        // it is fairly simple and easy to compute.
+                        if (flipped)
+                        {
+                            if (prevSources < currSources)
+                            {
+                                // Connectors point to nodes in "nodes".
+                                int number = 0;
+                                for (std::set<unsigned>::const_iterator it = prevNodes.begin();
+                                        it != prevNodes.end(); ++it)
+                                {
+                                    if (nodeInfo[*it].children.size() > 0)
+                                    {
+                                        shape_vec[*it]->setProperty("layeredEndConnectorGroup",
+                                                QVariant(number++));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Connectors point to nodes in "prevNodes".
+                                int number = 0;
+                                for (std::set<unsigned>::const_iterator it = nodes.begin();
+                                        it != nodes.end(); ++it)
+                                {
+                                    for (std::set<unsigned>::const_iterator ch =
+                                            nodeInfo[*it].parents.begin();
+                                            ch != nodeInfo[*it].parents.end(); ++ch)
+                                    {
+                                        shape_vec[*ch]->setProperty("layeredEndConnectorGroup",
+                                                QVariant(number));
+                                    }
+                                    if (nodeInfo[*it].parents.size() > 0)
+                                    {
+                                        number++;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (prevSources > currSources)
+                            {
+                                // Connectors point to nodes in "prevNodes".
+                                int number = 0;
+                                for (std::set<unsigned>::const_iterator it = nodes.begin();
+                                        it != nodes.end(); ++it)
+                                {
+                                    if (nodeInfo[*it].parents.size() > 0)
+                                    {
+                                        shape_vec[*it]->setProperty("layeredEndConnectorGroup",
+                                                QVariant(number++));
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Connectors point to nodes in "nodes".
+                                int number = 0;
+                                for (std::set<unsigned>::const_iterator it = prevNodes.begin();
+                                        it != prevNodes.end(); ++it)
+                                {
+                                    for (std::set<unsigned>::const_iterator ch =
+                                            nodeInfo[*it].children.begin();
+                                            ch != nodeInfo[*it].children.end(); ++ch)
+                                    {
+                                        shape_vec[*ch]->setProperty("layeredEndConnectorGroup",
+                                                QVariant(number));
+                                    }
+                                    if (nodeInfo[*it].children.size() > 0)
+                                    {
+                                        number++;
+                                    }
+                                }                            }
+                        }
+                    }
+
+                    // Set layer channel padding information for each shape on
+                    // this level, and add it to the alignment relationship.
+                    // The channel padding information is used for centring
+                    // all connectors at the same point between levels.
                     cola::AlignmentConstraint *alignment =
                             new cola::AlignmentConstraint(dimension);
-                    for (std::set<unsigned>::iterator it = nodes.begin();
+                    for (std::set<unsigned>::const_iterator it = nodes.begin();
                             it != nodes.end(); ++it)
                     {
-                        alignment->addShape(*it, 0);
+                        double offset = 0;
+                        double modifier = (flipped) ? -1 : 1;
+                        double distToEdge = rs[*it]->length(dimension) / 2.0;
+                        double startPadding = 0.0;
+                        double endPadding = 0.0;
+                        if (layeredAlignment == Canvas::ShapeStart)
+                        {
+                            offset = modifier * distToEdge;
+                            startPadding = distToEdge;
+                            endPadding = levelShapeLength[level] - distToEdge;
+                        }
+                        else if (layeredAlignment == Canvas::ShapeEnd)
+                        {
+                            offset = modifier * -distToEdge;
+                            startPadding = levelShapeLength[level] - distToEdge;
+                            endPadding = distToEdge;
+                        }
+                        else
+                        {
+                            startPadding = levelShapeLength[level] / 2.0;
+                            endPadding = levelShapeLength[level] / 2.0;
+                        }
+                        shape_vec[*it]->setProperty("layeredStartChannelPadding",
+                                QVariant(startPadding));
+                        shape_vec[*it]->setProperty("layeredEndChannelPadding",
+                                QVariant(endPadding));
+
+                        alignment->addShape(*it, offset);
                     }
                     ccs.push_back(alignment);
 
                     if (prevLevelAlignment)
                     {
-                        cola::AlignmentConstraint *first = (flipped) ?
-                                prevLevelAlignment : alignment;
-                        cola::AlignmentConstraint *second = (flipped) ?
-                                alignment : prevLevelAlignment;
+
+                        // Determine padding between this level and previous.
+                        double padding = 0;
+                        if (layeredAlignment == Canvas::ShapeMiddle)
+                        {
+                            padding = (levelShapeLength[level] / 2.0) +
+                                    (levelShapeLength[level - 1] / 2.0);
+                        }
+                        else if (layeredAlignment == Canvas::ShapeStart)
+                        {
+                            padding = levelShapeLength[level];
+                        }
+                        else if (layeredAlignment == Canvas::ShapeEnd)
+                        {
+                            padding = levelShapeLength[level - 1];
+                        }
+
+                        // Create a separation constraint between this level's
+                        // alignment and the one for the previous level.
                         ccs.push_back(new cola::SeparationConstraint(dimension,
-                                first, second, levelShapePadding[level] +
-                                levelShapePadding[level - 1] +
+                                prevLevelAlignment, alignment, padding +
                                 (canvas_->m_ideal_connector_length *
                                  canvas_->optIdealEdgeLengthModifier() *
                                  canvas_->m_flow_separation_modifier)));
