@@ -325,12 +325,12 @@ void KeyConceptClass::computePopularities()
     cout<<"Computing global popularities..."<<endl;
     computeGlobalPopularities();
     cout<<"Computing local popularities..."<<endl;
-    computeLocalPopularities();
+//    computeLocalPopularities();
     for(int i=0;i<classnum;i++)
     {
-        measures[i].popularity = popularity_wLP * measures[i].localpopularity
-                + popularity_wGP * measures[i].globalpopularity;
-//        measures[i].popularity = measures[i].globalpopularity;
+//        measures[i].popularity = popularity_wLP * measures[i].localpopularity
+//                + popularity_wGP * measures[i].globalpopularity;
+        measures[i].popularity = measures[i].globalpopularity;
     }
 }
 

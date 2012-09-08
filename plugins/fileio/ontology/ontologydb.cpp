@@ -100,7 +100,7 @@ QList<OwlClass *> OntologyDB::getAllNamedClasses(int ontoID)
         tmpclass->shape = new OntologyClassShape();
         tmpclass->shape->setIdString(tmpclass->shortname);
         tmpclass->shape->setToolTip(tmpclass->URI);
-        tmpclass->shape->setPosAndSize(QPointF(0,i*25),QSizeF(150,20));
+        tmpclass->shape->setPosAndSize(QPointF(0,i*0.1),QSizeF(150,20));
         i++;
         tmpclass->shape->setMyLabel(tmpclass->shortname);
         tmpclass->shape->setLabelByLevels(1,tmpclass->shortname); //set level 1 label

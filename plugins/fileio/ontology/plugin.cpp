@@ -234,7 +234,7 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 
     connect(onto,SIGNAL(loadHistory(int)),historydwgt,SLOT(loadInterests(int)));
     onto->loadontologyFromDBOptimized(fileInfo);
-    cout << "ontologyID---plugin---"<<onto->ontologyID<<endl;
+//    cout << "ontologyID---plugin---"<<onto->ontologyID<<endl;
 
 
     cout<<endl<<"T:"<<st.elapsed()<<endl;
