@@ -1275,7 +1275,26 @@ void Overview::widSceneClicked(OwlClass *cls)
     cout<<"Click event [Time]:"<<st.elapsed()<<endl;
 }
 
-void Overview::searchWgtResultClicked(OwlClass *c)
+void Overview::searchWgtResultClicked(QList<OwlClass *> rs)
+{
+    //highlight both in ov and dv ?? when release?
+
+    QList<OwlClass *> ovcls;
+    for(int i = 0;i<rs.size();i++){
+        int idx = getIndexByShortname(classes,rs[i]->shortname);
+        if(idx!=-1)ovcls.append(classes[idx]);
+        //detail view
+//        rs[i]->setFocused(true,this->m_ontology->maincanvas);
+
+    }
+    //overview
+    this->m_wid->highlightSearchResultItems(ovcls);
+
+
+
+}
+
+void Overview::searchWgtResultDoubleClicked(OwlClass *c)
 {
     cout<<"SR:Clicked ---- "<<c->shortname.toStdString()<<endl;
     int idx = getIndexByShortname(classes,c->shortname);

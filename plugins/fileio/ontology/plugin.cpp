@@ -266,7 +266,8 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     historydwgt->setOntology(ov->m_detailview);
     onto->emitLoadhistory(onto->ontologyID);
 
-    connect(searchdwgt,SIGNAL(searchResultClicked(OwlClass*)),ov,SLOT(searchWgtResultClicked(OwlClass*)));
+    connect(searchdwgt,SIGNAL(searchResultDoubleClicked(OwlClass*)),ov,SLOT(searchWgtResultDoubleClicked(OwlClass*)));
+    connect(searchdwgt,SIGNAL(searchResultSelected(QList<OwlClass*>)),ov,SLOT(searchWgtResultClicked(QList<OwlClass*>)));
 
     /** classview, individualview, propertyview can
       * be displayed together or individually.

@@ -127,7 +127,8 @@ public slots:
     void changeDetailviewNodeLimit(int n);
     void changeNodeLimit(int overview_n,int detailview_n);
 
-    void searchWgtResultClicked(OwlClass *c);
+    void searchWgtResultDoubleClicked(OwlClass *c);
+    void searchWgtResultClicked(QList<OwlClass *> rs);
 };
 
 #endif // OVERVIEW_H

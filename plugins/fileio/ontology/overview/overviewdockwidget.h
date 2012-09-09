@@ -69,7 +69,9 @@ public:
     void scaling();
 
     QGraphicsItem * highlightpolygon;
+    QList<QGraphicsItem *> searchResultHighlights;
     void highlightItems(QList<OwlClass *> cls);
+    void highlightSearchResultItems(QList<OwlClass *> cls);
 
     void circleItem(QString shortname);
 

@@ -17,6 +17,7 @@ SearchDockWidget::SearchDockWidget(QWidget *parent) :
     connect(ui->input,SIGNAL(returnPressed()),this,SLOT(searchOntology()));
     connect(ui->sorting,SIGNAL(activated(QString)),this,SLOT(sortingList()));
     connect(ui->clearBtn,SIGNAL(clicked()),this,SLOT(clearSearch()));
+
 //    connect(ui->resultList,SIGNAL(doubleClicked(QModelIndex)),this,SLOT(doubleClickedListItem(QModelIndex)));
 }
 
@@ -28,18 +29,33 @@ SearchDockWidget::~SearchDockWidget()
 void SearchDockWidget::setOntology(OwlOntology *onto){
     this->ontology = onto;
     connect(ui->resultList,SIGNAL(itemClicked(QListWidgetItem*)),this,SLOT(selectedEntity(QListWidgetItem*)));
+    connect(ui->resultList,SIGNAL(itemDoubleClicked(QListWidgetItem*)),this,SLOT(doubleClickedEntity(QListWidgetItem*)));
 }
 
 void SearchDockWidget::selectedEntity(QListWidgetItem *item){
-//    cout << "-=--=----=" << item->text().toStdString()<<endl;
+    QString name = item->text();
+    QList<OwlClass *> selcs;
+    if(name=="----OwlClasses----") {
+        selcs.append(classes);
+    }
+    else{
+        int idx1 = this->ontology->getIndexOfClasses(name);
+        if(idx1 > -1){
+            selcs.append(this->ontology->classes[idx1]);
+        }
+    }
+    if(!selcs.empty())
+        emit this->searchResultSelected(selcs);
+
+}
+
+void SearchDockWidget::doubleClickedEntity(QListWidgetItem *item)
+{
     QString name = item->text();
     int idx1 = this->ontology->getIndexOfClasses(name);
-//    int idx2 = this->ontology->getIndexOfIndividuals(name);
     if(idx1 > -1){
-//        this->ontology->ontoclass_clicked(this->ontology->classes[idx1]->shape);
-        emit this->searchResultClicked(this->ontology->classes[idx1]);
+        emit this->searchResultDoubleClicked(this->ontology->classes[idx1]);
     }
-
 }
 
 void SearchDockWidget::searchOntology()
@@ -50,9 +66,12 @@ void SearchDockWidget::searchOntology()
     if(!ui->classCB->isChecked() && !ui->individualCB->isChecked()
             && !ui->dPropertyCB->isChecked() && !ui->oPropertyCB->isChecked())
     {
-        QList<OwlClass *> classes = this->ontology->getOwlClassByName(searchText);
-        QList<OwlIndividual *> individuals = this->ontology->getOwlIndividualByName(searchText);
-        QList<OwlProperty *> properties = this->ontology->getOwlPropertyByName(searchText);
+        classes.clear();
+        individuals.clear();
+        properties.clear();
+        classes = this->ontology->getOwlClassByName(searchText);
+        individuals = this->ontology->getOwlIndividualByName(searchText);
+        properties = this->ontology->getOwlPropertyByName(searchText);
 
         if(classes.isEmpty() && individuals.isEmpty() && properties.isEmpty())
         {
@@ -150,6 +169,9 @@ void SearchDockWidget::sortingList(){
 }
 
 void SearchDockWidget::clearSearch(){
+    classes.clear();
+    individuals.clear();
+    properties.clear();
     ui->input->clear();
     ui->resultList->clear();
     ui->sorting->setCurrentIndex(0);

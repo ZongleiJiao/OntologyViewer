@@ -19,14 +19,22 @@ public:
 
     OwlOntology *ontology;
 
+    QList<OwlClass *> classes;
+    QList<OwlIndividual *> individuals;
+    QList<OwlProperty *> properties;
+
+
     explicit SearchDockWidget(QWidget *parent = 0);
     ~SearchDockWidget();
     void setOntology(OwlOntology * onto);
 signals:
-    void searchResultClicked(OwlClass *);
+    void searchResultDoubleClicked(OwlClass *);
+    void searchResultSelected(QList<OwlClass *>);
 public slots:
     void searchOntology();
     void selectedEntity(QListWidgetItem* item);
+    void doubleClickedEntity(QListWidgetItem* item);
+
     void sortingList();
     void clearSearch();
 private:

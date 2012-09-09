@@ -141,6 +141,10 @@ void OverviewDockWidget::clearall()
     }
     hideclasses.clear();
     this->highlightpolygon = NULL;
+    for(int i=0;i<searchResultHighlights.size();i++)
+        m_scene->removeItem(searchResultHighlights[i]);
+    this->searchResultHighlights.clear();
+
 }
 
 void OverviewDockWidget::clearallitems()
@@ -154,6 +158,7 @@ void OverviewDockWidget::clearallitems()
     lines.clear();
     hideclasses.clear();
     highlightpolygon=NULL;
+    searchResultHighlights.clear();
     this->m_scene->clear();
 
     QPen p = QPen(QColor("brown"));
@@ -444,6 +449,29 @@ void OverviewDockWidget::highlightItems(QList<OwlClass *> cls)
 
     highlightpolygon = m_scene->addPolygon(polygon,QPen(Qt::transparent),QBrush(grey));
     lines.append(highlightpolygon);
+}
+
+void OverviewDockWidget::highlightSearchResultItems(QList<OwlClass *> cls)
+{
+    if(!this->searchResultHighlights.empty()){
+        for(int i=0;i<searchResultHighlights.size();i++)
+            m_scene->removeItem(searchResultHighlights[i]);
+        searchResultHighlights.clear();
+    }
+    for(int i=0;i<cls.size();i++){
+        double x = cls[i]->overviewshape->pos().rx()-4.2;
+        double y = cls[i]->overviewshape->pos().ry()-4.2;
+        QRectF viewRect = QRectF(x,y,8,8);
+        QPen p(Qt::transparent);
+        QBrush b(QColor("orange"),Qt::SolidPattern);
+
+        QGraphicsItem *it = m_scene->addRect(viewRect,p,b);
+        QGraphicsOpacityEffect *ef = new QGraphicsOpacityEffect(this);
+        ef->setOpacity(0.8);
+        it->setGraphicsEffect(ef);
+
+        searchResultHighlights.append(it);
+    }
 }
 
 void OverviewDockWidget::circleItem(QString shortname)
