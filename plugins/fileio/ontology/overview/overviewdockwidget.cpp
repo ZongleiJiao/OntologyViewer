@@ -13,8 +13,8 @@ OverviewDockWidget::OverviewDockWidget(QWidget *parent) :
     ui->setupUi(this);
     setWindowTitle("Ontology Overview");
     m_scene = new OverviewScene();
-    m_view = new QGraphicsView(m_scene,this);
-    ui->dockWidget->setWidget(m_view);
+    ui->dockWidget->setScene(m_scene);
+    m_view = ui->dockWidget;
 
     this->originalSeceneSize = m_scene->sceneRect();
 
@@ -391,25 +391,11 @@ void OverviewDockWidget::layoutDirectionChanged(QString dir)
     emit(this->directionChanged(dir));
 }
 
-void OverviewDockWidget::resizeEvent(QResizeEvent *event){
-//    if(event)
-    int w = this->width();
-    int h = this->height();
-    int posx = w/2;
-    if(posx<120)posx=120;
-    ui->comboBox_LayoutMethod->setGeometry(QRect(0, 0, posx, 28));
-    ui->comboBox_Direction->setGeometry(QRect(posx, 0, w-posx, 28));
-
-    ui->label_ovn->setGeometry(0,28,w*0.2,25);
-    ui->lineEdit_ovn->setGeometry(w*0.2,28,w*0.2,25);
-    ui->label_dvn->setGeometry(w*0.4,28,w*0.2,25);
-    ui->lineEdit_dvn->setGeometry(w*0.6,28,w*0.2,25);
-    ui->btn_Go->setGeometry(w*0.8,28,w*0.2,25);
-
-    ui->dockWidget->setGeometry(QRect(0, 40, w, h-50));
+void OverviewDockWidget::resizeEvent(QResizeEvent *event)
+{
+    Q_UNUSED (event)
 
     this->scaling();
-
 }
 
 void OverviewDockWidget::scaling()

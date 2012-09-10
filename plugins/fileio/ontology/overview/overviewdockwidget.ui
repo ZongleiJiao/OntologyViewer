@@ -9,15 +9,9 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>200</width>
-    <height>282</height>
+    <width>209</width>
+    <height>358</height>
    </rect>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>200</width>
-    <height>200</height>
-   </size>
   </property>
   <property name="inputMethodHints">
    <set>Qt::ImhNone</set>
@@ -26,131 +20,146 @@
    <string>DockWidget</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <widget class="QComboBox" name="comboBox_LayoutMethod">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>120</width>
-      <height>28</height>
-     </rect>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>0</number>
     </property>
-   </widget>
-   <widget class="QComboBox" name="comboBox_Direction">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>0</y>
-      <width>80</width>
-      <height>28</height>
-     </rect>
+    <property name="leftMargin">
+     <number>7</number>
     </property>
-   </widget>
-   <widget class="QDockWidget" name="dockWidget">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>58</y>
-      <width>200</width>
-      <height>200</height>
-     </rect>
+    <property name="topMargin">
+     <number>5</number>
     </property>
-    <property name="minimumSize">
-     <size>
-      <width>200</width>
-      <height>200</height>
-     </size>
+    <property name="rightMargin">
+     <number>7</number>
     </property>
-    <property name="features">
-     <set>QDockWidget::NoDockWidgetFeatures</set>
+    <property name="bottomMargin">
+     <number>7</number>
     </property>
-    <widget class="QWidget" name="dockWidgetContents_2"/>
-   </widget>
-   <widget class="QLabel" name="label_ovn">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>28</y>
-      <width>40</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Ov N:</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_ovn">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>28</y>
-      <width>50</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="inputMethodHints">
-     <set>Qt::ImhDigitsOnly</set>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_dvn">
-    <property name="geometry">
-     <rect>
-      <x>90</x>
-      <y>28</y>
-      <width>40</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Dv N:</string>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_dvn">
-    <property name="geometry">
-     <rect>
-      <x>120</x>
-      <y>28</y>
-      <width>50</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="inputMethodHints">
-     <set>Qt::ImhDigitsOnly</set>
-    </property>
-    <property name="alignment">
-     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btn_Go">
-    <property name="geometry">
-     <rect>
-      <x>170</x>
-      <y>28</y>
-      <width>30</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Go</string>
-    </property>
-   </widget>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="spacing">
+       <number>5</number>
+      </property>
+      <item>
+       <widget class="QComboBox" name="comboBox_LayoutMethod"/>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBox_Direction">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>80</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>80</width>
+          <height>16777215</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="spacing">
+       <number>5</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label_ovn">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Ov N:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEdit_dvn">
+        <property name="minimumSize">
+         <size>
+          <width>30</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="inputMethodHints">
+         <set>Qt::ImhDigitsOnly</set>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_dvn">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Dv N:</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="lineEdit_ovn">
+        <property name="minimumSize">
+         <size>
+          <width>30</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="inputMethodHints">
+         <set>Qt::ImhDigitsOnly</set>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btn_Go">
+        <property name="minimumSize">
+         <size>
+          <width>50</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Go</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QGraphicsView" name="dockWidget"/>
+    </item>
+   </layout>
+   <zorder>graphicsView</zorder>
    <zorder>dockWidget</zorder>
-   <zorder>comboBox_LayoutMethod</zorder>
-   <zorder>comboBox_Direction</zorder>
-   <zorder>label_ovn</zorder>
-   <zorder>lineEdit_ovn</zorder>
-   <zorder>label_dvn</zorder>
-   <zorder>lineEdit_dvn</zorder>
-   <zorder>btn_Go</zorder>
+   <zorder>horizontalLayoutWidget</zorder>
+   <zorder>horizontalLayoutWidget_2</zorder>
   </widget>
  </widget>
  <resources/>

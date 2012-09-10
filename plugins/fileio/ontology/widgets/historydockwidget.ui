@@ -14,16 +14,14 @@
    <string>History Navigation</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <widget class="QListWidget" name="historyList">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>231</width>
-      <height>192</height>
-     </rect>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="margin">
+     <number>7</number>
     </property>
-   </widget>
+    <item>
+     <widget class="QListWidget" name="historyList"/>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

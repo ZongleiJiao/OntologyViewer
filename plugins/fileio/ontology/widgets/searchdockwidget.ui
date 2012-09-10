@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>261</width>
-    <height>325</height>
+    <width>229</width>
+    <height>332</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -20,129 +20,127 @@
    <string>Search</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
-   <widget class="QPushButton" name="searchBtn">
-    <property name="geometry">
-     <rect>
-      <x>157</x>
-      <y>11</y>
-      <width>71</width>
-      <height>32</height>
-     </rect>
+   <layout class="QGridLayout" name="gridLayout">
+    <property name="horizontalSpacing">
+     <number>5</number>
     </property>
-    <property name="text">
-     <string>Search</string>
+    <property name="verticalSpacing">
+     <number>8</number>
     </property>
-   </widget>
-   <widget class="QLineEdit" name="input">
-    <property name="geometry">
-     <rect>
-      <x>11</x>
-      <y>14</y>
-      <width>144</width>
-      <height>22</height>
-     </rect>
+    <property name="margin">
+     <number>7</number>
     </property>
-   </widget>
-   <widget class="QCheckBox" name="classCB">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>70</y>
-      <width>73</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Classes</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="individualCB">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>100</y>
-      <width>93</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Individuals</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="oPropertyCB">
-    <property name="geometry">
-     <rect>
-      <x>109</x>
-      <y>70</y>
-      <width>130</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Object Properties</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="dPropertyCB">
-    <property name="geometry">
-     <rect>
-      <x>109</x>
-      <y>100</y>
-      <width>118</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Data Properties</string>
-    </property>
-   </widget>
-   <widget class="QListWidget" name="resultList">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>130</y>
-      <width>241</width>
-      <height>161</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="sorting">
-    <property name="geometry">
-     <rect>
-      <x>11</x>
-      <y>40</y>
-      <width>144</width>
-      <height>26</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>--Sorting--</string>
-     </property>
+    <item row="1" column="2">
+     <widget class="QPushButton" name="clearBtn">
+      <property name="minimumSize">
+       <size>
+        <width>70</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>70</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Clear</string>
+      </property>
+     </widget>
     </item>
-    <item>
-     <property name="text">
-      <string>Alphabetically</string>
-     </property>
+    <item row="1" column="0" colspan="2">
+     <widget class="QComboBox" name="sorting">
+      <item>
+       <property name="text">
+        <string>--Sorting--</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Alphabetically</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Importance</string>
+       </property>
+      </item>
+     </widget>
     </item>
-    <item>
-     <property name="text">
-      <string>Importance</string>
-     </property>
+    <item row="4" column="0" colspan="3">
+     <widget class="QListWidget" name="resultList">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>120</height>
+       </size>
+      </property>
+     </widget>
     </item>
-   </widget>
-   <widget class="QPushButton" name="clearBtn">
-    <property name="geometry">
-     <rect>
-      <x>157</x>
-      <y>40</y>
-      <width>71</width>
-      <height>32</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Clear</string>
-    </property>
-   </widget>
+    <item row="0" column="2">
+     <widget class="QPushButton" name="searchBtn">
+      <property name="minimumSize">
+       <size>
+        <width>70</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>70</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Search</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <widget class="QLineEdit" name="input"/>
+    </item>
+    <item row="3" column="0">
+     <widget class="QCheckBox" name="individualCB">
+      <property name="text">
+       <string>Individuals</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QCheckBox" name="classCB">
+      <property name="text">
+       <string>Classes</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1" colspan="2">
+     <widget class="QCheckBox" name="dPropertyCB">
+      <property name="maximumSize">
+       <size>
+        <width>150</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Data Properties</string>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="1" colspan="2">
+     <widget class="QCheckBox" name="oPropertyCB">
+      <property name="maximumSize">
+       <size>
+        <width>150</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Object Properties</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

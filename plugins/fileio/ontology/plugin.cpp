@@ -191,13 +191,13 @@ class OntologyFileIOPlugin :
             this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,searchdwgt);
 
             infoboxdwgt = new InformationBoxDockWidget();
-            this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,infoboxdwgt);
+            this->appmainwin->addDockWidget(Qt::LeftDockWidgetArea,infoboxdwgt);
 
-            typedwgt = new ShowNodesDockWidget;
-            this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,typedwgt);
+            //typedwgt = new ShowNodesDockWidget;
+            //this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,typedwgt);
 
-            filterdwgt = new FilterDockWidget();
-            this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,filterdwgt);
+            //filterdwgt = new FilterDockWidget();
+            //this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,filterdwgt);
 
             historydwgt = new HistoryDockWidget();
             this->appmainwin->addDockWidget(Qt::RightDockWidgetArea,historydwgt);
@@ -221,8 +221,8 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 //    this->equclasswid->show();
     searchdwgt->show();
     infoboxdwgt->show();
-    typedwgt->show();
-    filterdwgt->show();
+    //typedwgt->show();
+    //filterdwgt->show();
     historydwgt->show();
 
     cout<<"Start loading ontology :"<<fileInfo.completeBaseName().toStdString()<<endl;
@@ -261,8 +261,8 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     ov->showlayout(this->overviewwid);
     cout<<"T:"<<st.elapsed()<<endl;
 
-    this->typedwgt->setOntology(onto,ov->m_detailview);
-    filterdwgt->setOntology(onto);
+    //this->typedwgt->setOntology(onto,ov->m_detailview);
+    //filterdwgt->setOntology(onto);
     historydwgt->setOntology(ov->m_detailview);
     onto->emitLoadhistory(onto->ontologyID);
 
