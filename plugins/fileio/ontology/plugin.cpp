@@ -268,7 +268,8 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
 
     connect(searchdwgt,SIGNAL(searchResultDoubleClicked(OwlClass*)),ov,SLOT(searchWgtResultDoubleClicked(OwlClass*)));
     connect(searchdwgt,SIGNAL(searchResultSelected(QList<OwlClass*>)),ov,SLOT(searchWgtResultClicked(QList<OwlClass*>)));
-
+    int idx = ov->getIndexByShortname(ov->classes,"Thing");
+    if(idx!=-1)ov->widSceneClicked(ov->classes[idx]);
     /** classview, individualview, propertyview can
       * be displayed together or individually.
     **/
