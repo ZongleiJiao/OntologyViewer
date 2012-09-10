@@ -49,6 +49,9 @@ class OntologyClassShape: public ShapeObj
 
         QString levelLabels[6] ;
 
+    protected:
+        QVariant itemChange(QGraphicsItem::GraphicsItemChange change,
+                const QVariant &value);
 };
 
 

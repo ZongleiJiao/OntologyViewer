@@ -156,17 +156,26 @@ void OntologyClassShape::setLabelByLevels(int level, QString text){
     levelLabels[level-1] = text;
 }
 
-void OntologyClassShape::setMyLabel(QString label){
-
-    int maxLength = 180;
-    int temp = 0;
-    int maxWidth = 20;
-
-    temp = label.size() *10;
-    if(temp > maxLength){
-        maxLength = temp;
+QVariant OntologyClassShape::itemChange(GraphicsItemChange change,
+        const QVariant &value)
+{
+    if (change == QGraphicsItem::ItemSceneHasChanged)
+    {
+        if (canvas())
+        {
+	    // Shape has just been added to a canvas.
+	    // Compute a size based on the width of the label.
+            int height = 20;
+            QFontMetrics metrics(canvas()->canvasFont());
+            QRect labelRect = metrics.boundingRect(getLabel());
+            int labelWidth = std::max(70, labelRect.width());
+            this->setSize(QSizeF(labelWidth + 60, height));
+        }
     }
+    return ShapeObj::itemChange(change, value);
+}
+void OntologyClassShape::setMyLabel(QString label)
+{
     this->setLabel(label);
-    this->setSize(QSizeF(maxLength,maxWidth));
 }
 
