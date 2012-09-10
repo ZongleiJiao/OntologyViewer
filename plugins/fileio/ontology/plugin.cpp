@@ -280,6 +280,9 @@ bool OntologyFileIOPlugin::loadDiagramFromFile(Canvas *canvas,
     //propertyview
 //    onto->drawPropertyView(canvas);
 
+    // Turn off editing controls and prevent editing on canvas.
+    canvas->setOptStructuralEditingDisabled(true);
+
     return true;
 }
 
