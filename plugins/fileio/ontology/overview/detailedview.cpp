@@ -173,9 +173,7 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
         int idx = getIndexByShortname(overviewClasses,dclasses[i]->shortname);
         if(idx!=-1){
             QPointF p = overviewClasses[idx]->overviewshape->pos();
-            // Call CanvasItem::setPos so the layout doesn't think this
-            // position was set by the user dragging the shape.
-            dclasses[i]->shape->CanvasItem::setPos(p);
+            dclasses[i]->shape->setCentrePos(p);
         }
 
         this->addShapeWithExt(dclasses[i]);
