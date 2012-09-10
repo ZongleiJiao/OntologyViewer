@@ -32,8 +32,12 @@ int initJavaWrapper(int argc,char **argv)
         JavaVMOption options[3];
         JavaVMInitArgs vm_args;
         options[0].optionString = "-Djava.compiler=NONE";                                       /* disable JIT */
-        options[1].optionString = "-Djava.class.path=../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar"; // path for linux
-//        options[1].optionString = "-Djava.class.path=../../../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar"; // path for mac
+#ifdef Q_WS_MAC
+        // On Mac the app bunde means the plugin directory is at a different relative path:
+        options[1].optionString = "-Djava.class.path=../../../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar";
+#else
+        options[1].optionString = "-Djava.class.path=../plugins/fileio/ontology/libontology/OWLAPIWrapper.jar";
+#endif
         options[2].optionString = "-verbose:none";                                              /* print JNI-related messages */
         vm_args.version = JNI_VERSION_1_2;
         vm_args.options = options;

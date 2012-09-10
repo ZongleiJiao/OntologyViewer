@@ -918,6 +918,7 @@ void Overview::setTreeLevels()
         classes[i]->tree_level = -1;
         if(classes[i]->superclasses.empty())root = classes[i];
     }
+    if(!root)return;
     this->computeTreeLevel(0,root);
     for(int i=0;i<classes.size();i++){
         for(int j=0;j<classes[i]->superclasses.size();j++){
@@ -1283,6 +1284,10 @@ void Overview::searchWgtResultClicked(QList<OwlClass *> rs)
     for(int i = 0;i<rs.size();i++){
         int idx = getIndexByShortname(classes,rs[i]->shortname);
         if(idx!=-1)ovcls.append(classes[idx]);
+        else{
+            OwlClass * onc = this->getNearestOvClass(rs[i]);
+            ovcls.append(onc);
+        }
         //detail view
 //        rs[i]->setFocused(true,this->m_ontology->maincanvas);
 
@@ -1392,7 +1397,9 @@ void Overview::layoutmethodChanged(QString method)
         this->m_detailview->m_canvas->setOptPreventOverlaps(true);
         this->setOrthogonalConnectors(this->m_detailview->m_canvas,true);
         this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
-
+        this->m_detailview->m_canvas->setOptFlowSeparationModifierFromSlider(50);
+        this->m_detailview->m_canvas->setOptIdealEdgeLengthModifierFromSlider(40);
+        this->m_detailview->m_canvas->setOptLayeredAlignmentPosition(Canvas::ShapeEnd);
         this->m_detailview->m_canvas->fully_restart_graph_layout();
         return;
     }
@@ -1464,6 +1471,7 @@ void Overview::directionChanged(QString dr)
 void Overview::connectWgt(OverviewDockWidget *wgt){
     this->m_wid = wgt;
     connect(m_ontology,SIGNAL(clickedClass(QString)),this,SLOT(detailView_ClickedClass(QString)));
+    connect(m_ontology,SIGNAL(doubleClickedClass(OwlClass*)),this,SLOT(searchWgtResultDoubleClicked(OwlClass*)));
     connect(m_ontology,SIGNAL(hoverEnterClass(QString)),this,SLOT(detailView_ClassHoverEnter(QString)));
     connect(m_ontology,SIGNAL(hoverLeaveClass(QString)),this,SLOT(detailView_ClassHoverLeave(QString)));
     connect(wgt->m_scene,SIGNAL(myclick(QPointF)),this,SLOT(widSceneClicked(QPointF)));

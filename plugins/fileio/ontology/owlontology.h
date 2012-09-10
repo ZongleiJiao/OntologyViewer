@@ -23,6 +23,7 @@ class OwlOntology:public QObject
     Q_OBJECT
 signals:
     void clickedClass(QString);
+    void doubleClickedClass(OwlClass *);
     void hoverEnterClass(QString);
     void hoverLeaveClass(QString);
     void loading(QString);

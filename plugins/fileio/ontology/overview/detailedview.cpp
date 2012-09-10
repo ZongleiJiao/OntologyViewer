@@ -55,13 +55,14 @@ void DetailedView::addShapeWithExt(OwlClass *cls)
 
     bool needsubext = false;
     bool needsuperext = false;
+    int inDetailviewSubCount = 0;
     for(int j=0;j<cls->subclasses.size();j++){
         int idx = getIndexByShortname(dclasses,cls->subclasses[j]->shortname);
-        if(idx==-1){
-            needsubext = true;
-            break;
-        }
+        if(idx!=-1)inDetailviewSubCount++;
     }
+    //show "c" node only if part of subclasses are showing in detailed view
+    if(inDetailviewSubCount<cls->subclasses.size()&&inDetailviewSubCount>0)needsubext=true;
+
     for(int j=0;j<cls->superclasses.size();j++){
         int idx = getIndexByShortname(dclasses,cls->superclasses[j]->shortname);
         if(idx==-1){

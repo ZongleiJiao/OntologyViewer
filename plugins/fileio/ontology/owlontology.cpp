@@ -1772,10 +1772,10 @@ void OwlOntology::ontoclass_doubleclicked(OntologyClassShape *classshape)
 {
     int idx = this->getIndexOfClasses(classshape->idString());
     if(idx!=-1){
-
         classes[idx]->hideIndividuals(this->maincanvas);
         classes[idx]->setFocused(false,this->maincanvas);
-        this->maincanvas->fully_restart_graph_layout();
+        emit this->doubleClickedClass(classes[idx]);
+//        this->maincanvas->fully_restart_graph_layout();
     }
 
 
