@@ -24,6 +24,13 @@ using namespace dunnart;
 using namespace vpsc;
 using namespace std;
 using namespace ogdf;
+
+const double Overview::TREE_siblingDistance;
+const double Overview::TREE_levelDistance;
+const double Overview::TREE_subtreeDistance;
+const double Overview::TREE_treeDistance;
+const double Overview::SINGLE_EDGE_LENGTH;
+
 Overview::Overview(int numOfNode,OwlOntology *ontology,Canvas * canvas,QObject *parent) :
     QObject(parent)
 {
