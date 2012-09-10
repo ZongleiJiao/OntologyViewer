@@ -173,7 +173,9 @@ QList<OwlClass *> DetailedView::drawClassView(OwlClass *centerNode, QList<OwlCla
         int idx = getIndexByShortname(overviewClasses,dclasses[i]->shortname);
         if(idx!=-1){
             QPointF p = overviewClasses[idx]->overviewshape->pos();
-            dclasses[i]->shape->setCentrePos(p);
+            // Call CanvasItem::setPos so the layout doesn't think this
+            // position was set by the user dragging the shape.
+            dclasses[i]->shape->CanvasItem::setPos(p);
         }
 
         this->addShapeWithExt(dclasses[i]);
@@ -367,6 +369,9 @@ void DetailedView::removeIndividuals(){
 
 void DetailedView::shapeRight_Clicked(OntologyClassShape *shape)
 {
+    // Stop layout to prepare for canvas items being added/removed.
+    m_canvas->stop_graph_layout();
+
 //    QMessageBox * m = new QMessageBox();
 //    m->setText("Unfinished function!!");
 //    m->show();

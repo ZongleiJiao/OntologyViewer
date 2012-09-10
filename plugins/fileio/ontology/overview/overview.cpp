@@ -1210,6 +1210,9 @@ void Overview::widSceneClicked(OwlClass *cls)
     QTime st = QTime::currentTime();
     st.start();
 
+    // Stop layout to prepare for canvas items being added/removed.
+    m_detailview->m_canvas->stop_graph_layout();
+
     for(int i = 0;i<this->classes.size();i++)
     {
         if(classes[i]->URI.left(9)!="[COMPACT]"){
