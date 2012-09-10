@@ -1404,6 +1404,7 @@ void Overview::layoutmethodChanged(QString method)
         this->compactTreeLayout(200,200);
 
         this->m_detailview->m_canvas->setOptAutomaticGraphLayout(true);
+        this->m_detailview->m_canvas->setOptShapeNonoverlapPadding(5);
         this->m_detailview->m_canvas->setOptPreventOverlaps(true);
         this->setOrthogonalConnectors(this->m_detailview->m_canvas,true);
         this->m_detailview->m_canvas->setOptLayoutMode(Canvas::LayeredLayout);
