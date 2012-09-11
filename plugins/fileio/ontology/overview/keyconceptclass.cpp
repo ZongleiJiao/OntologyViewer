@@ -685,6 +685,10 @@ int KeyConceptClass::readScore_DB()
             measures[idx].visitTimes = rs[i]->numberOfVisits;
         }
     }
+    //Thing class not in database
+    int idx = cnames.indexOf("Thing");
+    measures[idx].score = 2;
+    measures[idx].landmark = 5;
 
     db->closeDB();
     return 1;
