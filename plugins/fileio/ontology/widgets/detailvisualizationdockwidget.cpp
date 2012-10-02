@@ -13,9 +13,8 @@ DetailVisualizationDockWidget::DetailVisualizationDockWidget(OwlOntology *onto, 
 
     setWindowTitle("Detail Visualization for " + this->m_cls->shortname);
 
-    m_scene = new QGraphicsScene(ui->sceneDockWidget);
-    m_view = new QGraphicsView(m_scene,this);
-    ui->sceneDockWidget->setWidget(m_view);
+    m_scene = new QGraphicsScene(this);
+    ui->graphicsViewWidget->setScene(m_scene);
     m_scene->setBackgroundBrush(QBrush(QColor("white")));
 
     //assign data
